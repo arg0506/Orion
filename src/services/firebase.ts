@@ -16,7 +16,7 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
 export const auth = getAuth(app);
-export const db = getFirestore(app);
+export const db = getFirestore(app, "ai-studio-stellarwalletbal-ce67b067-c0a1-4380-b083-c029b776bf9e");
 export const googleProvider = new GoogleAuthProvider();
 
 export default app;

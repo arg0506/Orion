@@ -2,40 +2,89 @@ import { useState, useEffect, useCallback } from 'react';
 import { MultiAccountItem } from '../types';
 import { isValidAddress, fetchAccountDetails } from '../services/stellar';
 import { toast } from 'react-hot-toast';
+import { collection, query, where, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { db } from '../services/firebase';
+import { useAuth } from '../context/AuthContext';
 
 export const useMultiAccounts = () => {
+  const { user } = useAuth();
   const [accounts, setAccounts] = useState<MultiAccountItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load accounts from localStorage
+  // Load accounts based on auth state
   useEffect(() => {
-    const saved = localStorage.getItem('stellar_monitored_accounts');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setAccounts(parsed.map((acc: any) => ({
-          ...acc,
-          isLoading: false,
-        })));
-      } catch (err) {
-        console.error('Failed to parse monitored accounts:', err);
-      }
-    }
-    setLoading(false);
-  }, []);
+    let active = true;
 
-  // Sync to local storage
+    const loadAccounts = async () => {
+      setLoading(true);
+      if (user) {
+        try {
+          const q = query(collection(db, 'monitored_accounts'), where('userId', '==', user.uid));
+          const querySnapshot = await getDocs(q);
+          if (!active) return;
+
+          const loadedAccounts: MultiAccountItem[] = [];
+          querySnapshot.forEach((docSnapshot) => {
+            const data = docSnapshot.data();
+            loadedAccounts.push({
+              id: docSnapshot.id,
+              address: data.address,
+              label: data.label,
+              xlmBalance: data.xlmBalance || '0',
+              exists: data.exists ?? false,
+              isLoading: false,
+              error: data.error || null,
+              lastUpdated: data.lastUpdated || null,
+            });
+          });
+          setAccounts(loadedAccounts);
+        } catch (err) {
+          console.error('Failed to load accounts from Firestore:', err);
+          toast.error('Failed to synchronize monitored accounts from cloud.');
+        } finally {
+          if (active) setLoading(false);
+        }
+      } else {
+        // Guest mode fallback
+        const saved = localStorage.getItem('stellar_monitored_accounts');
+        if (saved && active) {
+          try {
+            const parsed = JSON.parse(saved);
+            setAccounts(parsed.map((acc: any) => ({
+              ...acc,
+              isLoading: false,
+            })));
+          } catch (err) {
+            console.error('Failed to parse monitored accounts:', err);
+          }
+        } else if (active) {
+          setAccounts([]);
+        }
+        if (active) setLoading(false);
+      }
+    };
+
+    loadAccounts();
+
+    return () => {
+      active = false;
+    };
+  }, [user]);
+
+  // Sync guest changes to local storage helper
   const saveToLocalStorage = (updatedList: MultiAccountItem[]) => {
-    const serialized = updatedList.map(({ id, address, label, xlmBalance, exists, lastUpdated, error }) => ({
-      id,
-      address,
-      label,
-      xlmBalance,
-      exists,
-      lastUpdated,
-      error,
-    }));
-    localStorage.setItem('stellar_monitored_accounts', JSON.stringify(serialized));
+    if (!user) {
+      const serialized = updatedList.map(({ id, address, label, xlmBalance, exists, lastUpdated, error }) => ({
+        id,
+        address,
+        label,
+        xlmBalance,
+        exists,
+        lastUpdated,
+        error,
+      }));
+      localStorage.setItem('stellar_monitored_accounts', JSON.stringify(serialized));
+    }
   };
 
   const fetchSingleAccount = useCallback(async (id: string, address: string) => {
@@ -45,6 +94,17 @@ export const useMultiAccounts = () => {
 
     try {
       const details = await fetchAccountDetails(address);
+      
+      if (user) {
+        const docRef = doc(db, 'monitored_accounts', id);
+        await updateDoc(docRef, {
+          xlmBalance: details.xlmBalance,
+          exists: details.exists,
+          lastUpdated: details.lastUpdated,
+          error: null,
+        });
+      }
+
       setAccounts((prev) => {
         const next = prev.map((acc) =>
           acc.id === id
@@ -63,6 +123,18 @@ export const useMultiAccounts = () => {
       });
     } catch (err: any) {
       const errMsg = err.message || 'Failed to fetch balance.';
+      
+      if (user) {
+        try {
+          const docRef = doc(db, 'monitored_accounts', id);
+          await updateDoc(docRef, {
+            error: errMsg,
+          });
+        } catch (e) {
+          console.error('Failed to log account fetch error in Firestore:', e);
+        }
+      }
+
       setAccounts((prev) => {
         const next = prev.map((acc) =>
           acc.id === id
@@ -77,7 +149,7 @@ export const useMultiAccounts = () => {
         return next;
       });
     }
-  }, []);
+  }, [user]);
 
   const addAccount = async (address: string, label?: string) => {
     const cleanAddress = address.trim();
@@ -97,11 +169,32 @@ export const useMultiAccounts = () => {
       return false;
     }
 
-    const newId = crypto.randomUUID();
+    const newId = user ? '' : crypto.randomUUID();
     const cleanLabel = label?.trim() || `Account ${accounts.length + 1}`;
+    
+    let targetId = newId;
+    
+    if (user) {
+      try {
+        const docRef = await addDoc(collection(db, 'monitored_accounts'), {
+          userId: user.uid,
+          address: cleanAddress,
+          label: cleanLabel,
+          xlmBalance: '0',
+          exists: false,
+          lastUpdated: null,
+          error: null
+        });
+        targetId = docRef.id;
+      } catch (err) {
+        console.error('Failed to add account to Firestore:', err);
+        toast.error('Failed to save monitored account to cloud database.');
+        return false;
+      }
+    }
 
     const newItem: MultiAccountItem = {
-      id: newId,
+      id: targetId,
       address: cleanAddress,
       label: cleanLabel,
       xlmBalance: '0',
@@ -118,9 +211,20 @@ export const useMultiAccounts = () => {
     // Load initial balance details
     try {
       const details = await fetchAccountDetails(cleanAddress);
+      
+      if (user) {
+        const docRef = doc(db, 'monitored_accounts', targetId);
+        await updateDoc(docRef, {
+          xlmBalance: details.xlmBalance,
+          exists: details.exists,
+          lastUpdated: details.lastUpdated,
+          error: null,
+        });
+      }
+
       setAccounts((prev) => {
         const next = prev.map((acc) =>
-          acc.id === newId
+          acc.id === targetId
             ? {
                 ...acc,
                 xlmBalance: details.xlmBalance,
@@ -138,9 +242,20 @@ export const useMultiAccounts = () => {
       return true;
     } catch (err: any) {
       const errMsg = err.message || 'Failed to resolve balance.';
+      if (user) {
+        try {
+          const docRef = doc(db, 'monitored_accounts', targetId);
+          await updateDoc(docRef, {
+            error: errMsg,
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
       setAccounts((prev) => {
         const next = prev.map((acc) =>
-          acc.id === newId
+          acc.id === targetId
             ? {
                 ...acc,
                 isLoading: false,
@@ -157,6 +272,17 @@ export const useMultiAccounts = () => {
   };
 
   const removeAccount = async (id: string) => {
+    if (user) {
+      try {
+        const docRef = doc(db, 'monitored_accounts', id);
+        await deleteDoc(docRef);
+      } catch (err) {
+        console.error('Failed to delete account from Firestore:', err);
+        toast.error('Failed to remove monitored account from cloud database.');
+        return;
+      }
+    }
+
     const updated = accounts.filter((acc) => acc.id !== id);
     setAccounts(updated);
     saveToLocalStorage(updated);
