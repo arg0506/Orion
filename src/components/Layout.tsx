@@ -1,14 +1,11 @@
 import React from 'react';
 import { NavLink, Outlet, Link } from 'react-router-dom';
 import { useWallet } from '../context/WalletContext';
-import { useAuth } from '../context/AuthContext';
-import AuthScreen from './AuthScreen';
-import { Wallet, Activity, AlertTriangle, ExternalLink, Compass, Monitor, LogOut, Loader2 } from 'lucide-react';
+import { Wallet, Activity, AlertTriangle, ExternalLink, Compass, Monitor, LogOut } from 'lucide-react';
 import orionLogo from '../assets/images/orion_logo_1783011957450.jpg';
 
 export default function Layout() {
   const { wallet, connect, disconnect } = useWallet();
-  const { user, loading, logout } = useAuth();
 
   const shortenAddress = (addr: string) => {
     return `${addr.slice(0, 6)}...${addr.slice(-6)}`;
@@ -70,26 +67,6 @@ export default function Layout() {
 
         {/* Sidebar Footer Indicators */}
         <div className="space-y-3">
-          {/* Firebase User Indicator */}
-          {user && (
-            <div className="p-4 rounded bg-white/[0.02] border border-white/5 space-y-2 font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-[9px] font-bold uppercase tracking-widest text-gray-500">VOYAGER ID</span>
-                <button
-                  onClick={logout}
-                  className="text-[9px] text-white hover:underline uppercase tracking-wider font-bold"
-                  title="Sign out of Firebase Auth"
-                >
-                  LOGOUT
-                </button>
-              </div>
-              <div>
-                <p className="text-[10px] text-white font-bold truncate">{user.displayName || 'Pilot Voyager'}</p>
-                <p className="text-[8px] text-gray-500 truncate">{user.email || 'Anonymous Session'}</p>
-              </div>
-            </div>
-          )}
-
           {/* Wallet connection indicator */}
           <div className="p-4 rounded bg-white/[0.02] border border-white/5 space-y-1.5 font-mono">
             <div className="flex items-center gap-2">
@@ -130,7 +107,7 @@ export default function Layout() {
             <div className="hidden sm:block font-mono">
               <h1 className="text-[9px] font-medium text-gray-500 uppercase tracking-widest">GATEWAY AUTHORIZED</h1>
               <p className="text-xs font-bold text-white uppercase tracking-widest truncate max-w-[180px]">
-                {user ? `PILOT: ${(user.displayName || user.email?.split('@')[0] || 'VOYAGER').toUpperCase()}` : 'PILOT: GUEST'}
+                PILOT: VOYAGER
               </p>
             </div>
           </div>
@@ -200,45 +177,32 @@ export default function Layout() {
 
         {/* Main Content Viewport */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 z-10 flex flex-col justify-start">
-          {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-20 font-mono text-gray-500 text-xs">
-              <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
-              <span>SYNCHRONIZING VOYAGER SECURE GATEWAY...</span>
-            </div>
-          ) : !user ? (
-            <div className="flex-1 flex items-center justify-center py-10">
-              <AuthScreen />
-            </div>
-          ) : (
-            <>
-              {/* Extension Warning Banner (Stark Gray instead of Amber) */}
-              {!wallet.isInstalled && (
-                <div className="mb-8 p-5 rounded border border-white/20 bg-white/[0.02] text-white flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="text-white shrink-0 mt-0.5 animate-pulse" size={18} />
-                    <div className="font-mono">
-                      <h4 className="font-bold text-xs text-white uppercase tracking-widest">Freighter Wallet Extension Required</h4>
-                      <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
-                        A secure cryptographic connection is required to transmit signed transaction payloads. You may monitor on-chain addresses read-only, but injecting transactions demands Freighter.
-                      </p>
-                    </div>
-                  </div>
-                  <a
-                    href="https://www.freighter.app/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10px] font-mono font-bold bg-white text-black hover:bg-gray-200 transition-all shrink-0 self-start md:self-center"
-                  >
-                    INSTALL EXTENSION
-                    <ExternalLink size={10} />
-                  </a>
+          {/* Extension Warning Banner (Stark Gray instead of Amber) */}
+          {!wallet.isInstalled && (
+            <div className="mb-8 p-5 rounded border border-white/20 bg-white/[0.02] text-white flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="text-white shrink-0 mt-0.5 animate-pulse" size={18} />
+                <div className="font-mono">
+                  <h4 className="font-bold text-xs text-white uppercase tracking-widest">Freighter Wallet Extension Required</h4>
+                  <p className="text-[11px] text-gray-400 mt-1 leading-relaxed">
+                    A secure cryptographic connection is required to transmit signed transaction payloads. You may monitor on-chain addresses read-only, but injecting transactions demands Freighter.
+                  </p>
                 </div>
-              )}
-
-              {/* Actual Route Contents */}
-              <Outlet />
-            </>
+              </div>
+              <a
+                href="https://www.freighter.app/"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-[10px] font-mono font-bold bg-white text-black hover:bg-gray-200 transition-all shrink-0 self-start md:self-center"
+              >
+                INSTALL EXTENSION
+                <ExternalLink size={10} />
+              </a>
+            </div>
           )}
+
+          {/* Actual Route Contents */}
+          <Outlet />
         </main>
 
         {/* Universal Footer */}

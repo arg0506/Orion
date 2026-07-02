@@ -1,4 +1,4 @@
-# Orion (Testnet Web3 Console)
+# Stellar Voyager Portal (Testnet Web3 Console)
 
 A highly polished, production-ready Web3 application built using **React, Vite, and Tailwind CSS** that operates against the **real Stellar Testnet**. It enables users to authenticate securely with Firebase Authentication, connect their Freighter browser wallet, retrieve real-time account data (including sequence numbers, subentries, and XLM balances), manage multiple monitored wallets, and securely build, sign, and submit transactions to the blockchain.
 

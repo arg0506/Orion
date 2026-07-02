@@ -5,8 +5,9 @@ import { toast } from 'react-hot-toast';
 
 export const useMultiAccounts = () => {
   const [accounts, setAccounts] = useState<MultiAccountItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load from localStorage on mount
+  // Load accounts from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('stellar_monitored_accounts');
     if (saved) {
@@ -20,10 +21,11 @@ export const useMultiAccounts = () => {
         console.error('Failed to parse monitored accounts:', err);
       }
     }
+    setLoading(false);
   }, []);
 
-  // Save to localStorage whenever accounts change (excluding loading states)
-  const saveToStorage = (updatedList: MultiAccountItem[]) => {
+  // Sync to local storage
+  const saveToLocalStorage = (updatedList: MultiAccountItem[]) => {
     const serialized = updatedList.map(({ id, address, label, xlmBalance, exists, lastUpdated, error }) => ({
       id,
       address,
@@ -56,21 +58,22 @@ export const useMultiAccounts = () => {
               }
             : acc
         );
-        saveToStorage(next);
+        saveToLocalStorage(next);
         return next;
       });
     } catch (err: any) {
+      const errMsg = err.message || 'Failed to fetch balance.';
       setAccounts((prev) => {
         const next = prev.map((acc) =>
           acc.id === id
             ? {
                 ...acc,
                 isLoading: false,
-                error: err.message || 'Failed to fetch balance.',
+                error: errMsg,
               }
             : acc
         );
-        saveToStorage(next);
+        saveToLocalStorage(next);
         return next;
       });
     }
@@ -95,10 +98,12 @@ export const useMultiAccounts = () => {
     }
 
     const newId = crypto.randomUUID();
+    const cleanLabel = label?.trim() || `Account ${accounts.length + 1}`;
+
     const newItem: MultiAccountItem = {
       id: newId,
       address: cleanAddress,
-      label: label?.trim() || `Account ${accounts.length + 1}`,
+      label: cleanLabel,
       xlmBalance: '0',
       exists: false,
       isLoading: true,
@@ -108,7 +113,7 @@ export const useMultiAccounts = () => {
 
     const updatedList = [...accounts, newItem];
     setAccounts(updatedList);
-    saveToStorage(updatedList);
+    saveToLocalStorage(updatedList);
 
     // Load initial balance details
     try {
@@ -126,23 +131,24 @@ export const useMultiAccounts = () => {
               }
             : acc
         );
-        saveToStorage(next);
+        saveToLocalStorage(next);
         return next;
       });
       toast.success('Monitored account added!');
       return true;
     } catch (err: any) {
+      const errMsg = err.message || 'Failed to resolve balance.';
       setAccounts((prev) => {
         const next = prev.map((acc) =>
           acc.id === newId
             ? {
                 ...acc,
                 isLoading: false,
-                error: err.message || 'Failed to resolve balance.',
+                error: errMsg,
               }
             : acc
         );
-        saveToStorage(next);
+        saveToLocalStorage(next);
         return next;
       });
       toast('Account added, but failed to fetch balance details.', { icon: '⚠️' });
@@ -150,10 +156,10 @@ export const useMultiAccounts = () => {
     }
   };
 
-  const removeAccount = (id: string) => {
+  const removeAccount = async (id: string) => {
     const updated = accounts.filter((acc) => acc.id !== id);
     setAccounts(updated);
-    saveToStorage(updated);
+    saveToLocalStorage(updated);
     toast.success('Account removed from monitor.');
   };
 
@@ -177,5 +183,6 @@ export const useMultiAccounts = () => {
     removeAccount,
     refreshAccount: fetchSingleAccount,
     refreshAllAccounts,
+    loading
   };
 };

@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { TransactionHistoryItem } from '../types';
+import { toast } from 'react-hot-toast';
 
 export const useTransactionHistory = (senderPublicKey: string | null) => {
   const [history, setHistory] = useState<TransactionHistoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load history from localStorage
+  // Load transaction history from localStorage
   useEffect(() => {
     const saved = localStorage.getItem('stellar_tx_history');
     if (saved) {
@@ -15,9 +17,10 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
         console.error('Failed to parse transaction history:', err);
       }
     }
+    setLoading(false);
   }, []);
 
-  // Filter history for current logged-in user if public key is provided
+  // Filter history for current active wallet if public key is provided
   const userHistory = senderPublicKey
     ? history.filter(
         (tx) =>
@@ -26,21 +29,20 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
       )
     : [];
 
-  const addTransaction = (tx: Omit<TransactionHistoryItem, 'timestamp'>) => {
+  const addTransaction = async (tx: Omit<TransactionHistoryItem, 'timestamp'>) => {
     const newTx: TransactionHistoryItem = {
       ...tx,
       timestamp: new Date().toISOString(),
     };
 
-    setHistory((prev) => {
-      const updated = [newTx, ...prev];
-      localStorage.setItem('stellar_tx_history', JSON.stringify(updated));
-      return updated;
-    });
+    const updated = [newTx, ...history];
+    localStorage.setItem('stellar_tx_history', JSON.stringify(updated));
+    setHistory(updated);
   };
 
-  const clearHistory = () => {
+  const clearHistory = async () => {
     localStorage.removeItem('stellar_tx_history');
+    toast.success('Local transaction logs cleared.');
     setHistory([]);
   };
 
@@ -49,5 +51,6 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
     allHistory: history,
     addTransaction,
     clearHistory,
+    loading
   };
 };
