@@ -184,7 +184,13 @@ export default function SendTransactionForm() {
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded bg-white/[0.02] border border-white/10 flex flex-col backdrop-blur-xl relative overflow-hidden shadow-2xl font-mono">
+    <div className="p-6 sm:p-8 rounded-lg glass-panel-monochrome flex flex-col relative overflow-hidden shadow-2xl font-mono hover:border-white/20 transition-all duration-300 group">
+      {/* Decorative corners */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40 transition-colors" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 group-hover:border-white/40 transition-colors" />
+      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20 group-hover:border-white/40 transition-colors" />
+      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40 transition-colors" />
+
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
           <Send size={14} className="text-white" />

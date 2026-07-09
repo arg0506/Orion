@@ -149,3 +149,65 @@ export async function submitSignedTransaction(signedXDR: string): Promise<{
     throw new Error(error.message || 'Failed to submit transaction to the network.');
   }
 }
+
+/**
+ * Fetches and parses recent payments from Horizon for a given public key.
+ */
+export async function fetchOnChainPayments(publicKey: string, limit = 15): Promise<any[]> {
+  if (!isValidAddress(publicKey)) {
+    throw new Error('Invalid Stellar address format.');
+  }
+
+  try {
+    const response = await server.payments()
+      .forAccount(publicKey)
+      .order('desc')
+      .limit(limit)
+      .call();
+
+    return response.records.map((record: any) => {
+      let amount = '0';
+      let sender = '';
+      let recipient = '';
+      let isIncoming = false;
+
+      if (record.type === 'payment') {
+        amount = record.amount;
+        sender = record.from;
+        recipient = record.to;
+        isIncoming = recipient === publicKey;
+      } else if (record.type === 'create_account') {
+        amount = record.starting_balance;
+        sender = record.funder;
+        recipient = record.account;
+        isIncoming = recipient === publicKey;
+      } else if (record.type === 'account_merge') {
+        amount = 'ALL';
+        sender = record.account;
+        recipient = record.into;
+        isIncoming = recipient === publicKey;
+      } else {
+        sender = record.source_account || '';
+        recipient = publicKey;
+        amount = '0';
+        isIncoming = true;
+      }
+
+      return {
+        id: record.id,
+        hash: record.transaction_hash,
+        type: record.type,
+        sender,
+        recipient,
+        amount,
+        timestamp: record.created_at,
+        isIncoming,
+        successful: record.transaction_successful ?? true,
+      };
+    });
+  } catch (error: any) {
+    console.error('Failed to fetch on-chain payments:', error);
+    throw error;
+  }
+}
+

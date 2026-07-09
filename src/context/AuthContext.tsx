@@ -17,6 +17,8 @@ import { toast } from 'react-hot-toast';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  authError: string | null;
+  clearAuthError: () => void;
   loginWithGoogle: () => Promise<void>;
   loginAnonymously: () => Promise<void>;
   logout: () => Promise<void>;
@@ -27,6 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -34,6 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setLoading(false);
 
       if (currentUser) {
+        setAuthError(null);
         // Sync or register user profile document in Firestore
         try {
           const userDocRef = doc(db, 'users', currentUser.uid);
@@ -55,10 +59,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginWithGoogle = async () => {
     try {
       setLoading(true);
+      setAuthError(null);
       await signInWithPopup(auth, googleProvider);
       toast.success('Successfully logged in with Google!');
     } catch (error: any) {
       console.error('Google Sign-In Error:', error);
+      setAuthError(error.code || error.message || 'auth/unauthorized-domain');
       toast.error(error.message || 'Failed to authenticate via Google.');
     } finally {
       setLoading(false);
@@ -68,10 +74,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const loginAnonymously = async () => {
     try {
       setLoading(true);
+      setAuthError(null);
       await signInAnonymously(auth);
       toast.success('Signed in as Guest Voyager.');
     } catch (error: any) {
       console.error('Anonymous Sign-In Error:', error);
+      setAuthError(error.code || error.message || 'auth/admin-restricted-operation');
       toast.error(error.message || 'Failed to sign in anonymously.');
     } finally {
       setLoading(false);
@@ -81,6 +89,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     try {
       setLoading(true);
+      setAuthError(null);
       await signOut(auth);
       toast.success('Signed out successfully.');
     } catch (error: any) {
@@ -91,8 +100,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const clearAuthError = () => setAuthError(null);
+
   return (
-    <AuthContext.Provider value={{ user, loading, loginWithGoogle, loginAnonymously, logout }}>
+    <AuthContext.Provider value={{ user, loading, authError, clearAuthError, loginWithGoogle, loginAnonymously, logout }}>
       {children}
     </AuthContext.Provider>
   );

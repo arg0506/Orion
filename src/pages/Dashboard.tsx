@@ -46,16 +46,21 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               
               {/* Account Balance Card - Stark Monochrome Design */}
-              <div className="p-8 rounded bg-white/[0.02] border border-white/10 shadow-2xl backdrop-blur-xl flex flex-col justify-between min-h-[220px]">
+              <div className="p-8 rounded-lg glass-panel-monochrome shadow-2xl flex flex-col justify-between min-h-[220px] hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 relative group overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40 transition-colors" />
+                
                 <div>
                   <div className="flex justify-between items-start">
                     <span className="text-xs font-semibold text-white tracking-widest uppercase font-display">Native Asset Balance</span>
                     <span className="px-2.5 py-1 rounded bg-white/10 border border-white/20 text-[9px] text-white font-bold tracking-widest font-mono">XLM</span>
                   </div>
                   <div className="mt-5 flex items-baseline gap-2">
-                    <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-display">
+                    <h2 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white font-display cyber-glow-white">
                       {isLoadingAccount ? (
-                        <span className="opacity-40">...</span>
+                        <span className="opacity-40 animate-pulse">...</span>
                       ) : account ? (
                         parseFloat(account.xlmBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })
                       ) : (
@@ -70,11 +75,14 @@ export default function Dashboard() {
                 </div>
                 
                 <div className="flex justify-between items-center mt-6 pt-4 border-t border-white/5">
-                  <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider font-mono">SESSION_CONNECTED</span>
+                  <span className="text-[10px] uppercase text-gray-500 font-bold tracking-wider font-mono flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                    SESSION_CONNECTED
+                  </span>
                   <button
                     onClick={refreshAccount}
                     disabled={isLoadingAccount}
-                    className="p-1.5 rounded border border-white/10 bg-black/40 text-gray-400 hover:text-white hover:border-white transition-all cursor-pointer"
+                    className="p-1.5 rounded border border-white/10 bg-black/40 text-gray-400 hover:text-white hover:border-white transition-all cursor-pointer hover:scale-105 active:scale-95"
                     title="Refresh Ledger Balance"
                   >
                     <RefreshCw size={12} className={isLoadingAccount ? 'animate-spin' : ''} />
@@ -83,7 +91,12 @@ export default function Dashboard() {
               </div>
 
               {/* Account State Card */}
-              <div className="p-8 rounded bg-white/[0.02] border border-white/10 shadow-2xl backdrop-blur-xl flex flex-col justify-between min-h-[220px]">
+              <div className="p-8 rounded-lg glass-panel-monochrome shadow-2xl flex flex-col justify-between min-h-[220px] hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)] transition-all duration-300 relative group overflow-hidden">
+                <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20 group-hover:border-white/40 transition-colors" />
+                <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40 transition-colors" />
+
                 <div>
                   <div className="flex justify-between items-start">
                     <span className="text-xs font-semibold text-white tracking-widest uppercase font-display">Voyage Parameters</span>

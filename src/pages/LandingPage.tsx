@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import orionLogo from '../assets/images/orion_logo_1783011957450.jpg';
+import ledgerScheme from '../assets/images/ledger_grid_monochrome_1783009823001.jpg';
 
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -383,7 +384,7 @@ export default function LandingPage() {
             <div className="p-1 rounded-[16px] bg-gradient-to-b from-white/20 to-transparent border border-white/10 relative z-10 shadow-2xl">
               <div className="rounded-[12px] overflow-hidden bg-black aspect-[16/10] relative group">
                 <img 
-                  src="/src/assets/images/ledger_grid_monochrome_1783009823001.jpg" 
+                  src={ledgerScheme} 
                   alt="Stellar Decentralized Ledger Scheme" 
                   referrerPolicy="no-referrer"
                   className="w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700 filter grayscale"

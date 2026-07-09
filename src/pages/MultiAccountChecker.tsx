@@ -32,7 +32,9 @@ export default function MultiAccountChecker() {
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Header and top tools with Immersive UI Styling */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded bg-white/[0.02] border border-white/10 backdrop-blur-xl relative overflow-hidden shadow-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-lg glass-panel-monochrome relative overflow-hidden shadow-2xl group">
+        <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-white/25 group-hover:border-white/50 transition-colors" />
+        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-white/25 group-hover:border-white/50 transition-colors" />
         <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-32 h-32 rounded-full bg-white/[0.01] blur-2xl pointer-events-none"></div>
         <div className="z-10">
           <span className="text-[9px] font-bold text-white uppercase tracking-widest block mb-1">Multi-Terminal Surveillance</span>
@@ -59,7 +61,9 @@ export default function MultiAccountChecker() {
         
         {/* Left Column: Form & Guide */}
         <div className="lg:col-span-4 space-y-6 font-mono">
-          <div className="p-6 sm:p-8 rounded bg-white/[0.02] border border-white/10 backdrop-blur-xl shadow-2xl">
+          <div className="p-6 sm:p-8 rounded-lg glass-panel shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300">
+            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40" />
+            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40" />
             <h3 className="font-display font-bold text-xs tracking-widest text-white uppercase flex items-center gap-2 mb-6">
               <Plus size={14} className="text-white" />
               Add Monitor Wallet
@@ -119,7 +123,7 @@ export default function MultiAccountChecker() {
           </div>
 
           {/* Guide Card */}
-          <div className="p-6 sm:p-8 rounded bg-white/[0.02] border border-white/10 backdrop-blur-xl space-y-4 text-xs leading-relaxed text-gray-400">
+          <div className="p-6 sm:p-8 rounded-lg glass-panel space-y-4 text-xs leading-relaxed text-gray-400">
             <h4 className="font-display font-semibold text-xs tracking-widest text-white flex items-center gap-1.5 uppercase font-mono">
               <HelpCircle size={14} className="text-white" />
               Surveillance Protocol
