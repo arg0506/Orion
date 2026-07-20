@@ -5,6 +5,7 @@ export interface WalletState {
   network: string | null;
   status: 'disconnected' | 'connecting' | 'connected' | 'error';
   error: string | null;
+  walletType?: 'freighter' | 'metamask' | null;
 }
 
 export interface AccountData {

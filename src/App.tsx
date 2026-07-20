@@ -9,6 +9,7 @@ import Layout from './components/Layout';
 import Dashboard from './pages/Dashboard';
 import MultiAccountChecker from './pages/MultiAccountChecker';
 import LandingPage from './pages/LandingPage';
+import DeveloperHub from './pages/DeveloperHub';
 import { WalletProvider } from './context/WalletContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -23,6 +24,7 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="terminal" element={<Dashboard />} />
               <Route path="monitor" element={<MultiAccountChecker />} />
+              <Route path="developer" element={<DeveloperHub />} />
             </Route>
           </Routes>
         </HashRouter>
@@ -32,23 +34,25 @@ export default function App() {
           position="bottom-right"
           toastOptions={{
             style: {
-              background: 'rgba(15, 10, 30, 0.95)',
-              color: '#f1f5f9',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              fontFamily: 'Share Tech Mono, monospace',
-              fontSize: '13px',
-              backdropFilter: 'blur(8px)',
+              background: 'rgba(9, 9, 11, 0.95)',
+              color: '#f4f4f5',
+              border: '1px solid rgba(39, 39, 42, 0.8)',
+              fontFamily: 'JetBrains Mono, monospace',
+              fontSize: '11px',
+              borderRadius: '9999px',
+              padding: '10px 16px',
+              backdropFilter: 'blur(12px)',
             },
             success: {
               iconTheme: {
-                primary: '#10b981',
-                secondary: '#0f0a1e',
+                primary: '#f4f4f5',
+                secondary: '#09090b',
               },
             },
             error: {
               iconTheme: {
                 primary: '#f43f5e',
-                secondary: '#0f0a1e',
+                secondary: '#09090b',
               },
             },
           }}

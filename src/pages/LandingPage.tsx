@@ -1,9 +1,11 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Compass, ArrowRight, Shield, Zap, Activity, Monitor, Globe, 
-  Cpu, Terminal, Sparkles, RefreshCw, CheckCircle, ExternalLink, ArrowDownCircle, Info
+  Cpu, Terminal, Sparkles, RefreshCw, CheckCircle, ExternalLink, 
+  ArrowDownCircle, Info, Wifi, Battery, Orbit, ShieldCheck, Server, Star,
+  Menu, X
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import orionLogo from '../assets/images/orion_logo_1783011957450.jpg';
@@ -12,8 +14,23 @@ import ledgerScheme from '../assets/images/ledger_grid_monochrome_1783009823001.
 export default function LandingPage() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  // Custom 3D Mathematical Block Ledger Model
+  // Monitor scrolling to shrink notch if wanted, or adjust styling
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 40) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Custom 3D Space Constellation & Star Ledger Orbit Canvas
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -22,73 +39,86 @@ export default function LandingPage() {
 
     let animationFrameId: number;
     let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 650);
+    let height = (canvas.height = canvas.parentElement?.clientHeight || 750);
 
     const handleResize = () => {
       if (!canvas) return;
       width = canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-      height = canvas.height = canvas.parentElement?.clientHeight || 650;
+      height = canvas.height = canvas.parentElement?.clientHeight || 750;
     };
     window.addEventListener('resize', handleResize);
 
-    // 3D Cube vertices
-    const size = Math.min(width, height) * 0.15;
-    const vertices = [
-      { x: -size, y: -size, z: -size },
-      { x: size, y: -size, z: -size },
-      { x: size, y: size, z: -size },
-      { x: -size, y: size, z: -size },
-      { x: -size, y: -size, z: size },
-      { x: size, y: -size, z: size },
-      { x: size, y: size, z: size },
-      { x: -size, y: size, z: size },
-    ];
-
-    const edges = [
-      [0, 1], [1, 2], [2, 3], [3, 0], // back face
-      [4, 5], [5, 6], [6, 7], [7, 4], // front face
-      [0, 4], [1, 5], [2, 6], [3, 7]  // depth lines
-    ];
-
-    // Orbiting particle fields
-    interface Particle {
+    // Stellar constellation nodes
+    interface SpaceNode {
       x: number;
       y: number;
       z: number;
-      ox: number;
-      oy: number;
-      oz: number;
       size: number;
-      speed: number;
+      pulseSpeed: number;
+      pulsePhase: number;
+      label: string;
     }
 
-    const particles: Particle[] = [];
-    for (let i = 0; i < 60; i++) {
+    const size = Math.min(width, height) * 0.18;
+    const nodes: SpaceNode[] = [
+      { x: -size, y: -size * 0.5, z: -size, size: 4, pulseSpeed: 0.02, pulsePhase: 0, label: "ORION_CORE" },
+      { x: size, y: -size * 0.8, z: -size * 0.5, size: 5, pulseSpeed: 0.015, pulsePhase: Math.PI / 4, label: "HORIZON_NODE_A" },
+      { x: size * 0.6, y: size * 0.7, z: -size * 1.2, size: 3.5, pulseSpeed: 0.03, pulsePhase: Math.PI / 2, label: "VALIDATOR_SOLAR" },
+      { x: -size * 0.8, y: size * 0.6, z: -size * 0.2, size: 4, pulseSpeed: 0.01, pulsePhase: Math.PI, label: "MEMPOOL_STRATUM" },
+      { x: -size * 0.2, y: -size * 1.2, z: size, size: 5, pulseSpeed: 0.025, pulsePhase: Math.PI * 1.5, label: "SDF_TESTNET" },
+      { x: size * 1.1, y: -size * 0.2, z: size * 0.8, size: 3.5, pulseSpeed: 0.018, pulsePhase: Math.PI * 0.3, label: "GATEWAY_XLM" },
+      { x: size * 0.3, y: size * 1.1, z: size * 0.5, size: 4.5, pulseSpeed: 0.022, pulsePhase: Math.PI * 0.8, label: "LEDGER_INDEX_B" },
+      { x: -size * 1.2, y: size * 0.1, z: size * 1.1, size: 4, pulseSpeed: 0.012, pulsePhase: Math.PI * 1.2, label: "CIPHER_PORT" },
+    ];
+
+    const connections = [
+      [0, 1], [1, 2], [2, 3], [3, 0], // Main constellation outer
+      [4, 5], [5, 6], [6, 7], [7, 4], // Front constellation outer
+      [0, 4], [1, 5], [2, 6], [3, 7], // Structural cross lines
+      [0, 5], [2, 7], [1, 6], [3, 4]  // Core diagonal orbits
+    ];
+
+    // Orbiting space stardust dust specs
+    interface StarSpec {
+      x: number;
+      y: number;
+      z: number;
+      angle: number;
+      radius: number;
+      speed: number;
+      brightness: number;
+      color: string;
+    }
+
+    const stardust: StarSpec[] = [];
+    const colors = ['rgba(255, 255, 255, ', 'rgba(147, 197, 253, ', 'rgba(196, 181, 253, ']; // white, blue-300, purple-300
+    for (let i = 0; i < 120; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const radius = size * (1.5 + Math.random() * 1.5);
-      particles.push({
+      const radius = size * (1.1 + Math.random() * 2.6);
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      stardust.push({
         x: Math.cos(angle) * radius,
-        y: (Math.random() - 0.5) * size * 2,
+        y: (Math.random() - 0.5) * size * 2.2,
         z: Math.sin(angle) * radius,
-        ox: Math.cos(angle) * radius,
-        oy: (Math.random() - 0.5) * size * 2,
-        oz: Math.sin(angle) * radius,
-        size: Math.random() * 2 + 1,
-        speed: (Math.random() * 0.01 + 0.005) * (Math.random() > 0.5 ? 1 : -1)
+        angle,
+        radius,
+        speed: (Math.random() * 0.005 + 0.001) * (Math.random() > 0.45 ? 1 : -1),
+        brightness: 0.35 + Math.random() * 0.65,
+        color
       });
     }
 
-    let angleX = 0.005;
-    let angleY = 0.008;
+    let angleX = 0.003;
+    let angleY = 0.005;
 
-    // Interactive Projection Render Loop
+    // Projection & Render Loop
     const render = () => {
       ctx.clearRect(0, 0, width, height);
 
-      // Grid Pattern
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.015)';
+      // Fine Space Grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.012)';
       ctx.lineWidth = 1;
-      const gridSpacing = 50;
+      const gridSpacing = 60;
       for (let x = 0; x < width; x += gridSpacing) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -103,118 +133,121 @@ export default function LandingPage() {
       }
 
       const cx = width / 2;
-      const cy = height / 2;
+      const cy = height * 0.45;
 
-      // Rotate based on mouse coordinates relative to center
-      const targetAngleX = (mousePos.y / height - 0.5) * 1.2;
-      const targetAngleY = (mousePos.x / width - 0.5) * 1.2;
+      // Parallax rotation based on mouse coordinates
+      const targetAngleX = (mousePos.y / height - 0.5) * 0.9;
+      const targetAngleY = (mousePos.x / width - 0.5) * 0.9;
 
-      angleX += (targetAngleX - angleX) * 0.05;
-      angleY += (targetAngleY - angleY) * 0.05;
+      angleX += (targetAngleX - angleX) * 0.04;
+      angleY += (targetAngleY - angleY) * 0.04;
 
       const cosX = Math.cos(angleX);
       const sinX = Math.sin(angleX);
       const cosY = Math.cos(angleY);
       const sinY = Math.sin(angleY);
 
-      // Render 3D Cube Edges
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      ctx.lineWidth = 1.5;
+      // Render Orbits
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, size * 1.5, size * 0.7, angleY, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, size * 2.2, size * 1.0, -angleY * 0.5, 0, Math.PI * 2);
+      ctx.stroke();
 
-      const projectedVertices = vertices.map((v) => {
+      // Project vertices to 2D
+      const projectedNodes = nodes.map((node) => {
         // Rotate Y
-        let x1 = v.x * cosY - v.z * sinY;
-        let z1 = v.x * sinY + v.z * cosY;
+        let x1 = node.x * cosY - node.z * sinY;
+        let z1 = node.x * sinY + node.z * cosY;
 
         // Rotate X
-        let y2 = v.y * cosX - z1 * sinX;
-        let z2 = v.y * sinX + z1 * cosX;
+        let y2 = node.y * cosX - z1 * sinX;
+        let z2 = node.y * sinX + z1 * cosX;
 
-        // Perspective division
-        const perspective = 450;
+        // Perspective
+        const perspective = 550;
         const scale = perspective / (perspective + z2);
         return {
           x: cx + x1 * scale,
           y: cy + y2 * scale,
           z: z2,
-          scale
+          scale,
+          node
         };
       });
 
-      // Draw cube lines
-      edges.forEach(([p1, p2]) => {
-        const pt1 = projectedVertices[p1];
-        const pt2 = projectedVertices[p2];
+      // Draw constellation wireframe lines
+      connections.forEach(([p1, p2]) => {
+        const pt1 = projectedNodes[p1];
+        const pt2 = projectedNodes[p2];
 
-        // Fade out lines that are deep in the background
         const avgZ = (pt1.z + pt2.z) / 2;
-        const opacity = Math.max(0.05, 0.4 - (avgZ / (size * 3.5)));
+        const opacity = Math.max(0.04, 0.25 - (avgZ / (size * 4)));
 
+        // Silver-white futuristic vectors
         ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.lineWidth = 1.0;
         ctx.beginPath();
         ctx.moveTo(pt1.x, pt1.y);
         ctx.lineTo(pt2.x, pt2.y);
         ctx.stroke();
       });
 
-      // Draw cube corners (nodes)
-      projectedVertices.forEach((pt) => {
-        const opacity = Math.max(0.1, 0.6 - (pt.z / (size * 3)));
+      // Draw star nodes
+      projectedNodes.forEach((pt) => {
+        pt.node.pulsePhase += pt.node.pulseSpeed;
+        const sizePulse = pt.node.size + Math.sin(pt.node.pulsePhase) * 1.5;
+        const opacity = Math.max(0.1, 0.65 - (pt.z / (size * 3.5)));
+
+        // Metallic star sparkle aura
         ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
         ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = pt.scale * 8;
+        ctx.shadowBlur = pt.scale * 12;
         ctx.beginPath();
-        ctx.arc(pt.x, pt.y, pt.scale * 4, 0, Math.PI * 2);
+        ctx.arc(pt.x, pt.y, pt.scale * sizePulse * 0.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.shadowBlur = 0;
+
+        // Micro telemetry tag alongside the stellar node
+        if (pt.scale > 0.8) {
+          ctx.fillStyle = `rgba(255, 255, 255, ${opacity * 0.5})`;
+          ctx.font = '7px monospace';
+          ctx.fillText(pt.node.label, pt.x + 8, pt.y + 3);
+        }
       });
 
-      // Update and Draw Orbiting Particles (blocks floating around main ledger)
-      particles.forEach((p) => {
-        // Update angle orbit
-        const theta = Math.atan2(p.oz, p.ox) + p.speed;
-        const r = Math.hypot(p.ox, p.oz);
-        p.ox = Math.cos(theta) * r;
-        p.oz = Math.sin(theta) * r;
+      // Update & render space stardust
+      stardust.forEach((star) => {
+        // Orbit update
+        star.angle += star.speed;
+        star.x = Math.cos(star.angle) * star.radius;
+        star.z = Math.sin(star.angle) * star.radius;
 
         // Rotate Y
-        let x1 = p.ox * cosY - p.oz * sinY;
-        let z1 = p.ox * sinY + p.oz * cosY;
+        let x1 = star.x * cosY - star.z * sinY;
+        let z1 = star.x * sinY + star.z * cosY;
 
         // Rotate X
-        let y2 = p.oy * cosX - z1 * sinX;
-        let z2 = p.oy * sinX + z1 * cosX;
+        let y2 = star.y * cosX - z1 * sinX;
+        let z2 = star.y * sinX + z1 * cosX;
 
-        const scale = 450 / (450 + z2);
+        const scale = 550 / (550 + z2);
         const px = cx + x1 * scale;
         const py = cy + y2 * scale;
 
-        const opacity = Math.max(0.1, 0.5 - (z2 / (size * 4)));
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+        const opacity = Math.max(0.05, (0.45 - (z2 / (size * 5))) * star.brightness);
+        
+        // Twinkling effect
+        const finalOpacity = opacity * (0.7 + Math.sin(star.angle * 10) * 0.3);
+
+        ctx.fillStyle = `${star.color}${finalOpacity})`;
         ctx.beginPath();
-        ctx.arc(px, py, p.size * scale, 0, Math.PI * 2);
+        ctx.arc(px, py, scale * 1.2, 0, Math.PI * 2);
         ctx.fill();
-
-        // Trace tiny connections between particles and cube if close
-        projectedVertices.forEach((pt) => {
-          const dist = Math.hypot(px - pt.x, py - pt.y);
-          if (dist < 70) {
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.12 * (1 - dist / 70)})`;
-            ctx.lineWidth = 0.5;
-            ctx.beginPath();
-            ctx.moveTo(px, py);
-            ctx.lineTo(pt.x, pt.y);
-            ctx.stroke();
-          }
-        });
       });
-
-      // Center holographic wireframe globe halo
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(cx, cy, size * 1.6, 0, Math.PI * 2);
-      ctx.stroke();
 
       animationFrameId = requestAnimationFrame(render);
     };
@@ -249,332 +282,494 @@ export default function LandingPage() {
 
   return (
     <div 
-      className="min-h-screen text-gray-100 immersive-bg font-sans overflow-x-hidden relative selection:bg-white selection:text-black"
+      className="min-h-screen text-zinc-100 immersive-bg space-stardust font-sans overflow-x-hidden relative selection:bg-white selection:text-black"
       onMouseMove={handleMouseMove}
     >
-      {/* Absolute Noir ambient background textures */}
-      <div className="absolute top-0 left-0 w-full h-[85vh] z-0 opacity-40 pointer-events-none overflow-hidden">
+      {/* Space Light Nebula Glows (Indigo, Violet, and Charcoal) */}
+      <div className="absolute top-[5%] left-[10%] w-[400px] sm:w-[600px] h-[400px] sm:h-[600px] bg-indigo-900/10 rounded-full blur-[150px] pointer-events-none z-0 animate-pulse-slow"></div>
+      <div className="absolute top-[35%] right-[5%] w-[500px] sm:w-[700px] h-[500px] sm:h-[700px] bg-purple-950/10 rounded-full blur-[180px] pointer-events-none z-0"></div>
+      <div className="absolute bottom-[10%] left-[15%] w-[450px] sm:w-[650px] h-[450px] sm:h-[650px] bg-zinc-900/15 rounded-full blur-[160px] pointer-events-none z-0"></div>
+
+      {/* Deep Celestial Star Orbit Canvas background */}
+      <div className="absolute top-0 left-0 w-full h-[95vh] z-0 opacity-80 pointer-events-none overflow-hidden">
         <canvas ref={canvasRef} className="w-full h-full" />
       </div>
 
-      {/* Elegant thin top white accent line */}
-      <div className="h-1 bg-gradient-to-r from-transparent via-white/40 to-transparent relative z-20"></div>
+      {/* Top thin pure silver highlight strip */}
+      <div className="fixed top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-zinc-400 to-transparent z-50 opacity-60"></div>
 
-      {/* Header Bar */}
-      <header className="max-w-7xl mx-auto h-24 px-6 lg:px-8 flex items-center justify-between relative z-20">
-        <div className="flex items-center gap-3">
-          <img 
-            src={orionLogo} 
-            alt="Orion Logo" 
-            className="w-9 h-9 rounded-full border border-white/20 object-cover shadow-[0_0_15px_rgba(255,255,255,0.35)]"
-            referrerPolicy="no-referrer"
-          />
-          <span className="text-lg font-bold tracking-widest text-white font-display">
-            ORION<span className="text-gray-400 font-light"> TERMINAL</span>
-          </span>
-        </div>
-
-        {/* Dynamic Nav elements with smooth scrolls */}
-        <nav className="hidden md:flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-gray-400">
-          <button 
-            onClick={() => scrollToSection('features')} 
-            className="hover:text-white transition-colors cursor-pointer"
-          >
-            Surveillance
-          </button>
-          <button 
-            onClick={() => scrollToSection('interactive-demo')} 
-            className="hover:text-white transition-colors cursor-pointer"
-          >
-            Faucet Sandbox
-          </button>
-          <button 
-            onClick={() => scrollToSection('architecture')} 
-            className="hover:text-white transition-colors cursor-pointer"
-          >
-            Architecture
-          </button>
-          <a 
-            href="https://developers.stellar.org/" 
-            target="_blank" 
-            rel="noreferrer" 
-            className="hover:text-white transition-colors flex items-center gap-1"
-          >
-            SDF Docs <ExternalLink size={10} />
-          </a>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          <Link
-            to="/terminal"
-            className="flex items-center gap-1.5 px-4 py-2 border border-white hover:bg-white hover:text-black text-white text-[10px] font-mono tracking-widest uppercase transition-all"
-          >
-            LAUNCH TERMINAL
-            <ArrowRight size={12} />
+      {/* Modern Center Floating Navigation Bar Wrapper */}
+      <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none flex justify-center px-4 sm:px-6">
+        <motion.div 
+          initial={{ y: -100, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ type: 'spring', stiffness: 120, damping: 18, delay: 0.1 }}
+          className={`pointer-events-auto w-full max-w-4xl transition-[padding,margin,background-color,border-color,box-shadow] duration-300 ease-in-out ${
+            scrolled 
+              ? 'mt-3 py-2 bg-zinc-950/90 border-zinc-850/80 shadow-[0_15px_40px_rgba(0,0,0,0.9)]' 
+              : 'mt-4 py-3 bg-zinc-950/75 border-zinc-900 shadow-[0_10px_30px_rgba(0,0,0,0.8)]'
+          } backdrop-blur-md border rounded-2xl px-4 sm:px-6 flex items-center justify-between gap-4 relative`}
+        >
+          {/* Left: Brand & Logo */}
+          <Link to="/" className="flex items-center gap-2.5 group active:scale-98 transition-transform">
+            <div className="relative">
+              {/* Spinning/pulsing celestial outline ring */}
+              <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-zinc-500/30 to-white/20 blur-sm opacity-70 group-hover:opacity-100 group-hover:scale-110 transition-all duration-500 animate-spin-slow"></div>
+              <img 
+                src={orionLogo} 
+                alt="Orion Logo" 
+                className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full border border-zinc-500/80 object-cover shadow-[0_0_10px_rgba(255,255,255,0.2)]"
+                referrerPolicy="no-referrer"
+              />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-xs sm:text-sm font-extrabold tracking-[0.18em] text-white font-sans flex items-center">
+                ORION
+              </span>
+              <span className="text-[7px] text-zinc-500 font-mono tracking-widest uppercase leading-none mt-0.5">
+                CELESTIAL
+              </span>
+            </div>
           </Link>
-        </div>
-      </header>
 
-      {/* Redesigned Hero Section - Dynamic Startup style */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 pt-12 pb-20 md:pt-16 md:pb-28 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6 text-left">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.05)]">
-                <Sparkles size={11} className="animate-pulse" />
-                NON-CUSTODIAL MONITOR &bull; VER V3.0
+          {/* Center: Beautifully Styled Navigation Deck */}
+          <nav className="hidden md:flex items-center gap-1 bg-zinc-900/40 p-1 rounded-full border border-zinc-800/40">
+            <button 
+              onClick={() => scrollToSection('features')} 
+              className="px-3 py-1.5 rounded-full text-zinc-300 hover:text-white text-[10.5px] font-sans font-bold uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1.5 hover:bg-zinc-800/60"
+            >
+              <Monitor size={11} className="text-zinc-400" />
+              Surveillance
+            </button>
+            <button 
+              onClick={() => scrollToSection('interactive-demo')} 
+              className="px-3 py-1.5 rounded-full text-zinc-300 hover:text-white text-[10.5px] font-sans font-bold uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1.5 hover:bg-zinc-800/60"
+            >
+              <Zap size={11} className="text-zinc-400" />
+              Faucet Sandbox
+            </button>
+            <button 
+              onClick={() => scrollToSection('architecture')} 
+              className="px-3 py-1.5 rounded-full text-zinc-300 hover:text-white text-[10.5px] font-sans font-bold uppercase tracking-widest transition-all cursor-pointer flex items-center gap-1.5 hover:bg-zinc-800/60"
+            >
+              <Cpu size={11} className="text-zinc-400" />
+              Architecture
+            </button>
+          </nav>
+
+          {/* Right Actions & Telemetry Widget */}
+          <div className="flex items-center gap-3">
+            {/* Live System Signal telemetry */}
+            <div className="hidden lg:flex items-center gap-2.5 bg-black/40 border border-zinc-900/80 px-3.5 py-1.5 rounded-full text-zinc-500 font-mono text-[8px] tracking-widest">
+              <div className="flex items-center gap-1.5">
+                <span className="relative flex h-1.5 w-1.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                <span className="text-zinc-400">TESTNET_5G</span>
               </div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-white/5 border border-white/10 text-white text-[10px] font-mono uppercase tracking-widest shadow-[0_0_10px_rgba(255,255,255,0.05)]">
-                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shrink-0"></span>
-                MADE BY ARPAN ROY
+              <span className="text-zinc-800">|</span>
+              <div className="flex items-center gap-1">
+                <Server size={9} className="text-zinc-500" />
+                <span>NODES_OK</span>
               </div>
             </div>
 
-            <h1 className="font-display font-extrabold text-4xl sm:text-6xl tracking-tighter text-white leading-none uppercase">
-              DECENTRALIZED <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
-                LEDGER INTELLIGENCE
-              </span>
-            </h1>
+            <Link
+              to="/terminal"
+              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-white text-black text-[10.5px] font-sans font-extrabold tracking-wider uppercase transition-all duration-300 hover:bg-zinc-200 hover:scale-[1.02] active:scale-98 shadow-[0_3px_15px_rgba(255,255,255,0.2)]"
+            >
+              LAUNCH CONSOLE
+              <ArrowRight size={11} />
+            </Link>
 
-            <p className="text-gray-400 text-xs sm:text-sm max-w-xl font-mono leading-relaxed">
-              Verify transactions, monitor multiple on-chain balances, and authorize payments securely on the SDF Testnet using Freighter API protocol. High contrast, zero-fluff, pure functionality.
-            </p>
+            {/* Mobile Menu Toggle button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="flex md:hidden items-center justify-center p-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 transition-colors"
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4">
+          {/* Mobile Dropdown Panel inside navbar */}
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className="absolute top-full left-0 right-0 overflow-hidden bg-zinc-950/95 border border-zinc-800/90 rounded-[20px] p-4 flex flex-col gap-3 shadow-[0_20px_40px_rgba(0,0,0,0.9)] z-40 md:hidden backdrop-blur-lg pointer-events-auto"
+              >
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    scrollToSection('features');
+                  }} 
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white font-sans font-bold text-xs uppercase tracking-wider flex items-center gap-3 transition-colors"
+                >
+                  <Monitor size={14} className="text-zinc-400" />
+                  Surveillance
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    scrollToSection('interactive-demo');
+                  }} 
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white font-sans font-bold text-xs uppercase tracking-wider flex items-center gap-3 transition-colors"
+                >
+                  <Zap size={14} className="text-zinc-400" />
+                  Faucet Sandbox
+                </button>
+                <button 
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    scrollToSection('architecture');
+                  }} 
+                  className="w-full text-left px-4 py-3 rounded-xl hover:bg-white/5 text-zinc-300 hover:text-white font-sans font-bold text-xs uppercase tracking-wider flex items-center gap-3 transition-colors"
+                >
+                  <Cpu size={14} className="text-zinc-400" />
+                  Architecture
+                </button>
+                <div className="h-px bg-zinc-900 my-1"></div>
+                <Link
+                  to="/terminal"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-full py-3 rounded-xl bg-white text-black font-sans font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-300"
+                >
+                  LAUNCH CONSOLE
+                  <ArrowRight size={13} />
+                </Link>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
+      </div>
+
+      {/* Spacer to push content past fixed floating notch */}
+      <div className="h-24 sm:h-26"></div>
+
+      {/* Hero Section - Stark premium monochrome layout */}
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-10 md:py-16 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+          
+          {/* Hero Left Content */}
+          <div className="lg:col-span-7 space-y-8 text-left">
+            
+            {/* Badges Wrapper */}
+            <div className="flex flex-wrap items-center gap-3">
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-zinc-800 text-zinc-300 text-[10px] font-mono uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.02)]"
+              >
+                <Sparkles size={11} className="text-zinc-400 animate-pulse" />
+                NON-CUSTODIAL &bull; CONSOLE v3.0
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: 0.1 }}
+                className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-zinc-800 text-zinc-300 text-[10px] font-mono uppercase tracking-widest shadow-[0_0_15px_rgba(255,255,255,0.02)]"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-zinc-300 animate-ping shrink-0"></span>
+                CREATED BY ARPAN ROY
+              </motion.div>
+            </div>
+
+            {/* Headline with metallic silver text glow */}
+            <div className="space-y-4">
+              <motion.h1 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, cubicBezier: [0.16, 1, 0.3, 1] }}
+                className="font-sans font-black text-5xl sm:text-7xl tracking-tight text-white leading-tight uppercase"
+              >
+                CELESTIAL <br />
+                <span className="silver-text-glow font-black">
+                  BLOCK LEDGER
+                </span>
+              </motion.h1>
+
+              <motion.p 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: 0.1 }}
+                className="text-zinc-400 text-xs sm:text-sm max-w-xl font-sans font-light leading-relaxed tracking-wide"
+              >
+                Monitor multiple on-chain vaults, sign zero-trust payments, and broadcast instant SDF Testnet contract executions securely via the premium Freighter & EVM secure gateway.
+              </motion.p>
+            </div>
+
+            {/* Action Buttons wrapped in Motion */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2"
+            >
               <Link
                 to="/terminal"
-                className="flex items-center justify-center gap-2 px-6 py-4 bg-white text-black font-bold text-xs font-mono tracking-widest uppercase hover:bg-gray-200 transition-all shadow-[0_0_20px_rgba(255,255,255,0.25)] text-center"
+                className="flex items-center justify-center gap-2.5 px-7 py-4 rounded-full btn-metallic text-xs font-mono font-bold uppercase transition-all duration-300 text-center shadow-[0_12px_24px_-8px_rgba(255,255,255,0.3)] hover:shadow-[0_15px_30px_-5px_rgba(255,255,255,0.4)]"
               >
                 <Terminal size={14} />
-                ENTER TERMINAL CONSUL
+                ENTER TERMINAL CONSOLE
               </Link>
 
               <button
                 onClick={() => scrollToSection('interactive-demo')}
-                className="flex items-center justify-center gap-2 px-6 py-4 bg-transparent border border-white/20 text-white hover:border-white font-bold text-xs font-mono tracking-widest uppercase transition-all text-center cursor-pointer"
+                className="flex items-center justify-center gap-2 px-7 py-4 rounded-full bg-black/40 border border-zinc-700/60 text-zinc-300 hover:text-white hover:border-zinc-400 font-bold text-xs font-mono tracking-widest uppercase transition-all text-center cursor-pointer backdrop-blur-md"
               >
-                TESTNET SANDBOX DEMO
+                TESTNET FAUCET SANDBOX
               </button>
-            </div>
+            </motion.div>
 
-            {/* Micro Telemetry stats */}
-            <div className="pt-8 grid grid-cols-3 gap-6 border-t border-white/5 max-w-lg">
+            {/* Cosmic Telemetry Stats */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 1.2, delay: 0.35 }}
+              className="pt-8 grid grid-cols-3 gap-6 border-t border-zinc-900 max-w-lg"
+            >
               <div>
-                <span className="block text-[9px] font-mono text-gray-500 font-bold tracking-widest">NETWORK RATE</span>
-                <span className="text-base font-extrabold text-white font-display">100% SECURE</span>
+                <span className="block text-[9px] font-mono text-zinc-500 font-bold tracking-widest uppercase">CONCURRENT SECURE</span>
+                <span className="text-sm font-extrabold text-zinc-100 font-display">100% SECURE</span>
               </div>
               <div>
-                <span className="block text-[9px] font-mono text-gray-500 font-bold tracking-widest">PROPAGATION</span>
-                <span className="text-base font-extrabold text-white font-display">&lt; 5.0s LAT</span>
+                <span className="block text-[9px] font-mono text-zinc-500 font-bold tracking-widest uppercase">HORIZON TRANSIT</span>
+                <span className="text-sm font-extrabold text-zinc-100 font-display">&lt; 4.8s LAT</span>
               </div>
               <div>
-                <span className="block text-[9px] font-mono text-gray-500 font-bold tracking-widest">COMMISSIONS</span>
-                <span className="text-base font-extrabold text-white font-display">0.00001 XLM</span>
+                <span className="block text-[9px] font-mono text-zinc-500 font-bold tracking-widest uppercase">ON-CHAIN FEES</span>
+                <span className="text-sm font-extrabold text-zinc-100 font-display">0.0001 XLM</span>
               </div>
-            </div>
+            </motion.div>
           </div>
 
-          {/* Hero Right Graphic - Embedded image with neat futuristic frame */}
-          <div className="lg:col-span-5 relative">
-            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent blur-2xl pointer-events-none rounded-2xl"></div>
-            <div className="p-1 rounded-[16px] bg-gradient-to-b from-white/20 to-transparent border border-white/10 relative z-10 shadow-2xl">
-              <div className="rounded-[12px] overflow-hidden bg-black aspect-[16/10] relative group">
+          {/* Hero Right Graphic - Embedded image with neat futuristic space frame */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.95, x: 20 }}
+            animate={{ opacity: 1, scale: 1, x: 0 }}
+            transition={{ duration: 1.0, cubicBezier: [0.16, 1, 0.3, 1] }}
+            className="lg:col-span-5 relative mt-6 lg:mt-0"
+          >
+            <div className="absolute inset-0 bg-gradient-to-tr from-white/10 to-transparent blur-3xl pointer-events-none rounded-full"></div>
+            <div className="p-1 rounded-[24px] bg-gradient-to-b from-zinc-700 via-transparent to-zinc-900 border border-zinc-800/80 relative z-10 shadow-2xl">
+              <div className="rounded-[20px] overflow-hidden bg-black aspect-[16/10] relative group">
                 <img 
                   src={ledgerScheme} 
                   alt="Stellar Decentralized Ledger Scheme" 
                   referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover opacity-70 group-hover:scale-105 transition-transform duration-700 filter grayscale"
+                  className="w-full h-full object-cover opacity-60 group-hover:scale-105 transition-transform duration-[1.5s] filter grayscale contrast-125"
                 />
                 
-                {/* Visual interface elements on top of the image */}
+                {/* Visual interface elements overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent"></div>
-                <div className="absolute bottom-4 left-4 right-4 p-3 bg-black/80 backdrop-blur-md rounded border border-white/10 flex items-center justify-between text-[10px] font-mono">
+                <div className="absolute bottom-4 left-4 right-4 p-3.5 bg-black/85 backdrop-blur-md rounded-xl border border-zinc-800 flex items-center justify-between text-[10px] font-mono">
                   <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                    <span className="text-white">NODE_LEDGER_GRID.DAT</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                    <span className="text-zinc-200">ORION_SATELLITE_ORBIT.DAT</span>
                   </div>
-                  <span className="text-gray-500">ACTIVE SCHEMATIC</span>
+                  <span className="text-zinc-500 uppercase tracking-widest text-[8px] font-bold">SYSTEM MAP</span>
                 </div>
               </div>
             </div>
 
-            {/* Absolute visual anchors */}
-            <div className="absolute top-[-20px] left-[-20px] w-8 h-8 border-t-2 border-l-2 border-white/40 pointer-events-none"></div>
-            <div className="absolute bottom-[-20px] right-[-20px] w-8 h-8 border-b-2 border-r-2 border-white/40 pointer-events-none"></div>
-          </div>
+            {/* Corner Bracket Accents (Silver-plated look) */}
+            <div className="absolute top-[-15px] left-[-15px] w-6 h-6 border-t-2 border-l-2 border-zinc-400/50 pointer-events-none rounded-tl"></div>
+            <div className="absolute bottom-[-15px] right-[-15px] w-6 h-6 border-b-2 border-r-2 border-zinc-400/50 pointer-events-none rounded-br"></div>
+          </motion.div>
 
         </div>
       </section>
 
-      {/* Bento Grid Features Layout - Stark monochrome */}
-      <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 relative z-10 border-t border-white/5">
-        <div className="text-center space-y-2 mb-16">
-          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest font-mono">CORE CAPABILITIES</span>
-          <h2 className="font-display font-extrabold text-2xl sm:text-3xl text-white uppercase tracking-tight">
-            DECENTRALIZED WORKSTATION FEATURES
+      {/* Bento Grid Features Layout - Stark silver and black */}
+      <section id="features" className="max-w-7xl mx-auto px-6 lg:px-8 py-24 relative z-10 border-t border-zinc-900">
+        <div className="text-center space-y-3 mb-20">
+          <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-widest font-mono block">MONOCHROME ENGINE</span>
+          <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white uppercase tracking-tight">
+            DECENTRALIZED WORKSTATION CAPABILITIES
           </h2>
-          <p className="text-gray-400 text-xs max-w-md mx-auto font-mono">
-            Pure on-chain logic, high-performance sequence tracking, and frictionless testnet faucet triggers.
+          <p className="text-zinc-400 text-xs max-w-lg mx-auto font-sans font-light tracking-wide">
+            High contrast space typography, multi-monitor ledger telemetry, and absolute wallet autonomy.
           </p>
         </div>
 
-        {/* The Bento Grid */}
+        {/* Bento Grid layout with Framer Motion hover animations */}
         <div id="architecture" className="grid grid-cols-1 md:grid-cols-12 gap-6">
           
           {/* Card 1: Live account stream (8 Cols) */}
-          <div className="md:col-span-8 p-8 rounded bg-white/[0.02] border border-white/10 flex flex-col justify-between hover:border-white transition-all group min-h-[350px]">
+          <motion.div 
+            whileHover={{ y: -6, borderColor: 'rgba(255, 255, 255, 0.25)' }}
+            transition={{ duration: 0.3 }}
+            className="md:col-span-8 p-8 sm:p-10 rounded-3xl bg-zinc-950/40 border border-zinc-800/80 flex flex-col justify-between hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] transition-all min-h-[380px]"
+          >
             <div>
-              <div className="w-10 h-10 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center mb-6">
-                <Activity size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-white/5 border border-zinc-800 text-white flex items-center justify-center mb-6">
+                <Orbit className="w-5 h-5 text-zinc-300" />
               </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">
+              <h3 className="font-display font-bold text-xl text-white uppercase tracking-wider">
                 Direct Horizon Node Synchronization
               </h3>
-              <p className="text-gray-400 text-xs mt-2 max-w-md leading-relaxed font-mono">
-                Connect your secure browser wallet to instantly load account balances, registered transaction arrays, subentries count, and unique sequence ids.
+              <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-sans font-light tracking-wide max-w-xl">
+                Securely fetch and read account balances, locked asset subentries count, and unique sequence ids. Fully customized for both the Stellar Network and Ethereum Sepolia nodes.
               </p>
             </div>
 
-            {/* Custom Interactive Telemetry Graphics inside Card */}
-            <div className="mt-8 p-4 rounded bg-black/60 border border-white/5 font-mono text-[10px] text-gray-400 space-y-2">
-              <div className="flex justify-between border-b border-white/5 pb-1 text-white">
-                <span>GATEWAY_INTERFACE: READY</span>
-                <span className="animate-pulse">● RPC CONNECTED</span>
+            {/* Interactive Telemetry Widget inside Card */}
+            <div className="mt-8 p-4 rounded-2xl bg-black/60 border border-zinc-800/80 font-mono text-[10px] text-zinc-400 space-y-2">
+              <div className="flex justify-between border-b border-zinc-900 pb-2 text-zinc-200 font-bold">
+                <span className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+                  ORION_RPC_ROUTER: ACTIVE
+                </span>
+                <span className="text-[9px] uppercase tracking-wider text-zinc-500">TESTNET PROXY</span>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-1">
+              <div className="grid grid-cols-2 gap-x-6 gap-y-1.5 pt-1 text-[9px] text-zinc-500">
                 <div>
-                  <span className="text-gray-500">LEDGER INDEX:</span> <span className="text-white">ACTIVE</span>
+                  INDEX_LEDGERS: <span className="text-zinc-200">ONLINE</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">SEQUENCE NO:</span> <span className="text-white">201,482,913</span>
+                  LATEST_SEQUENCE: <span className="text-zinc-200">201,495,122</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">VALIDATORS:</span> <span className="text-white">ONLINE</span>
+                  CONSENSUS: <span className="text-zinc-200">SDF_HORIZON</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">PROPAGATION:</span> <span className="text-white">0.0001 XLM FEE</span>
+                  GAS_EST: <span className="text-zinc-200">0.0001 XLM / ETH</span>
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Card 2: 100% Non-Custodial (4 Cols) */}
-          <div className="md:col-span-4 p-8 rounded bg-white/[0.02] border border-white/10 flex flex-col justify-between hover:border-white transition-all group min-h-[350px]">
+          {/* Card 2: Cryptographic Safeguards (4 Cols) */}
+          <motion.div 
+            whileHover={{ y: -6, borderColor: 'rgba(255, 255, 255, 0.25)' }}
+            transition={{ duration: 0.3 }}
+            className="md:col-span-4 p-8 rounded-3xl bg-zinc-950/40 border border-zinc-800/80 flex flex-col justify-between hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] transition-all min-h-[380px]"
+          >
             <div>
-              <div className="w-10 h-10 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center mb-6">
-                <Shield size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-white/5 border border-zinc-800 text-white flex items-center justify-center mb-6">
+                <ShieldCheck className="w-5 h-5 text-zinc-300" />
               </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-                100% Cryptographic Safeguards
+              <h3 className="font-display font-bold text-xl text-white uppercase tracking-wider">
+                Cryptographic Safeguards
               </h3>
-              <p className="text-gray-400 text-xs mt-2 leading-relaxed font-mono">
-                No storage. No cloud servers holding keys. All envelopes are built locally on-chain and authenticated natively inside the Freighter extension.
+              <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-sans font-light tracking-wide">
+                No storage. Zero cloud servers holding private keys. All transaction envelopes are built completely locally on-chain and authorized inside secure wallet containers.
               </p>
             </div>
 
-            <div className="pt-6 border-t border-white/5 flex items-center justify-between text-[11px] font-mono text-white">
-              <span>CIPHER MODE</span>
-              <span className="px-2 py-0.5 rounded bg-white/10 border border-white/20">ED25519 Keys</span>
+            <div className="pt-6 border-t border-zinc-900 flex items-center justify-between text-[10px] font-mono text-zinc-400">
+              <span>CIPHER_STANDARDS</span>
+              <span className="px-2.5 py-1 rounded-full bg-white/5 border border-zinc-800 text-zinc-200 text-[9px] font-bold">ED25519 Keys</span>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Card 3: Watchlist Surveillance (4 Cols) */}
-          <div className="md:col-span-4 p-8 rounded bg-white/[0.02] border border-white/10 flex flex-col justify-between hover:border-white transition-all group min-h-[340px]">
+          {/* Card 3: Watchlist Multi-Monitor (4 Cols) */}
+          <motion.div 
+            whileHover={{ y: -6, borderColor: 'rgba(255, 255, 255, 0.25)' }}
+            transition={{ duration: 0.3 }}
+            className="md:col-span-4 p-8 rounded-3xl bg-zinc-950/40 border border-zinc-800/80 flex flex-col justify-between hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] transition-all min-h-[360px]"
+          >
             <div>
-              <div className="w-10 h-10 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center mb-6">
-                <Monitor size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-white/5 border border-zinc-800 text-white flex items-center justify-center mb-6">
+                <Monitor className="w-5 h-5 text-zinc-300" />
               </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-                Multi-Account Tracker
+              <h3 className="font-display font-bold text-xl text-white uppercase tracking-wider">
+                Multi-Monitor Watchlist
               </h3>
-              <p className="text-gray-400 text-xs mt-2 leading-relaxed font-mono">
-                Store up to dozens of cold storage vaults, target receiving nodes, or public addresses in your workspace using safe localStorage.
+              <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-sans font-light tracking-wide">
+                Seamlessly store, save, and surveillance dozens of public key accounts, offline vaults, or payment nodes using encrypted local cache.
               </p>
             </div>
 
-            <div className="space-y-1 text-[10px] font-mono mt-6">
-              <div className="flex justify-between text-gray-500 uppercase font-bold text-[8px] tracking-wider mb-1">
-                <span>LOCAL WATCHLIST</span>
-                <span>STATE</span>
+            <div className="space-y-1.5 font-mono text-[9px] mt-6">
+              <div className="flex justify-between text-zinc-500 uppercase font-bold text-[8px] tracking-wider mb-1">
+                <span>LOCAL_WATCHLIST</span>
+                <span>BALANCE</span>
               </div>
-              <div className="flex justify-between py-1 border-b border-white/5">
-                <span className="text-gray-300">Savings Vault</span>
-                <span className="text-white font-bold">14,891 XLM</span>
+              <div className="flex justify-between py-1 border-b border-zinc-900">
+                <span className="text-zinc-400">Cold Storage</span>
+                <span className="text-white font-bold">14,895 XLM</span>
               </div>
               <div className="flex justify-between py-1">
-                <span className="text-gray-300">Hot Wallet</span>
-                <span className="text-white font-bold">120.00 XLM</span>
+                <span className="text-zinc-400">Voyager Core</span>
+                <span className="text-white font-bold">2,500 XLM</span>
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Card 4: Faucet & Cli Command Card (8 Cols) */}
-          <div className="md:col-span-8 p-8 rounded bg-white/[0.02] border border-white/10 flex flex-col justify-between hover:border-white transition-all group min-h-[340px] relative overflow-hidden">
+          {/* Card 4: SDK package (8 Cols) */}
+          <motion.div 
+            whileHover={{ y: -6, borderColor: 'rgba(255, 255, 255, 0.25)' }}
+            transition={{ duration: 0.3 }}
+            className="md:col-span-8 p-8 sm:p-10 rounded-3xl bg-zinc-950/40 border border-zinc-800/80 flex flex-col justify-between hover:shadow-[0_20px_40px_rgba(0,0,0,0.8)] transition-all min-h-[360px]"
+          >
             <div>
-              <div className="w-10 h-10 rounded bg-white/5 border border-white/10 text-white flex items-center justify-center mb-6">
-                <Cpu size={18} />
+              <div className="w-11 h-11 rounded-2xl bg-white/5 border border-zinc-800 text-white flex items-center justify-center mb-6">
+                <Cpu size={20} className="text-zinc-300" />
               </div>
-              <h3 className="font-display font-bold text-lg text-white uppercase tracking-wider">
-                Official Freighter Integration
+              <h3 className="font-display font-bold text-xl text-white uppercase tracking-wider">
+                Official Freighter & MetaMask SDKs
               </h3>
-              <p className="text-gray-400 text-xs mt-2 max-w-lg leading-relaxed font-mono">
-                Leverages the official SDF developer library. Integrate directly into your node script and start calling secure network procedures instantly.
+              <p className="text-zinc-400 text-xs mt-3 leading-relaxed font-sans font-light tracking-wide max-w-xl">
+                Built and verified with the latest Stellar Freighter API, Friendbot faucet routers, and MetaMask RPC connectors. Perfect sandbox developer toolkit.
               </p>
             </div>
 
-            <div className="mt-6 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="flex-1 bg-black/60 border border-white/5 rounded px-4 py-3 font-mono text-xs text-gray-300 flex items-center justify-between gap-3 overflow-x-auto">
-                <span className="shrink-0 text-gray-500">$</span>
+            <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="flex-1 bg-black/60 border border-zinc-800/80 rounded-2xl px-4 py-3.5 font-mono text-xs text-zinc-300 flex items-center justify-between gap-3 overflow-x-auto">
+                <span className="shrink-0 text-zinc-500 font-bold">$</span>
                 <span className="truncate">npm i @stellar/freighter-api</span>
               </div>
               <button
                 onClick={handleCopyCli}
-                className="px-5 py-3 rounded bg-white hover:bg-gray-200 text-black font-mono font-bold text-[10px] tracking-wider uppercase transition-all shrink-0 cursor-pointer text-center"
+                className="px-6 py-3.5 rounded-full bg-white text-black font-mono font-bold text-[10px] tracking-wider uppercase transition-all duration-300 shrink-0 cursor-pointer text-center hover:bg-zinc-200 hover:scale-103 shadow-[0_4px_12px_rgba(255,255,255,0.1)]"
               >
                 COPY PACKAGE
               </button>
             </div>
-          </div>
+          </motion.div>
 
         </div>
       </section>
 
       {/* Interactive Sandbox Demo Section */}
-      <section id="interactive-demo" className="max-w-7xl mx-auto px-6 lg:px-8 py-20 relative z-10 border-t border-white/5">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+      <section id="interactive-demo" className="max-w-7xl mx-auto px-6 lg:px-8 py-24 relative z-10 border-t border-zinc-900">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
           
           <div className="lg:col-span-5 space-y-6 text-left">
-            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest font-mono block">SIMULATED LEDGER</span>
-            <h2 className="font-display font-extrabold text-3xl text-white uppercase tracking-tight leading-tight">
-              TRY THE TESTNET SANDBOX
+            <span className="text-[10px] font-extrabold text-zinc-500 uppercase tracking-widest font-mono block">SIMULATED LEDGER</span>
+            <h2 className="font-display font-extrabold text-3xl sm:text-4xl text-white uppercase tracking-tight leading-none">
+              TRY THE STELLAR <br />
+              <span className="silver-text-glow font-extrabold">TESTNET SANDBOX</span>
             </h2>
-            <p className="text-gray-400 text-xs leading-relaxed font-mono">
-              Simulate creating an ED25519 keypair and registering it with the test network Friendbot instantly in under 3 seconds.
+            <p className="text-zinc-400 text-xs leading-relaxed font-sans font-light tracking-wide">
+              Create an instantaneous simulated ED25519 cryptographic keypair and claim free XLM test assets via Friendbot inside a fully offline environment.
             </p>
 
-            <div className="space-y-4 font-mono text-xs text-gray-400">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle size={14} className="text-white shrink-0" />
-                <span>Instant 1-Click Simulated wallet generation</span>
+            <div className="space-y-4 font-mono text-[11px] text-zinc-400 pt-2">
+              <div className="flex items-center gap-3">
+                <CheckCircle size={15} className="text-white shrink-0" />
+                <span>Simulated ED25519 keypair compile</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <CheckCircle size={14} className="text-white shrink-0" />
-                <span>Simulated registration with on-chain consensus</span>
+              <div className="flex items-center gap-3">
+                <CheckCircle size={15} className="text-white shrink-0" />
+                <span>Friendbot broadcast & network registration</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <CheckCircle size={14} className="text-white shrink-0" />
-                <span>Instant simulated refill of 10,000 XLM</span>
+              <div className="flex items-center gap-3">
+                <CheckCircle size={15} className="text-white shrink-0" />
+                <span>Instant injection of 10,000 XLM sandbox funds</span>
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-4">
               <Link
                 to="/terminal"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-black font-bold text-xs font-mono tracking-widest uppercase hover:bg-gray-200 transition-all font-display"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-full bg-white text-black font-bold text-xs font-mono tracking-widest uppercase hover:bg-zinc-200 transition-all shadow-[0_4px_12px_rgba(255,255,255,0.15)]"
               >
                 GO TO CORE TERMINAL
                 <ArrowRight size={13} />
@@ -590,32 +785,32 @@ export default function LandingPage() {
       </section>
 
       {/* Startup Partner Badges */}
-      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-16 text-center border-t border-white/5 relative z-10">
-        <span className="text-[9px] font-mono text-gray-500 uppercase tracking-widest block mb-8">COMPATIBLE INTEGRATIONS</span>
-        <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-40">
-          <span className="text-xs font-extrabold tracking-widest text-white font-mono">STELLAR NETWORK</span>
-          <span className="text-xs font-extrabold tracking-widest text-white font-mono">FREIGHTER AGENT</span>
-          <span className="text-xs font-extrabold tracking-widest text-white font-mono">HORIZON API v3</span>
-          <span className="text-xs font-extrabold tracking-widest text-white font-mono">SDF LEDGER</span>
+      <section className="max-w-7xl mx-auto px-6 lg:px-8 py-20 text-center border-t border-zinc-900 relative z-10">
+        <span className="text-[9px] font-mono text-zinc-500 uppercase tracking-widest block mb-10 font-bold">COMPATIBLE BLOCKCHAIN CONNECTIONS</span>
+        <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16 opacity-30">
+          <span className="text-xs font-extrabold tracking-widest text-white font-mono">STELLAR TESTNET</span>
+          <span className="text-xs font-extrabold tracking-widest text-white font-mono">FREIGHTER EXTENSION</span>
+          <span className="text-xs font-extrabold tracking-widest text-white font-mono">HORIZON RPC v3</span>
+          <span className="text-xs font-extrabold tracking-widest text-white font-mono">ETHEREUM SEPOLIA</span>
         </div>
       </section>
 
-      {/* Noir CTA Section */}
-      <section className="max-w-5xl mx-auto px-6 lg:px-8 py-16 sm:py-24 text-center relative z-10">
-        <div className="p-8 sm:p-12 rounded bg-white/[0.01] border border-white/10 backdrop-blur-2xl space-y-6 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full blur-2xl pointer-events-none"></div>
+      {/* Metallic Space Call-To-Action (CTA) Section */}
+      <section className="max-w-5xl mx-auto px-6 lg:px-8 py-20 text-center relative z-10">
+        <div className="p-8 sm:p-14 rounded-[32px] bg-zinc-950/60 border border-zinc-800/80 backdrop-blur-2xl space-y-6 relative overflow-hidden shadow-2xl">
+          <div className="absolute top-0 right-0 w-44 h-44 bg-white/[0.02] rounded-full blur-3xl pointer-events-none"></div>
           
-          <h3 className="font-display font-extrabold text-2xl sm:text-3xl text-white uppercase tracking-tight">
-            INITIATE LEDGER TRANSMISSIONS
+          <h3 className="font-display font-extrabold text-3xl sm:text-4xl text-white uppercase tracking-tight">
+            INITIATE VOYAGER MISSIONS
           </h3>
-          <p className="text-gray-400 text-xs sm:text-sm max-w-lg mx-auto font-mono">
-            Access secure payments, instant Friendbot testnet claims, and high contrast multi-monitor balance tracking instantly.
+          <p className="text-zinc-400 text-xs sm:text-sm max-w-lg mx-auto font-sans font-light tracking-wide leading-relaxed">
+            Gain immediate terminal access, securely sign payment envelopes, trigger local faucet allocations, and monitor multiple balance surveillance ports.
           </p>
 
-          <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
+          <div className="pt-6 flex flex-col sm:flex-row items-center justify-center gap-4 max-w-sm mx-auto">
             <Link
               to="/terminal"
-              className="w-full py-4 bg-white text-black hover:bg-gray-200 font-bold text-xs font-mono tracking-widest uppercase transition-all text-center"
+              className="w-full py-4 rounded-full bg-zinc-100 text-black hover:bg-white font-bold text-xs font-mono tracking-widest uppercase transition-all text-center shadow-[0_10px_20px_rgba(255,255,255,0.15)] active:scale-98"
             >
               LAUNCH CONSOLE HUB
             </Link>
@@ -624,22 +819,22 @@ export default function LandingPage() {
       </section>
 
       {/* Footer bar */}
-      <footer className="border-t border-white/5 bg-black py-8 px-6 lg:px-8 text-[10px] text-gray-600 font-mono flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="space-y-1 text-left">
-          <p className="uppercase tracking-widest text-gray-400 font-bold">© 2026 STELLAR VOYAGER SYSTEM LOGS. MONOCHROME PLATFORM.</p>
-          <p className="text-[9px] text-gray-500 uppercase tracking-widest">
-            DESIGNED & DEVELOPED SECURELY BY <span className="text-white font-bold">ARPAN ROY (arpanroy0506@gmail.com)</span>
+      <footer className="border-t border-zinc-900 bg-black/90 py-10 px-6 lg:px-8 text-[10px] text-zinc-500 font-mono flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+        <div className="space-y-1.5 text-center md:text-left">
+          <p className="uppercase tracking-widest text-zinc-400 font-bold">© 2026 ORION COSMIC WORKSPACE LOGS. METALLIC EDITION.</p>
+          <p className="text-[9px] text-zinc-500 uppercase tracking-widest">
+            DESIGNED & CRAFTED EXCLUSIVELY BY <span className="text-zinc-200 font-bold">ARPAN ROY (arpanroy0506@gmail.com)</span>
           </p>
         </div>
-        <div className="flex items-center gap-4 text-gray-500">
+        <div className="flex items-center gap-4 text-zinc-400">
           <a href="https://horizon-testnet.stellar.org" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-0.5">
-            HORIZON
-            <ExternalLink size={8} />
+            HORIZON_NODE
+            <ExternalLink size={9} />
           </a>
           <span>•</span>
           <a href="https://stellar.org" target="_blank" rel="noreferrer" className="hover:text-white transition-colors flex items-center gap-0.5">
             STELLAR.ORG
-            <ExternalLink size={8} />
+            <ExternalLink size={9} />
           </a>
         </div>
       </footer>
@@ -647,7 +842,7 @@ export default function LandingPage() {
   );
 }
 
-// Simulated Faucet Sandbox Experience component for the Landing page - fully black and white
+// Simulated Faucet Sandbox Experience component for the Landing page - fully silver and black with Motion
 function InteractiveSandboxDemo() {
   const [address, setAddress] = useState('');
   const [balance, setBalance] = useState('0.00');
@@ -657,7 +852,6 @@ function InteractiveSandboxDemo() {
   const generateMockWallet = () => {
     setStatus('generating');
     setTimeout(() => {
-      // Create a nice mock Stellar address
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let mockAddr = 'GB';
       for (let i = 0; i < 54; i++) {
@@ -666,11 +860,9 @@ function InteractiveSandboxDemo() {
       setAddress(mockAddr);
       setStatus('funding');
       
-      // Auto trigger simulated funding
       setTimeout(() => {
         setBalance('10,000.00');
         
-        // Mock hash
         let mockHash = '';
         const hex = '0123456789abcdef';
         for (let i = 0; i < 64; i++) {
@@ -692,86 +884,109 @@ function InteractiveSandboxDemo() {
   };
 
   return (
-    <div className="p-6 sm:p-8 rounded bg-white/[0.02] border border-white/10 backdrop-blur-xl relative overflow-hidden shadow-2xl text-left">
-      <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-6">
+    <div className="p-6 sm:p-8 rounded-[24px] bg-zinc-950/50 border border-zinc-800/80 backdrop-blur-2xl relative overflow-hidden shadow-2xl text-left">
+      
+      {/* Decorative notch line inside the sandbox card header */}
+      <div className="flex items-center justify-between border-b border-zinc-900 pb-4 mb-6">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-          <span className="text-[9px] font-mono text-gray-400 font-bold tracking-widest uppercase">TESTNET FAUCET SIMULATOR</span>
+          <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+          <span className="text-[9px] font-mono text-zinc-400 font-bold tracking-widest uppercase">TESTNET FAUCET SIMULATOR</span>
         </div>
-        <div className="flex gap-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
-          <div className="w-1.5 h-1.5 rounded-full bg-white/20"></div>
+        <div className="flex gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-zinc-800"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-zinc-800"></div>
+          <div className="w-1.5 h-1.5 rounded-full bg-zinc-800"></div>
         </div>
       </div>
 
-      <div className="space-y-4">
+      <AnimatePresence mode="wait">
         {status === 'idle' && (
-          <div className="py-8 text-center space-y-4">
-            <Globe className="w-8 h-8 text-white mx-auto animate-pulse" />
-            <div className="space-y-1">
-              <p className="font-mono text-xs text-white uppercase font-bold tracking-widest">Uninitialized Sandbox Port</p>
-              <p className="text-[11px] text-gray-500 max-w-xs mx-auto font-mono">
-                Simulate ED25519 on-chain registration on the Stellar sandbox ledger instantly.
+          <motion.div 
+            key="idle"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="py-10 text-center space-y-5"
+          >
+            <Globe className="w-8 h-8 text-zinc-300 mx-auto animate-pulse" />
+            <div className="space-y-1.5">
+              <p className="font-mono text-xs text-zinc-100 uppercase font-bold tracking-widest">Uninitialized Sandbox Core</p>
+              <p className="text-[11px] text-zinc-500 max-w-xs mx-auto font-sans leading-relaxed">
+                Generate an immediate ED25519 test session on the simulated Stellar sandbox blockchain.
               </p>
             </div>
             <button
               onClick={generateMockWallet}
-              className="px-5 py-3 rounded bg-white hover:bg-gray-200 text-black font-mono font-bold text-[10px] tracking-wider uppercase transition-all cursor-pointer"
+              className="px-6 py-3 rounded-full bg-zinc-100 hover:bg-white text-black font-mono font-bold text-[10px] tracking-wider uppercase transition-all duration-300 cursor-pointer shadow-lg active:scale-97"
             >
               INITIALIZE FAUCET CLAIM
             </button>
-          </div>
+          </motion.div>
         )}
 
         {status === 'generating' && (
-          <div className="py-12 text-center space-y-3">
-            <RefreshCw className="w-6 h-6 text-white mx-auto animate-spin" />
-            <p className="font-mono text-[10px] text-white uppercase tracking-widest">Compiling Cryptographic Credentials...</p>
-          </div>
+          <motion.div 
+            key="generating"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="py-14 text-center space-y-4"
+          >
+            <RefreshCw className="w-6 h-6 text-zinc-400 mx-auto animate-spin" />
+            <p className="font-mono text-[9px] text-zinc-400 uppercase tracking-widest animate-pulse font-bold">Compiling Secure Credentials...</p>
+          </motion.div>
         )}
 
         {(status === 'funding' || status === 'completed') && (
-          <div className="space-y-4 font-mono text-xs text-gray-400">
+          <motion.div 
+            key="sandbox-results"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="space-y-4 font-mono text-xs text-zinc-400"
+          >
             <div>
-              <span className="text-[9px] text-gray-600 block mb-1 uppercase tracking-wider">MOCK PUBLIC KEY</span>
-              <div className="p-3 bg-black/60 border border-white/5 text-[10px] text-white select-all truncate block font-mono">
+              <span className="text-[9px] text-zinc-500 block mb-1 uppercase tracking-wider font-bold">MOCK PUBLIC KEY (ED25519)</span>
+              <div className="p-3.5 bg-black/60 border border-zinc-900 rounded-xl text-[10px] text-white select-all truncate block font-mono">
                 {address}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 rounded bg-black/40 border border-white/5">
-                <span className="text-[9px] text-gray-600 block mb-1 uppercase tracking-wider">MOCK ASSETS</span>
+              <div className="p-4 rounded-xl bg-black/40 border border-zinc-900">
+                <span className="text-[9px] text-zinc-500 block mb-1 uppercase tracking-wider font-bold">MOCK ASSETS</span>
                 <span className="text-sm font-extrabold text-white block">
-                  {balance} <span className="text-[10px] text-gray-400">XLM</span>
+                  {balance} <span className="text-[9px] text-zinc-400">XLM</span>
                 </span>
               </div>
-              <div className="p-4 rounded bg-black/40 border border-white/5">
-                <span className="text-[9px] text-gray-600 block mb-1 uppercase tracking-wider">LEDGER CONSENSUS</span>
-                <span className={`text-[10px] font-bold block ${status === 'completed' ? 'text-white underline' : 'text-gray-500 animate-pulse'}`}>
+              <div className="p-4 rounded-xl bg-black/40 border border-zinc-900">
+                <span className="text-[9px] text-zinc-500 block mb-1 uppercase tracking-wider font-bold">CONSENSUS STATE</span>
+                <span className={`text-[10px] font-bold block ${status === 'completed' ? 'text-zinc-300 underline' : 'text-zinc-500 animate-pulse'}`}>
                   {status === 'completed' ? 'SUCCESS_SYNCED' : 'BROADCASTING...'}
                 </span>
               </div>
             </div>
 
             {status === 'funding' && (
-              <div className="p-3 rounded bg-white/5 border border-white/10 text-white text-[10px] flex items-center gap-2 animate-pulse">
-                <RefreshCw size={12} className="animate-spin shrink-0" />
-                <span>Broadcasting test address registration to consensus validators...</span>
+              <div className="p-3.5 rounded-xl bg-white/5 border border-zinc-800 text-zinc-300 text-[10px] flex items-center gap-2.5 animate-pulse">
+                <RefreshCw size={12} className="animate-spin shrink-0 text-zinc-400" />
+                <span>Broadcasting test wallet credentials to network validators...</span>
               </div>
             )}
 
             {status === 'completed' && (
-              <div className="space-y-3">
-                <div className="p-3 rounded bg-white/5 border border-white/10 text-white text-[10px] flex items-center gap-2">
-                  <CheckCircle size={12} className="shrink-0" />
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-4"
+              >
+                <div className="p-3.5 rounded-xl bg-white/5 border border-zinc-800 text-zinc-200 text-[10px] flex items-center gap-2">
+                  <CheckCircle size={14} className="shrink-0 text-zinc-400" />
                   <span>Consensus reached. 10,000 XLM injected into local memory storage block.</span>
                 </div>
 
                 <div>
-                  <span className="text-[9px] text-gray-600 block mb-1 uppercase tracking-wider">TX ENVELOPE HASH</span>
-                  <span className="p-2.5 bg-black/60 border border-white/5 text-[9px] text-gray-500 block truncate font-mono">
+                  <span className="text-[9px] text-zinc-500 block mb-1 uppercase tracking-wider font-bold">TX ENVELOPE HASH</span>
+                  <span className="p-2.5 bg-black/60 border border-zinc-900 rounded-xl text-[9px] text-zinc-500 block truncate font-mono">
                     {txHash}
                   </span>
                 </div>
@@ -779,22 +994,22 @@ function InteractiveSandboxDemo() {
                 <div className="pt-2 flex gap-3">
                   <button
                     onClick={handleReset}
-                    className="flex-1 py-2.5 rounded bg-white/5 border border-white/10 hover:bg-white/10 text-white font-mono text-[10px] transition-all cursor-pointer"
+                    className="flex-1 py-3 rounded-full bg-white/5 border border-zinc-800 hover:bg-white/10 text-zinc-200 font-mono text-[10px] font-bold tracking-wider transition-all cursor-pointer"
                   >
                     RESET SANDBOX
                   </button>
                   <Link
                     to="/terminal"
-                    className="flex-1 py-2.5 rounded bg-white text-black font-mono text-[10px] font-bold text-center uppercase tracking-wider transition-all"
+                    className="flex-1 py-3 rounded-full bg-white text-black font-mono text-[10px] font-bold text-center uppercase tracking-widest transition-all shadow-md active:scale-97"
                   >
                     GO TO TERMINAL
                   </Link>
                 </div>
-              </div>
+              </motion.div>
             )}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }

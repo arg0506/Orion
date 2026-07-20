@@ -1,6 +1,6 @@
 {
   "name": "Orion",
   "description": "A production-ready Web3 application to monitor, validate, and transact using the official Stellar Testnet and Freighter wallet integration.",
-  "requestFramePermissions": [],
+  "requestFramePermissions": ["camera"],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

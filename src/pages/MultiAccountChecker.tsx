@@ -30,28 +30,28 @@ export default function MultiAccountChecker() {
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8">
       {/* Header and top tools with Immersive UI Styling */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 sm:p-8 rounded-lg glass-panel-monochrome relative overflow-hidden shadow-2xl group">
-        <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-white/25 group-hover:border-white/50 transition-colors" />
-        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-white/25 group-hover:border-white/50 transition-colors" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-8 sm:p-10 rounded-[28px] border border-zinc-800 bg-zinc-950/40 backdrop-blur-3xl relative overflow-hidden shadow-2xl group">
+        <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-zinc-700 rounded-tl group-hover:border-zinc-500 transition-colors" />
+        <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-zinc-700 rounded-br group-hover:border-zinc-500 transition-colors" />
         <div className="absolute top-0 right-0 -translate-y-6 translate-x-6 w-32 h-32 rounded-full bg-white/[0.01] blur-2xl pointer-events-none"></div>
         <div className="z-10">
-          <span className="text-[9px] font-bold text-white uppercase tracking-widest block mb-1">Multi-Terminal Surveillance</span>
-          <h2 className="font-display font-extrabold text-2xl tracking-tighter text-white uppercase">
+          <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest block mb-1.5 font-mono">Multi-Terminal Surveillance</span>
+          <h2 className="font-display font-extrabold text-2xl tracking-tight text-white uppercase">
             Multi-Account Monitor
           </h2>
-          <p className="text-gray-400 text-xs mt-1.5 leading-relaxed max-w-2xl font-mono">
+          <p className="text-zinc-400 text-xs mt-2 leading-relaxed max-w-2xl font-sans font-light">
             Watch real-time active balances, record registrations, and track key activities on external Stellar G-addresses securely without revealing credentials.
           </p>
         </div>
         {accounts.length > 0 && (
           <button
             onClick={refreshAllAccounts}
-            className="flex items-center justify-center gap-2 px-5 py-3 font-mono font-bold text-xs bg-white text-black hover:bg-gray-200 transition-all cursor-pointer self-start md:self-center shrink-0 z-10 uppercase tracking-widest"
+            className="flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-full btn-metallic text-[10px] font-mono font-bold tracking-widest uppercase transition-all cursor-pointer self-start md:self-center shrink-0 z-10 shadow-md"
           >
             <RefreshCw size={12} />
-            REFRESH ALL MONITORS
+            REFRESH MONITORS
           </button>
         )}
       </div>
@@ -61,18 +61,18 @@ export default function MultiAccountChecker() {
         
         {/* Left Column: Form & Guide */}
         <div className="lg:col-span-4 space-y-6 font-mono">
-          <div className="p-6 sm:p-8 rounded-lg glass-panel shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all duration-300">
-            <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40" />
-            <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40" />
-            <h3 className="font-display font-bold text-xs tracking-widest text-white uppercase flex items-center gap-2 mb-6">
-              <Plus size={14} className="text-white" />
+          <div className="p-8 rounded-[28px] border border-zinc-800 bg-zinc-950/40 backdrop-blur-3xl shadow-2xl relative overflow-hidden group hover:border-zinc-700/80 transition-all duration-300">
+            <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-zinc-700 rounded-tl group-hover:border-zinc-500" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-zinc-700 rounded-br group-hover:border-zinc-500" />
+            <h3 className="font-sans font-bold text-xs tracking-widest text-white uppercase flex items-center gap-2 mb-6">
+              <Plus size={14} className="text-zinc-400" />
               Add Monitor Wallet
             </h3>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Address Input */}
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest">
+                <label className="block text-[8px] font-bold text-zinc-500 uppercase tracking-widest">
                   Stellar G-Address
                 </label>
                 <input
@@ -82,13 +82,13 @@ export default function MultiAccountChecker() {
                   value={newAddress}
                   onChange={(e) => setNewAddress(e.target.value)}
                   placeholder="GD3J26... (ED25519 Public Key)"
-                  className="w-full bg-black/60 border border-white/10 focus:border-white rounded px-4 py-3 text-xs focus:outline-none transition-all font-mono placeholder:text-gray-700 text-white disabled:opacity-50"
+                  className="w-full bg-zinc-900/40 border border-zinc-800 focus:border-zinc-500 rounded-xl px-4 py-3 text-xs focus:outline-none transition-all font-mono placeholder:text-zinc-700 text-white disabled:opacity-50"
                 />
               </div>
 
               {/* Label Input */}
               <div className="space-y-1.5">
-                <label className="block text-[9px] font-bold text-gray-500 mb-1.5 uppercase tracking-widest">
+                <label className="block text-[8px] font-bold text-zinc-500 uppercase tracking-widest">
                   Label Memo / Name
                 </label>
                 <input
@@ -97,7 +97,7 @@ export default function MultiAccountChecker() {
                   value={newLabel}
                   onChange={(e) => setNewLabel(e.target.value)}
                   placeholder="Savings Vault / cold-storage"
-                  className="w-full bg-black/60 border border-white/10 focus:border-white rounded px-4 py-3 text-xs focus:outline-none transition-all font-mono placeholder:text-gray-700 text-white disabled:opacity-50"
+                  className="w-full bg-zinc-900/40 border border-zinc-800 focus:border-zinc-500 rounded-xl px-4 py-3 text-xs focus:outline-none transition-all font-mono placeholder:text-zinc-700 text-white disabled:opacity-50"
                 />
               </div>
 
@@ -105,7 +105,7 @@ export default function MultiAccountChecker() {
               <button
                 type="submit"
                 disabled={isSubmitting || !newAddress.trim()}
-                className="w-full flex items-center justify-center gap-2 py-3.5 rounded font-bold text-xs bg-white text-black hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed transition-all mt-2 cursor-pointer uppercase tracking-widest"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-full btn-metallic text-[10px] font-bold tracking-widest uppercase transition-all mt-4 cursor-pointer shadow-md"
               >
                 {isSubmitting ? (
                   <>
@@ -123,12 +123,12 @@ export default function MultiAccountChecker() {
           </div>
 
           {/* Guide Card */}
-          <div className="p-6 sm:p-8 rounded-lg glass-panel space-y-4 text-xs leading-relaxed text-gray-400">
-            <h4 className="font-display font-semibold text-xs tracking-widest text-white flex items-center gap-1.5 uppercase font-mono">
-              <HelpCircle size={14} className="text-white" />
+          <div className="p-8 rounded-[28px] border border-zinc-850 bg-zinc-950/20 backdrop-blur-md space-y-4 text-xs leading-relaxed text-zinc-400">
+            <h4 className="font-sans font-semibold text-xs tracking-widest text-white flex items-center gap-1.5 uppercase">
+              <HelpCircle size={14} className="text-zinc-400" />
               Surveillance Protocol
             </h4>
-            <div className="space-y-3">
+            <div className="space-y-3 font-sans font-light text-[11px] text-zinc-400 leading-relaxed">
               <p>
                 This monitor performs direct read-only queries to the official Stellar Horizon Node. No credentials or private keys are ever held.
               </p>
@@ -141,16 +141,16 @@ export default function MultiAccountChecker() {
 
         {/* Right Columns: Monitored wallets list */}
         <div className="lg:col-span-8 space-y-4">
-          <h3 className="font-mono font-bold text-xs tracking-widest text-gray-400 uppercase">
+          <h3 className="font-mono font-bold text-[10px] tracking-widest text-zinc-500 uppercase">
             Tracked Accounts ({accounts.length})
           </h3>
 
           {accounts.length === 0 ? (
-            <div className="p-12 text-center rounded bg-white/[0.02] border border-white/10 backdrop-blur-xl flex flex-col items-center gap-3 font-mono">
-              <Search size={28} className="text-gray-600 animate-pulse mb-1" />
-              <div className="space-y-1">
-                <p className="text-xs text-gray-300 uppercase tracking-widest">No Monitors Initialized</p>
-                <p className="text-[11px] text-gray-500 max-w-sm mx-auto leading-relaxed">
+            <div className="p-12 text-center rounded-[28px] border border-zinc-800 bg-zinc-950/40 backdrop-blur-3xl flex flex-col items-center justify-center min-h-[300px] gap-3 font-sans">
+              <Search size={28} className="text-zinc-600 animate-pulse mb-1" />
+              <div className="space-y-1.5">
+                <p className="text-xs text-white uppercase tracking-widest font-mono font-bold">No Monitors Initialized</p>
+                <p className="text-[11px] text-zinc-500 max-w-sm mx-auto leading-relaxed">
                   Enter a Stellar public key address in the left panel to initialize safe watchlists of test balances.
                 </p>
               </div>
@@ -160,29 +160,27 @@ export default function MultiAccountChecker() {
               {accounts.map((acc) => (
                 <div
                   key={acc.id}
-                  className={`p-6 rounded relative overflow-hidden transition-all border backdrop-blur-xl ${
+                  className={`p-6 sm:p-7 rounded-[22px] relative overflow-hidden transition-all border backdrop-blur-3xl shadow-lg ${
                     acc.error
-                      ? 'border-white/10 bg-white/[0.01]'
-                      : acc.exists
-                      ? 'border-white/10 bg-white/[0.02] hover:border-white'
-                      : 'border-white/10 bg-white/[0.01]'
+                      ? 'border-rose-500/20 bg-rose-950/5'
+                      : 'border-zinc-800 bg-zinc-950/40 hover:border-zinc-700/80 hover:shadow-[0_0_20px_rgba(255,255,255,0.01)]'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1.5 max-w-[calc(100%-70px)] font-mono">
+                    <div className="space-y-1.5 max-w-[calc(100%-70px)] font-sans">
                       {/* Name / Label */}
-                      <h4 className="font-display font-bold text-sm text-white tracking-wide truncate">
+                      <h4 className="font-bold text-sm text-white tracking-wide truncate">
                         {acc.label || 'Unnamed Wallet'}
                       </h4>
 
                       {/* Address */}
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-gray-500 hover:text-gray-400 select-all truncate block" title={acc.address}>
+                      <div className="flex items-center gap-1.5 font-mono">
+                        <span className="text-[10px] text-zinc-500 hover:text-zinc-400 select-all truncate block" title={acc.address}>
                           {shortenAddress(acc.address)}
                         </span>
                         <button
                           onClick={() => handleCopy(acc.address)}
-                          className="text-gray-500 hover:text-white transition-colors cursor-pointer shrink-0"
+                          className="text-zinc-600 hover:text-white transition-colors cursor-pointer shrink-0"
                           title="Copy Address"
                         >
                           <Copy size={11} />
@@ -191,7 +189,7 @@ export default function MultiAccountChecker() {
                           href={`https://stellar.expert/explorer/testnet/account/${acc.address}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="text-gray-500 hover:text-white transition-colors shrink-0"
+                          className="text-zinc-600 hover:text-white transition-colors shrink-0"
                           title="View on Explorer"
                         >
                           <ExternalLink size={11} />
@@ -204,14 +202,14 @@ export default function MultiAccountChecker() {
                       <button
                         onClick={() => refreshAccount(acc.id, acc.address)}
                         disabled={acc.isLoading}
-                        className="p-2 rounded border border-white/5 bg-black/40 text-gray-400 hover:text-white hover:border-white transition-all cursor-pointer"
+                        className="p-2 rounded-lg border border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:text-white hover:border-zinc-600 transition-all cursor-pointer"
                         title="Sync Ledger Balance"
                       >
                         <RefreshCw size={12} className={acc.isLoading ? 'animate-spin' : ''} />
                       </button>
                       <button
                         onClick={() => removeAccount(acc.id)}
-                        className="p-2 rounded border border-white/5 bg-black/40 text-gray-400 hover:text-white hover:border-white transition-all cursor-pointer"
+                        className="p-2 rounded-lg border border-zinc-800 bg-zinc-950/60 text-zinc-400 hover:text-white hover:border-zinc-600 transition-all cursor-pointer"
                         title="Remove Monitor"
                       >
                         <Trash2 size={12} />
@@ -220,33 +218,33 @@ export default function MultiAccountChecker() {
                   </div>
 
                   {/* Account state values */}
-                  <div className="mt-5 pt-4 border-t border-white/5 flex items-end justify-between font-mono">
+                  <div className="mt-5 pt-4 border-t border-zinc-900 flex items-end justify-between font-mono">
                     <div>
-                      <span className="text-[9px] font-bold text-gray-500 tracking-widest block uppercase">
+                      <span className="text-[8px] font-bold text-zinc-500 tracking-widest block uppercase">
                         Ledger XLM Balance
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
-                        <span className="font-display font-extrabold text-lg text-white">
+                        <span className="font-sans font-extrabold text-lg text-white">
                           {acc.isLoading ? '...' : parseFloat(acc.xlmBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}
                         </span>
-                        <span className="text-[10px] font-bold text-white">XLM</span>
+                        <span className="text-[10px] font-bold text-zinc-400 font-mono">XLM</span>
                       </div>
                     </div>
 
                     <div className="text-right">
                       {acc.error ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-rose-400 bg-rose-950/20 border border-rose-900/30 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                           <AlertCircle size={9} />
                           RPC_ERR
                         </span>
                       ) : acc.exists ? (
-                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white bg-white/10 border border-white/20 px-2 py-0.5 rounded uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1 text-[9px] font-bold text-white bg-white/5 border border-zinc-800 px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                           <CheckCircle2 size={9} />
                           ACTIVE
                         </span>
                       ) : (
                         <span
-                          className="inline-flex items-center gap-1 text-[9px] font-bold text-gray-400 bg-white/5 border border-white/10 px-2 py-0.5 rounded uppercase tracking-wider cursor-help"
+                          className="inline-flex items-center gap-1 text-[9px] font-bold text-zinc-500 bg-zinc-900/40 border border-zinc-850 px-2.5 py-0.5 rounded-full uppercase tracking-wider cursor-help"
                           title="Account is unfunded and does not yet exist on-chain."
                         >
                           <AlertCircle size={9} />
@@ -257,8 +255,8 @@ export default function MultiAccountChecker() {
                   </div>
 
                   {/* Sync date */}
-                  <div className="mt-2 text-[9px] font-mono text-gray-600 flex justify-between">
-                    <span>Sync:</span>
+                  <div className="mt-3.5 text-[9px] font-mono text-zinc-600 flex justify-between border-t border-dashed border-zinc-900/50 pt-2">
+                    <span>Sync timestamp:</span>
                     <span>{acc.lastUpdated ? new Date(acc.lastUpdated).toLocaleTimeString() : 'NEVER'}</span>
                   </div>
                 </div>
