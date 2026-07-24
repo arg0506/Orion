@@ -1,10 +1,13 @@
-# Stellar Voyager Portal (Testnet Web3 Console)
+# Orion (Testnet Web3 Console)
 
 A highly polished, production-ready Web3 application built using **React, Vite, and Tailwind CSS** that operates against the **real Stellar Testnet**. It enables users to authenticate securely with Firebase Authentication, connect their Freighter browser wallet, retrieve real-time account data (including sequence numbers, subentries, and XLM balances), manage multiple monitored wallets, and securely build, sign, and submit transactions to the blockchain.
 
 Designed and developed securely by **ARPAN ROY (arpanroy0506@gmail.com)**.
 
 ---
+<p align="center">
+  <img src="src/assets/images/banner.png" width="100%" alt="orion-banner">
+</p>
 
 ## 🎨 Visual Identity & Core Theme
 *   **Cosmic Slate / Dark Cyberpunk Theme:** A tailored dark visual design featuring glowing monochrome indicators, subtle glassmorphism layers, and responsive interactive states.
@@ -98,7 +101,9 @@ This section lists the fundamental operational states of the terminal interface.
 ### 5. Automated CI/CD Workflow Runner
 *Simulated DevOps pipeline runner with static analysis, unit testing, and GitHub Actions deploy YAML.*
 
-![Automated CI/CD Workflow Runner](./public/cicd_pipeline_workflow.jpg)
+<p align="center">
+  <img src="src/assets/images/cicd_pipeline_workflow.png" width="100%" alt="orion-ci/cd">
+</p>
 
 ---
 
