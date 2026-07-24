@@ -1,0 +1,40 @@
+{
+  "firestore": {
+    "collections": {
+      "users": {
+        "description": "User records containing profile metadata",
+        "fields": {
+          "uid": { "type": "string", "required": true },
+          "email": { "type": "string", "required": true },
+          "displayName": { "type": "string" },
+          "createdAt": { "type": "timestamp", "required": true }
+        }
+      },
+      "monitored_accounts": {
+        "description": "Stellar testnet addresses monitored by the user",
+        "fields": {
+          "id": { "type": "string", "required": true },
+          "userId": { "type": "string", "required": true },
+          "address": { "type": "string", "required": true },
+          "label": { "type": "string", "required": true },
+          "xlmBalance": { "type": "string", "required": true },
+          "exists": { "type": "boolean", "required": true },
+          "lastUpdated": { "type": "string" }
+        }
+      },
+      "transactions": {
+        "description": "Stellar testnet transaction logs submitted or tracked by the user",
+        "fields": {
+          "id": { "type": "string", "required": true },
+          "userId": { "type": "string", "required": true },
+          "sender": { "type": "string", "required": true },
+          "recipient": { "type": "string", "required": true },
+          "amount": { "type": "string", "required": true },
+          "memo": { "type": "string" },
+          "ledger": { "type": "number", "required": true },
+          "timestamp": { "type": "string", "required": true }
+        }
+      }
+    }
+  }
+}
