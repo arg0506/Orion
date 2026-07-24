@@ -95,6 +95,11 @@ This section lists the fundamental operational states of the terminal interface.
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
+### 5. Automated CI/CD Workflow Runner
+*Simulated DevOps pipeline runner with static analysis, unit testing, and GitHub Actions deploy YAML.*
+
+![Automated CI/CD Workflow Runner](./public/cicd_pipeline_workflow.jpg)
+
 ---
 
 ## 📁 Project Structure
@@ -204,6 +209,8 @@ An integrated simulation of automated pipelines representing a full DevOps loop:
 *   **Test Stage:** Automatically launches local blockchain test nodes, performing structural assertions with rich diagnostic outputs.
 *   **Build Stage:** Invokes release optimizers (`solc --optimize` and `soroban-optimizer`) to compress WASM binaries and optimize EVM bytecode footprint.
 *   **Deploy Stage:** Provisions final release builds, registering contracts with the Stellar Testnet / Sepolia networks.
+
+![Automated CI/CD Workflow Runner](./public/cicd_pipeline_workflow.png)
 
 ### 5. Smart Contract & Frontend Unit Testing Output
 The application includes integrated testing frameworks returning diagnostic code coverage metrics and execution runtimes. Below is the active test suite log:
