@@ -1,8 +1,27 @@
-# Orion (Testnet Web3 Console)
+<div align="center">
 
-A highly polished, production-ready Web3 application built using **React, Vite, and Tailwind CSS** that operates against the **real Stellar Testnet**. It enables users to authenticate securely with Firebase Authentication, connect their Freighter browser wallet, retrieve real-time account data (including sequence numbers, subentries, and XLM balances), manage multiple monitored wallets, and securely build, sign, and submit transactions to the blockchain.
+# 🌌 Orion
 
-Designed and developed securely by **ARPAN ROY (arpanroy0506@gmail.com)**.
+### A Modern Web3 Wallet Dashboard for the Stellar Testnet
+
+Manage • Monitor • Transact • Explore
+
+[![Stellar](https://img.shields.io/badge/Built%20on-Stellar-000000?style=for-the-badge&logo=stellar&logoColor=white)](#)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](#)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript)](#)
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss)](#)
+[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](#)
+[![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)](#license)
+
+---
+
+### Your Gateway to the Stellar Ecosystem
+
+A clean, intuitive, and developer-friendly dashboard for interacting with the Stellar blockchain.
+
+🚀 **Live Demo:** https://orion-xi-blond.vercel.app
+
+</div>
 
 ---
 <p align="center">
