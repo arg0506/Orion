@@ -29,3 +29,93 @@ const smooth = (a: number, b: number, x: number) => {
 export type BodyKind = 'sphere' | 'crescent' | 'eclipse' | 'keyhole' | 'ringed';
 
 /** A stippled celestial body that prints itself dot by dot. */
+export function Stipple({ kind = 'sphere', size = 120, seed = 7, className, reprint = 0 }: { kind?: BodyKind; size?: number; seed?: number; className?: string; reprint?: number }) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+  const reduced = useReducedMotion();
+
+  const dots = useMemo(() => {
+    const rand = rng(seed * 97 + kind.length);
+    const cx = size / 2, cy = size / 2;
+    const R = size * (kind === 'eclipse' ? 0.3 : kind === 'ringed' ? 0.28 : 0.38);
+    const L = kind === 'crescent' ? [0.92, -0.28, -0.25] : [-0.58, -0.6, 0.55];
+    const m = Math.hypot(...L);
+    const light = L.map((v) => v / m);
+    const step = Math.max(1.15, size / 110);
+    const out: { x: number; y: number; r: number; o: number }[] = [];
+    for (let y = 0; y < size; y += step) {
+      for (let x = 0; x < size; x += step) {
+        const px = x + (rand() - 0.5) * step, py = y + (rand() - 0.5) * step;
+        const dx = (px - cx) / R, dy = (py - cy) / R;
+        const d2 = dx * dx + dy * dy;
+        let t = 0;
+        if (d2 <= 1) {
+          const nz = Math.sqrt(1 - d2);
+          const lam = Math.max(0, dx * light[0]! + dy * light[1]! + nz * light[2]!);
+          t = kind === 'eclipse' ? 0.93 : 0.05 + Math.pow(1 - lam, 1.35) * 0.9 + Math.pow(1 - nz, 4) * 0.18;
+          if (kind === 'keyhole') {
+            const inCircle = Math.hypot(dx, dy + 0.18) < 0.2;
+            const inSlot = dy > -0.1 && dy < 0.42 && Math.abs(dx) < 0.07 + (dy + 0.1) * 0.12;
+            if (inCircle || inSlot) t = 0;
+            else if (Math.hypot(dx, dy + 0.18) < 0.27 || (dy > -0.1 && dy < 0.5 && Math.abs(dx) < 0.14 + (dy + 0.1) * 0.12)) t = Math.min(1, t + 0.45);
+          }
+        } else if (kind === 'eclipse') {
+          // Corona: streaky light that fades outward
+          const dist = Math.sqrt(d2);
+          const ang = Math.atan2(dy, dx);
+          const streak = 0.55 + 0.45 * Math.sin(ang * 9 + seed) * Math.sin(ang * 5 - seed);
+          t = Math.max(0, (1 - smooth(1, 1.75, dist)) * 0.55 * streak);
+        }
+        if (kind === 'ringed') {
+          // A tilted ring: dense band, hidden where the planet is in front of it
+          const tilt = -0.32;
+          const rx = dx * Math.cos(tilt) - dy * Math.sin(tilt);
+          const ry = dx * Math.sin(tilt) + dy * Math.cos(tilt);
+          const e = Math.hypot(rx / 1.75, ry / 0.42);
+          const band = Math.abs(e - 1) < 0.1 ? 0.85 : Math.abs(e - 0.84) < 0.05 ? 0.5 : 0;
+          const behind = ry < 0 && d2 <= 1;
+          if (band && !behind) t = Math.max(t, band);
+        }
+        if (t > 0 && rand() < t) out.push({ x: px, y: py, r: (0.32 + t * 0.62) * (size / 120) ** 0.35, o: Math.hypot(px - cx * 0.6, py - cy * 0.5) + rand() * size * 0.25 });
+      }
+    }
+    return out.sort((a, b) => a.o - b.o);
+  }, [kind, size, seed]);
+
+  useEffect(() => {
+    const c = ref.current;
+    const ctx = c?.getContext('2d');
+    if (!c || !ctx) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    c.width = size * dpr;
+    c.height = size * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+    ctx.fillStyle = INK;
+    const draw = (a: number, b: number) => {
+      ctx.beginPath();
+      for (let i = a; i < b; i++) {
+        const d = dots[i]!;
+        ctx.moveTo(d.x + d.r, d.y);
+        ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      }
+      ctx.fill();
+    };
+    if (reduced) return draw(0, dots.length);
+    let raf = 0, drawn = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, Math.max(0, (now - start) / 1300));
+      const target = Math.floor((1 - Math.pow(1 - t, 3)) * dots.length);
+      if (target > drawn) {
+        draw(drawn, target);
+        drawn = target;
+      }
+      if (t < 1) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [dots, size, reduced, reprint]);
+
+  return <canvas ref={ref} className={className} style={{ width: size, height: size }} aria-hidden="true" />;
+}
+
