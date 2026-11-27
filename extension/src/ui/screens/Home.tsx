@@ -8,6 +8,9 @@ import type { WalletView } from '../../lib/messages';
 import { explorerAddressUrl, type Family, type Network } from '../../lib/networks';
 import type { TrackedTx } from '../../lib/chains/types';
 import Activity from './Activity';
+import Ori from '../art/Ori';
+import { Confetti } from '../art/Scene';
+import { NetworkLogo, Coin } from '../art/ChainLogo';
 
 function AnimatedNumber({ value }: { value: number }) {
   const reduced = useReducedMotion();
@@ -33,6 +36,11 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
   const [faucetMsg, setFaucetMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [faucetBusy, setFaucetBusy] = useState(false);
   const [txs, setTxs] = useState<TrackedTx[]>([]);
+  const [party, setParty] = useState<null | string>(null);
+  const celebrate = (text: string) => {
+    setParty(text);
+    setTimeout(() => setParty(null), 1900);
+  };
 
   const loadBalance = useCallback(async () => {
     setLoading(true);
@@ -73,7 +81,9 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
     setFaucetBusy(true);
     setFaucetMsg(null);
     try {
-      setFaucetMsg({ ok: true, text: await call<string>({ type: 'ui:faucet', family }) });
+      const text = await call<string>({ type: 'ui:faucet', family });
+      setFaucetMsg({ ok: true, text });
+      celebrate(text);
       loadBalance();
     } catch (e: any) {
       setFaucetMsg({ ok: false, text: e.message });
@@ -83,6 +93,17 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
   };
 
   const familyTxs = txs.filter((t) => t.family === family);
+  const pendingHere = familyTxs.some((t) => t.status === 'pending');
+  // Ori reacts to what's going on with this chain.
+  const ori = balErr
+    ? { pose: 'stand' as const, mood: 'dizzy' as const, prop: 'plug' as const, say: 'Node unreachable!' }
+    : faucetBusy
+      ? { pose: 'stand' as const, mood: 'focused' as const, prop: 'can' as const, say: 'Watering…' }
+      : pendingHere
+        ? { pose: 'run' as const, mood: 'focused' as const, prop: null, say: 'On it!' }
+        : net.kind === 'mainnet'
+          ? { pose: 'stand' as const, mood: 'worried' as const, prop: null, say: 'Real money!' }
+          : { pose: 'sit' as const, mood: 'happy' as const, prop: null, say: '' };
 
   return (
     <div className="relative h-full flex flex-col">
@@ -105,10 +126,19 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
         {/* Balance */}
         <AnimatePresence mode="wait">
           <motion.div key={family} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease }}>
-            <Card className="mt-3 p-5">
+            <Card className="relative mt-[76px] p-5">
+              {/* Ori perches on the card and reacts to the wallet's state */}
+              <motion.div key={ori.pose + ori.mood + ori.prop} className="absolute -top-[72px] right-2 z-10" initial={{ y: 12, opacity: 0, rotate: 12 }} animate={{ y: 0, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 12 }}>
+                <Ori size={70} pose={ori.pose} mood={ori.mood} prop={ori.prop} shadow={false} />
+                {ori.say && (
+                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-[64px] top-2 whitespace-nowrap rounded-[10px] border-2 border-ink bg-white px-2 py-0.5 text-[11px] font-medium shadow-[2px_2px_0_#141414]">
+                    {ori.say}
+                  </motion.span>
+                )}
+              </motion.div>
               <div className="flex items-center justify-between">
-                <button onClick={() => setSheet('networks')} className="inline-flex items-center gap-1.5 h-7 pl-2 pr-1.5 rounded-[9px] bg-inset text-[12px] font-medium hover:bg-line">
-                  <span className={cx('w-1.5 h-1.5 rounded-full', net.kind === 'mainnet' ? 'bg-bad' : net.kind === 'local' ? 'bg-rigel' : 'bg-ok')} />
+                <button onClick={() => setSheet('networks')} className="inline-flex items-center gap-1.5 h-7 pl-1 pr-1.5 rounded-[9px] bg-inset text-[12px] font-medium hover:bg-line">
+                  <NetworkLogo networkId={net.id} family={family} size={18} />
                   {net.name}
                   <ChevronDown size={13} className="text-subtle" />
                 </button>
@@ -166,8 +196,21 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
       </div>
 
       <Sheet open={sheet === 'send'} onClose={() => setSheet(null)} title={`Send ${net.symbol}`}>
-        <SendForm family={family} net={net} balance={balance} onSent={() => { setSheet(null); loadTxs(); }} />
+        <SendForm family={family} net={net} balance={balance} onSent={() => { setSheet(null); loadTxs(); celebrate('Sent!'); }} />
       </Sheet>
+      {/* Celebration: confetti + Ori cheering */}
+      <Confetti show={!!party} />
+      <AnimatePresence>
+        {party && (
+          <motion.div className="pointer-events-none absolute inset-0 z-40 grid place-items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <motion.div initial={{ scale: 0.3, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0.6, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 10 }} className="flex flex-col items-center">
+              <span className="font-serif text-[30px] rounded-[16px] border-[3px] border-ink bg-[#ffd84d] px-4 py-1 shadow-[4px_4px_0_#141414] -rotate-3">{party}</span>
+              <Ori size={130} pose="cheer" mood="excited" sparkles />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Sheet open={sheet === 'receive'} onClose={() => setSheet(null)} title="Receive">
         <div className="flex flex-col items-center text-center">
           <motion.div initial={{ rotate: -6, scale: 0.9, opacity: 0 }} animate={{ rotate: 0, scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 140, damping: 14 }} className="p-4 rounded-[20px] bg-card border border-line">
@@ -229,7 +272,10 @@ function NetworkList({ view, family, onPick }: { view: WalletView; family: Famil
           <div className="rounded-[16px] bg-card border border-line divide-y divide-line overflow-hidden">
             {list.map((n) => (
               <button key={n.id} onClick={() => onPick(n.id)} className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-black/[0.02]">
-                <span className={cx('w-2 h-2 rounded-full', n.kind === 'mainnet' ? 'bg-bad' : n.kind === 'local' ? 'bg-rigel' : 'bg-ok')} />
+                <span className="relative">
+                  <Coin family={n.family} networkId={n.id} size={30} />
+                  <span className={cx('absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white', n.kind === 'mainnet' ? 'bg-bad' : n.kind === 'local' ? 'bg-rigel' : 'bg-ok')} />
+                </span>
                 <span className="flex-1 min-w-0">
                   <span className="block text-[14px]">{n.name}</span>
                   <span className="block text-[11px] text-subtle font-mono truncate">{n.chainId ? `chain ${n.chainId} · ` : ''}{n.rpcUrl.replace(/^https?:\/\//, '')}</span>

@@ -38,6 +38,17 @@
   - **Simulation before signing**: EVM transactions are simulated with `eth_estimateGas` and flagged if they would revert; ERC-20 `transfer`/`approve` and `setApprovalForAll` are decoded, with warnings for unlimited approvals.
   - `wallet_addEthereumChain` / `wallet_switchEthereumChain` support for custom and local chains.
 
+## Look and feel
+
+Orion's UI follows the website's ink-on-paper style, with a cartoon mascot, **Ori**: a chubby star wearing Orion's belt.
+He reacts to what's happening (dizzy with an unplugged cable when a node is unreachable, running while a transaction is pending,
+holding a stop sign while a cancel races the original, watering the faucet, cheering with confetti when a send goes through).
+Ori, the splats, confetti and doodles are original artwork drawn in code (`src/ui/art/`), with a hand-inked "line boil" wobble.
+All animation respects `prefers-reduced-motion`.
+
+Chain and network marks (Ethereum, Base, Arbitrum, Optimism, Sepolia, Solana, Stellar) come unaltered from
+[`@web3icons/react`](https://github.com/0xa3k5/web3icons) (MIT); they belong to their respective projects.
+
 ## Install (development build)
 
 ```bash

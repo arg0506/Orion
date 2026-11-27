@@ -5,6 +5,8 @@ import { call } from '../api';
 import { Badge, Button, ErrorText, ago, cx, fmt, short } from '../kit';
 import { explorerTxUrl, type Network } from '../../lib/networks';
 import type { TrackedTx } from '../../lib/chains/types';
+import Ori from '../art/Ori';
+import { NetworkLogo } from '../art/ChainLogo';
 
 const STATUS: Record<TrackedTx['status'], { label: string; tone: 'neutral' | 'ok' | 'warn' | 'bad' | 'info' }> = {
   pending: { label: 'Pending', tone: 'info' },
@@ -31,10 +33,16 @@ export default function Activity({ txs, networks, onChange }: { txs: TrackedTx[]
     <section className="mt-5">
       <div className="flex items-center justify-between mb-2">
         <h2 className="font-serif text-[20px]">Activity</h2>
-        {txs.length > 0 && <span className="text-[12px] text-subtle">{txs.filter((t) => t.status === 'pending').length} pending</span>}
+        {txs.length > 0 && (
+          <span className="flex items-center gap-1 text-[12px] text-subtle">
+            {anyPending && <Ori size={30} pose="run" mood="focused" shadow={false} />}
+            {txs.filter((t) => t.status === 'pending').length} pending
+          </span>
+        )}
       </div>
       {txs.length === 0 ? (
-        <div className="rounded-[16px] border border-dashed border-line-strong py-8 text-center">
+        <div className="rounded-[16px] border-2 border-dashed border-line-strong pt-3 pb-6 text-center">
+          <Ori size={92} pose="sleep" mood="sleepy" shadow={false} className="mx-auto" />
           <p className="font-serif text-[18px]">Nothing yet</p>
           <p className="text-[12px] text-muted mt-1">Transactions you send from Orion or approve for a site show up here.</p>
         </div>
@@ -79,11 +87,16 @@ function TxRow({ tx, net, now, onChange }: { tx: TrackedTx; net?: Network; now: 
   return (
     <div className={cx('rounded-[16px] border bg-card p-3', pending ? 'border-rigel/30' : 'border-line')}>
       <div className="flex items-center gap-3">
+        <span className="relative shrink-0">
         <span
           className={cx('tile w-9 h-9 shrink-0', tx.kind === 'cancel' ? 'text-muted' : 'text-betel')}
           style={{ background: tx.kind === 'cancel' ? 'linear-gradient(160deg,#fff,#eceae4)' : tx.kind === 'dapp' ? 'linear-gradient(160deg,#fff,#eef2ff)' : 'linear-gradient(160deg,#fff,#f2f0ea)' }}
         >
           {tx.kind === 'cancel' ? <Ban size={16} /> : tx.kind === 'dapp' ? <Globe size={16} className="text-rigel" /> : tx.kind === 'speedup' ? <Zap size={16} /> : <ArrowUpRight size={16} />}
+        </span>
+          <span className="absolute -bottom-1 -right-1 grid place-items-center w-[18px] h-[18px] rounded-full bg-white border-[1.5px] border-ink">
+            <NetworkLogo networkId={tx.networkId} family={tx.family} size={12} />
+          </span>
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-[13px] font-medium truncate">{title}</p>
@@ -131,7 +144,10 @@ function TxRow({ tx, net, now, onChange }: { tx: TrackedTx; net?: Network; now: 
           ) : tx.family === 'solana' ? (
             <p className="text-[11px] text-subtle leading-snug">Solana can't cancel a sent transaction, but it can't land after its blockhash expires. If it does, no funds move.</p>
           ) : tx.kind === 'cancel' ? (
-            <p className="text-[11px] text-subtle leading-snug">Racing the original. Whichever lands first wins; the other can never go through.</p>
+            <div className="flex items-center gap-2">
+              <Ori size={44} prop="stop" mood="worried" shadow={false} />
+              <p className="text-[11px] text-subtle leading-snug">Racing the original. Whichever lands first wins; the other can never go through.</p>
+            </div>
           ) : null}
           <div className="mt-2">
             <ErrorText>{error}</ErrorText>

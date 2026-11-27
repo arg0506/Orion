@@ -4,6 +4,8 @@ import { AlertTriangle, CheckCircle2, Clock, Zap } from 'lucide-react';
 import { call } from './api';
 import { Badge, Button, Card, FamilyTile, OrionMark, Rise, SplitWords, cx, fmt, short } from './kit';
 import Unlock from './screens/Unlock';
+import Ori from './art/Ori';
+import { Doodles } from './art/Scene';
 import type { Approval as A, WalletView } from '../lib/messages';
 
 const TITLES: Record<A['kind'], string> = {
@@ -58,8 +60,18 @@ export default function Approval() {
   const danger = (a.kind === 'sendTransaction' && d.simulation && !d.simulation.ok) || d.call?.warn || net?.kind === 'mainnet';
 
   return (
-    <div className="h-full flex flex-col dots">
-      <div className="px-5 pt-5">
+    <div className="relative h-full flex flex-col dots">
+      <Doodles />
+      <motion.div className="absolute right-3 top-[52px] z-10" initial={{ x: 60, rotate: 25 }} animate={{ x: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 140, damping: 12, delay: 0.2 }}>
+        <Ori
+          size={84}
+          shadow={false}
+          pose={a.kind === 'connect' ? 'wave' : 'stand'}
+          mood={danger ? 'worried' : a.kind === 'connect' ? 'excited' : 'focused'}
+          prop={a.kind === 'connect' ? null : a.kind === 'addChain' ? 'telescope' : 'magnifier'}
+        />
+      </motion.div>
+      <div className="relative px-5 pt-5">
         <div className="flex items-center gap-2.5">
           {a.favicon ? <img src={a.favicon} className="w-9 h-9 rounded-[10px] border border-line bg-card" alt="" /> : <span className="w-9 h-9 rounded-[10px] bg-inset" />}
           <div className="min-w-0">
@@ -71,7 +83,7 @@ export default function Approval() {
             {net && <Badge tone={net.kind === 'mainnet' ? 'bad' : net.kind === 'local' ? 'info' : 'ok'} dot>{net.name}</Badge>}
           </span>
         </div>
-        <h1 className="font-serif text-[30px] leading-[1.02] mt-6">
+        <h1 className="font-serif text-[30px] leading-[1.02] mt-6 pr-24">
           <SplitWords text={TITLES[a.kind]} />
         </h1>
       </div>

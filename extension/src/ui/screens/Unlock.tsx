@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { call } from '../api';
-import { Button, ErrorText, OrionMark, Rise, SplitWords, inputCls } from '../kit';
+import { Button, ErrorText, Rise, SplitWords, inputCls } from '../kit';
+import Ori from '../art/Ori';
+import { Doodles, OriScene } from '../art/Scene';
 import type { WalletView } from '../../lib/messages';
 
 export default function Unlock({ onDone, compact = false }: { onDone: (v: WalletView) => void; compact?: boolean }) {
@@ -11,7 +13,7 @@ export default function Unlock({ onDone, compact = false }: { onDone: (v: Wallet
   const [shake, setShake] = useState(0);
   return (
     <form
-      className={`flex flex-col items-center text-center px-6 ${compact ? 'py-6' : 'h-full pt-16 dots'}`}
+      className={`relative flex flex-col items-center text-center px-6 ${compact ? 'py-6' : 'h-full pt-8 dots'}`}
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);
@@ -26,8 +28,13 @@ export default function Unlock({ onDone, compact = false }: { onDone: (v: Wallet
         }
       }}
     >
-      <OrionMark className={compact ? 'w-10 h-10' : 'w-14 h-14'} animate />
-      <h1 className={`font-serif ${compact ? 'text-[26px] mt-4' : 'text-[36px] mt-6'} leading-none`}>
+      {!compact && <Doodles />}
+      {compact ? (
+        <Ori size={96} prop="key" mood={error ? 'worried' : 'happy'} />
+      ) : (
+        <OriScene size={190} prop="key" mood={error ? 'worried' : 'excited'} splat="#dbe7ff" seed={4} />
+      )}
+      <h1 className={`font-serif ${compact ? 'text-[26px] mt-2' : 'text-[36px] mt-2'} leading-none`}>
         <SplitWords text="Welcome back" delay={0.2} />
       </h1>
       <Rise delay={0.4} className="w-full">

@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { Globe, Unplug } from 'lucide-react';
 import { call } from '../api';
 import { Button, FamilyTile, ago } from '../kit';
+import { OriScene } from '../art/Scene';
 import type { Permission } from '../../lib/store';
 
 export default function Sites() {
@@ -15,7 +16,8 @@ export default function Sites() {
       <h1 className="font-serif text-[28px] leading-none">Connected sites</h1>
       <p className="text-[12px] text-muted mt-2 leading-relaxed">Sites can see your address on the chains listed and ask you to sign. They can never sign without your approval.</p>
       {list && list.length === 0 && (
-        <div className="mt-5 rounded-[16px] border border-dashed border-line-strong py-8 text-center">
+        <div className="mt-5 rounded-[16px] border-2 border-dashed border-line-strong pt-2 pb-6 text-center">
+          <OriScene size={150} prop="telescope" mood="excited" splat="#e4dcff" seed={21} />
           <p className="font-serif text-[18px]">No sites yet</p>
           <p className="text-[12px] text-muted mt-1">When a dapp asks to connect, it will appear here.</p>
         </div>

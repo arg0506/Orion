@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion, useReducedMotion } from 'motion/react';
 import { Check, Copy, Loader2, Wallet, Sun, Sparkles } from 'lucide-react';
 import { ORION_RING_PATH, ORION_STAR_PATHS } from '../ui-logo';
+import { FamilyLogo } from './art/ChainLogo';
 import type { Family } from '../lib/networks';
 
 export const cx = (...c: (string | false | null | undefined)[]) => c.filter(Boolean).join(' ');
@@ -51,10 +52,9 @@ export const FAMILY_TILE: Record<Family, { bg: string; fg: string; label: string
 };
 
 export function FamilyTile({ family, size = 28 }: { family: Family; size?: number }) {
-  const t = FAMILY_TILE[family];
   return (
-    <span className="tile shrink-0" style={{ width: size, height: size, background: t.bg, color: t.fg, borderRadius: size * 0.32 }}>
-      {t.glyph}
+    <span className="tile shrink-0 bg-white" style={{ width: size, height: size, borderRadius: size * 0.32 }}>
+      <FamilyLogo family={family} size={size * 0.74} />
     </span>
   );
 }
