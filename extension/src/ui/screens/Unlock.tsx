@@ -13,7 +13,7 @@ export default function Unlock({ onDone, compact = false }: { onDone: (v: Wallet
   const [shake, setShake] = useState(0);
   return (
     <form
-      className={`relative flex flex-col items-center text-center px-6 ${compact ? 'py-6' : 'h-full pt-8 dots'}`}
+      className={`relative isolate flex flex-col items-center text-center px-6 ${compact ? 'py-6' : 'h-full pt-8 dots'}`}
       onSubmit={async (e) => {
         e.preventDefault();
         setBusy(true);

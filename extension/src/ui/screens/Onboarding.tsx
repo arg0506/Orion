@@ -17,7 +17,7 @@ export default function Onboarding({ onDone }: { onDone: (v: WalletView) => void
 
   const go = (s: Step) => setStep(s);
   return (
-    <div className="relative h-full flex flex-col dots">
+    <div className="relative isolate h-full flex flex-col dots">
       <Doodles />
       <AnimatePresence mode="wait">
         <motion.div key={step} className="flex-1 flex flex-col" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.3, ease }}>

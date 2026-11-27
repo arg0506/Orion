@@ -60,7 +60,7 @@ export default function Approval() {
   const danger = (a.kind === 'sendTransaction' && d.simulation && !d.simulation.ok) || d.call?.warn || net?.kind === 'mainnet';
 
   return (
-    <div className="relative h-full flex flex-col dots">
+    <div className="relative isolate h-full flex flex-col dots">
       <Doodles />
       <motion.div className="absolute right-3 top-[52px] z-10" initial={{ x: 60, rotate: 25 }} animate={{ x: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 140, damping: 12, delay: 0.2 }}>
         <Ori

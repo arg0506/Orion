@@ -152,7 +152,7 @@ export function Doodles({ className }: { className?: string }) {
     { x: '88%', y: '80%', k: 'star', r: 6, s: 0.8 },
   ];
   return (
-    <div className={`pointer-events-none absolute inset-0 opacity-70 ${className ?? ''}`} aria-hidden="true">
+    <div className={`pointer-events-none absolute inset-0 -z-10 opacity-70 ${className ?? ''}`} aria-hidden="true">
       {items.map((it, i) => (
         <motion.svg
           key={i}
