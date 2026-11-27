@@ -378,6 +378,19 @@ npm run dev`}</Code>
             />
           </Section>
 
+          {/* ── Sites ── */}
+          <Section id="sites" eyebrow="Using Orion" title="Sites & approvals">
+            <P>A site must connect before it can see your address. Connecting is per chain family: connecting a site for EVM doesn't share your Solana or Stellar address.</P>
+            <P>Every signature or transaction opens an approval window showing the requesting site (taken from the browser, not the page), the network, and a plain-language summary:</P>
+            <UL>
+              <li><strong>EVM transactions</strong> show the amount, recipient, decoded ERC-20 <C>transfer</C> / <C>approve</C> and <C>setApprovalForAll</C> calls, the maximum fee and a simulation result.</li>
+              <li><strong>Solana transactions</strong> list SOL transfers, the instruction count and every program involved.</li>
+              <li><strong>Stellar transactions</strong> list each operation, destination and amount, the memo, fee and network.</li>
+              <li><strong>Messages</strong> are shown as text when readable, otherwise as hex.</li>
+            </UL>
+            <P>Closing the window rejects the request. You can see and disconnect sites from the <strong>Sites</strong> tab.</P>
+          </Section>
+
       </div>
     </div>
   );
