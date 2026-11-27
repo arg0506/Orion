@@ -327,6 +327,25 @@ npm run dev`}</Code>
             <P>Dapps can add EVM networks with <C>wallet_addEthereumChain</C> (you approve each one) and switch between known ones with <C>wallet_switchEthereumChain</C>.</P>
           </Section>
 
+          {/* ── Sending ── */}
+          <Section id="sending" eyebrow="Using Orion" title="Sending">
+            <P>Every send form has a <strong>Fast</strong> / <strong>Normal</strong> switch. Fast is the default.</P>
+            <Table
+              head={['Chain', 'Fast', 'Normal']}
+              rows={[
+                ['EVM', 'EIP-1559 with 2× the suggested priority fee; usually lands in the next block', 'Suggested priority fee'],
+                ['Solana', '75th-percentile recent priority fee (min 10,000 µlamports/CU), rebroadcast every 2.5 s', 'Median recent priority fee'],
+                ['Stellar', '90th-percentile fee, 30-second time bound', 'Median fee, 2-minute time bound'],
+              ]}
+            />
+            <H3>Chain rules Orion handles for you</H3>
+            <UL>
+              <li><strong>Stellar:</strong> paying a brand-new address uses <C>createAccount</C> (minimum 1 XLM); memos are limited to 28 bytes; the account's minimum balance is kept back.</li>
+              <li><strong>Solana:</strong> a transfer to a new address must cover the rent-exempt minimum, or Orion stops you before signing.</li>
+              <li><strong>EVM:</strong> gas is estimated and padded by 20%; the nonce comes from the pending block so back-to-back sends don't collide.</li>
+            </UL>
+          </Section>
+
       </div>
     </div>
   );
