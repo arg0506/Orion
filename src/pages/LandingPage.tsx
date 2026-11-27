@@ -93,31 +93,19 @@ export function HeroArt({ className }: { className?: string }) {
 
 function Reveal({ children, delay = 0, className, y = 28 }: { key?: React.Key; children: React.ReactNode; delay?: number; className?: string; y?: number }) {
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.8, ease, delay }}
-    >
+    <motion.div className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8, ease, delay }}>
       {children}
     </motion.div>
   );
 }
 
-function SplitHeadline({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+function SplitHeadline({ text, delay = 0 }: { text: string; delay?: number }) {
   const words = text.split(' ');
   return (
-    <span className={className} aria-label={text}>
+    <span aria-label={text}>
       {words.map((w, i) => (
         <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.08em] -mb-[0.08em]" aria-hidden="true">
-          <motion.span
-            className="inline-block"
-            initial={{ y: '105%' }}
-            whileInView={{ y: '0%' }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.9, ease, delay: delay + i * 0.08 }}
-          >
+          <motion.span className="inline-block" initial={{ y: '105%' }} whileInView={{ y: '0%' }} viewport={{ once: true }} transition={{ duration: 0.9, ease, delay: delay + i * 0.08 }}>
             {w}
             {i < words.length - 1 ? ' ' : ''}
           </motion.span>
@@ -127,20 +115,18 @@ function SplitHeadline({ text, className, delay = 0 }: { text: string; className
   );
 }
 
-/** Paragraph whose words darken one by one as it scrolls through the viewport. */
 function ScrollInk({ text }: { text: string }) {
   const ref = useRef<HTMLParagraphElement | null>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] });
   const words = text.split(' ');
   return (
-    <p ref={ref} className="font-serif text-[30px] sm:text-[44px] lg:text-[52px] leading-[1.12] tracking-[-0.01em] text-[#141414]">
+    <p ref={ref} className="font-serif text-[30px] sm:text-[44px] lg:text-[52px] leading-[1.12] tracking-[-0.01em]">
       {words.map((w, i) => (
         <InkWord key={i} word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
       ))}
     </p>
   );
 }
-
 function InkWord({ word, progress, range }: { key?: React.Key; word: string; progress: MotionValue<number>; range: [number, number] }) {
   const opacity = useTransform(progress, range, [0.16, 1]);
   return (
@@ -150,22 +136,10 @@ function InkWord({ word, progress, range }: { key?: React.Key; word: string; pro
   );
 }
 
-function CountUp({ to, decimals = 2 }: { to: number; decimals?: number }) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const inView = useInView(ref, { once: true });
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, to, { duration: 1.8, ease, onUpdate: setV });
-    return () => controls.stop();
-  }, [inView, to]);
-  return <span ref={ref}>{v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function Label({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
   return (
     <Reveal y={12}>
-      <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
+      <p className={cx('flex items-center gap-2 text-[13px] text-[#6b6a66]', center && 'justify-center')}>
         <Belt className="w-5 text-[#141414]" />
         {children}
       </p>
@@ -173,27 +147,98 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AnimatedMark({ className, delay = 0, inView = false }: { className?: string; delay?: number; inView?: boolean }) {
+  const reduced = !!useReducedMotion();
+  const trigger = inView ? 'whileInView' : 'animate';
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+      <motion.path d={ORION_RING_PATH} fill="currentColor" fillRule="evenodd" style={{ transformOrigin: '50px 50px' }}
+        initial={reduced ? false : { scale: 0.6, opacity: 0, rotate: -40 }} {...{ [trigger]: { scale: 1, opacity: 1, rotate: 0 } }} viewport={{ once: true }} transition={{ delay, duration: 0.9, ease }} />
+      {ORION_STAR_PATHS.map((d, i) => (
+        <motion.path key={i} d={d} fill="currentColor" style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+          initial={reduced ? false : { scale: 0, opacity: 0, x: -8, y: 8 }} {...{ [trigger]: { scale: 1, opacity: 1, x: 0, y: 0 } }} viewport={{ once: true }}
+          transition={{ delay: delay + 0.45 + i * 0.14, type: 'spring', stiffness: 260, damping: 14 }} />
+      ))}
+    </svg>
+  );
+}
+
+function CodeBlock({ code, lang }: { code: string; lang?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <div className="relative rounded-[18px] bg-[#141414] text-[#eceae4] overflow-hidden">
+      <div className="flex items-center justify-between px-4 h-10 border-b border-white/10 text-[12px] text-white/50">
+        <span className="font-mono">{lang}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(code);
+            setDone(true);
+            setTimeout(() => setDone(false), 1200);
+          }}
+          className="inline-flex items-center gap-1.5 hover:text-white"
+        >
+          {done ? <Check size={13} /> : <Copy size={13} />}
+          {done ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className="p-4 sm:p-5 text-[13px] leading-relaxed font-mono overflow-x-auto">{code}</pre>
+    </div>
+  );
+}
+
+/* ───────────────────────── content ───────────────────────── */
+
+const CHAINS: { family: Family; name: string; nets: string; standard: string; path: string }[] = [
+  { family: 'evm', name: 'Ethereum & EVM', nets: 'Sepolia, Base, Arbitrum and OP Sepolia, Anvil / Hardhat, custom chains', standard: 'EIP-1193 + EIP-6963', path: "m/44'/60'/0'/0/0" },
+  { family: 'solana', name: 'Solana', nets: 'Devnet, Testnet, solana-test-validator', standard: 'Wallet Standard', path: "m/44'/501'/0'/0'" },
+  { family: 'stellar', name: 'Stellar', nets: 'Testnet, Quickstart (local)', standard: 'SEP-43 + SEP-53', path: "m/44'/148'/0'" },
+];
+
+const SNIPPETS: Record<Family, { lang: string; code: string }> = {
+  evm: {
+    lang: 'EIP-6963 · works with wagmi, RainbowKit, Web3Modal',
+    code: `window.addEventListener('eip6963:announceProvider', (e) => {
+  if (e.detail.info.rdns === 'app.orion.wallet') {
+    const orion = e.detail.provider;
+    orion.request({ method: 'eth_requestAccounts' });
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));`,
+  },
+  solana: {
+    lang: 'Wallet Standard · nothing to install',
+    code: `// Orion registers itself through the Wallet Standard, so
+// @solana/wallet-adapter lists it as "Orion" automatically.
+const { wallets } = useWallet();
+const orion = wallets.find((w) => w.adapter.name === 'Orion');
+await orion.adapter.connect();`,
+  },
+  stellar: {
+    lang: 'SEP-43 · errors are returned, not thrown',
+    code: `const { address } = await window.orion.stellar.getAddress();
+const { networkPassphrase } = await window.orion.stellar.getNetwork();
+const { signedTxXdr, error } = await window.orion.stellar
+  .signTransaction(xdr, { networkPassphrase });`,
+  },
+};
+
+const TOOLS = [
+  { icon: Server, title: 'Local nodes, one click', body: 'Anvil / Hardhat on :8545, solana-test-validator on :8899, Stellar Quickstart on :8000. Orion tells you when a node is down.' },
+  { icon: Droplets, title: 'Faucets built in', body: 'Friendbot for Stellar, airdrops on Solana devnet, and anvil_setBalance on local EVM. Links for public EVM testnets.' },
+  { icon: FlaskConical, title: 'Simulated before you sign', body: 'EVM transactions run through eth_estimateGas first. Reverts, unlimited approvals and setApprovalForAll are called out.' },
+  { icon: ScrollText, title: 'Request log', body: 'Every call a dapp made, with params, result, errors and timing. The fastest way to debug a wallet integration.' },
+  { icon: Network, title: 'Custom chains', body: 'Dapps can add and switch EVM chains with wallet_addEthereumChain. Mainnets stay hidden until you turn them on.' },
+  { icon: ShieldCheck, title: 'Honest by default', body: 'No fake balances, no simulated wallets. If a node is unreachable, Orion says so.' },
+];
+
 /* ───────────────────────── page ───────────────────────── */
-
-const FEATURES = [
-  { tile: TILES[2], title: 'Payments that follow the rules', body: "Orion knows Stellar's minimum balance, fees and 28-byte memo limit, and creates the account for you when you pay a brand-new address." },
-  { tile: TILES[5], title: 'Activity, as it happens', body: 'History streams straight from Horizon. Incoming payments appear, and your balance updates, the moment they land.' },
-  { tile: TILES[0], title: 'A watchlist for any address', body: "Track wallets you don't control, like a team treasury or a judge's account, with totals at a glance." },
-  { tile: { ...TILES[3], icon: ShieldCheck }, title: 'Safe by default', body: 'Keys stay in Freighter or MetaMask. Sending is blocked on the wrong network, and errors are shown, never papered over.' },
-];
-
-const STEPS = [
-  { title: 'Connect Freighter', body: 'Orion asks for your public address. Your secret key never leaves the extension.' },
-  { title: 'Fund with Friendbot', body: "New addresses don't exist until they hold 1 XLM. One click brings 10,000 test XLM." },
-  { title: 'Send and watch it land', body: 'Pick an address and amount, approve in Freighter, and see it on the ledger seconds later.' },
-];
 
 export default function LandingPage() {
   const reduced = !!useReducedMotion();
   const { scrollY } = useScroll();
   const navShadow = useTransform(scrollY, [0, 80], ['0 0 0 rgba(0,0,0,0)', '0 8px 30px -12px rgba(0,0,0,0.25)']);
   const heroArtY = useTransform(scrollY, [0, 700], [0, reduced ? 0 : -60]);
-
+  const [tab, setTab] = useState<Family>('evm');
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   return (
@@ -204,7 +249,7 @@ export default function LandingPage() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.7, ease }}
         style={{ boxShadow: navShadow }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-2 py-1.5 border border-black/[0.04]"
+        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-1.5 py-1.5 border border-black/[0.04]"
         aria-label="Main"
       >
         <Link to="/" aria-label="Orion home" className="h-8 pl-1.5 pr-2.5 flex items-center gap-1.5 rounded-lg hover:bg-black/5">
