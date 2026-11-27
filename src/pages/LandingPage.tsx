@@ -400,59 +400,74 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───────── Playground marquee ───────── */}
-      <section className="py-20 sm:py-28 border-y border-black/[0.06] overflow-hidden">
-        <div className="flex whitespace-nowrap" aria-hidden="true">
-          <motion.div
-            className="flex shrink-0 font-serif text-[64px] sm:text-[110px] leading-none tracking-[-0.02em]"
-            animate={reduced ? undefined : { x: ['0%', '-50%'] }}
-            transition={{ duration: 38, repeat: Infinity, ease: 'linear' }}
-          >
-            {[0, 1].map((k) => (
-              <span key={k} className="flex shrink-0">
-                {['Soroban', 'Freighter', 'Horizon', 'Friendbot', 'XLM', 'Testnet'].map((w, i) => (
-                  <span key={w} className={cx('px-6 sm:px-10 flex items-center gap-6 sm:gap-10', i % 2 ? 'text-transparent [-webkit-text-stroke:1.5px_#141414]' : '')}>
-                    {w}
-                    <Belt className="w-10 sm:w-16 text-[#141414]" />
-                  </span>
-                ))}
-              </span>
+      {/* ───────── Preview ───────── */}
+      <section className="px-5 py-28 sm:py-40 overflow-hidden">
+        <div className="max-w-5xl mx-auto text-center">
+          <Label center>The extension</Label>
+          <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em]">
+            <SplitHeadline text="Ink on paper, in your toolbar." />
+          </h2>
+          <div className="relative mt-16 h-[440px] sm:h-[520px]">
+            {[
+              { src: '/screens/04-home-local.png', rot: -9, x: '-118%', d: 0.1 },
+              { src: '/screens/05-pending.png', rot: 0, x: '-50%', d: 0 },
+              { src: '/screens/07-cancelled.png', rot: 9, x: '18%', d: 0.2 },
+            ].map((s, i) => (
+              <motion.img
+                key={s.src}
+                src={s.src}
+                alt={['The wallet on a local chain', 'A pending payment with Speed up and Cancel', 'The cancellation confirmed'][i]}
+                className="absolute left-1/2 top-0 w-[240px] sm:w-[300px] rounded-[22px] border border-[#e4e2dc] shadow-[0_40px_80px_-40px_rgba(20,20,20,0.45)] bg-white"
+                style={{ zIndex: i === 1 ? 2 : 1 }}
+                initial={{ x: '-50%', rotate: 0, y: 60, opacity: 0 }}
+                whileInView={{ x: s.x, rotate: s.rot, y: i === 1 ? 0 : 30, opacity: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 1.1, ease, delay: s.d }}
+              />
             ))}
-          </motion.div>
-        </div>
-        <Reveal className="max-w-5xl mx-auto px-5 mt-14 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="max-w-xl">
-            <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
-              <FlaskConical size={15} /> Playground
-            </p>
-            <p className="mt-3 font-serif text-[28px] sm:text-[34px] leading-tight">See how a smart contract goes from code to deploy.</p>
-            <p className="mt-3 text-[15px] text-[#5a5955] leading-relaxed">
-              Step through Soroban and Solidity templates, contract calls, events and a CI pipeline. It's a guided simulation in your browser, so nothing is deployed.
-            </p>
           </div>
-          <Link to="/developer" className="shrink-0 inline-flex items-center gap-2 h-11 px-5 rounded-[12px] border border-[#141414] text-[15px] font-medium hover:bg-[#141414] hover:text-white transition-colors">
-            Open playground <ArrowRight size={15} />
-          </Link>
-        </Reveal>
+        </div>
       </section>
 
       {/* ───────── Final CTA ───────── */}
-      <FinalCta />
+      <section className="relative px-5 py-32 sm:py-44 text-center overflow-hidden border-t border-black/[0.06]">
+        <div className="absolute left-[6%] top-16 opacity-60 hidden md:block">
+          <Constellation size={170} />
+        </div>
+        <div className="absolute right-[8%] bottom-14 opacity-90 hidden md:block">
+          <Stipple kind="crescent" size={120} seed={5} />
+        </div>
+        <div className="relative">
+          <AnimatedMark className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-10 text-[#141414]" inView />
+          <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
+            <SplitHeadline text="Look up," />
+            <br />
+            <SplitHeadline text="then ship." delay={0.2} />
+          </h2>
+          <Reveal delay={0.4}>
+            <p className="mt-6 text-[16px] text-[#5a5955]">Open source. Testnet-first. Free.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link to="/docs?s=install" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium hover:bg-black transition-colors">
+                <Puzzle size={17} /> Get the extension
+              </Link>
+              <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
+                <Github size={17} /> View source
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       <footer className="px-5 pb-10">
         <div className="max-w-5xl mx-auto pt-8 border-t border-black/[0.06] flex flex-col sm:flex-row gap-4 justify-between text-[13px] text-[#6b6a66]">
           <span className="flex items-center gap-2">
-            <AnimatedMark className="w-5 h-5 text-[#141414]" inView /> Orion · Built by Arpan Roy · Test networks only, tokens have no real value
+            <AnimatedMark className="w-5 h-5 text-[#141414]" inView /> Orion · Built by Arpan Roy · Not audited, testnets first
           </span>
-          <span className="flex gap-5">
+          <span className="flex flex-wrap gap-5">
+            <Link to="/docs" className="hover:text-[#141414]">Docs</Link>
+            <Link to="/terminal" className="hover:text-[#141414]">Web dashboard</Link>
             <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-[#141414] inline-flex items-center gap-1">
               <Github size={14} /> GitHub
-            </a>
-            <a href="https://developers.stellar.org" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
-              Stellar docs
-            </a>
-            <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
-              Get Freighter
             </a>
           </span>
         </div>
@@ -461,17 +476,32 @@ export default function LandingPage() {
   );
 }
 
-function HowItWorks() {
-  // Three steps = Orion's three belt stars, joined by a line that draws as you scroll in
-  const pts = [
-    { x: 60, y: 120 },
-    { x: 500, y: 80 },
-    { x: 940, y: 40 },
+/** The cancel race, drawn as a timeline: the replacement overtakes the original and lands first. */
+function CancelStory() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { margin: '-120px' });
+  const reduced = !!useReducedMotion();
+  const [cycle, setCycle] = useState(0);
+  useEffect(() => {
+    if (!inView || reduced) return;
+    const id = setInterval(() => setCycle((c) => c + 1), 5200);
+    return () => clearInterval(id);
+  }, [inView, reduced]);
+  const run = inView || reduced;
+
+  const rows = [
+    { chain: 'EVM', speed: 'Same nonce, fees up 12.5%+', cancel: '0-value self-transfer on the same nonce' },
+    { chain: 'Stellar', speed: 'Fee-bump transaction at 10x', cancel: 'Same-sequence no-op at 10x the fee' },
+    { chain: 'Solana', speed: 'Priority fee + rebroadcast', cancel: "Can't be cancelled: Orion shows when its blockhash expires" },
   ];
+
   return (
-    <section className="px-5 py-28 sm:py-40 bg-[#efede8]">
+    <section className="px-5 py-28 sm:py-40 bg-[#141414] text-[#f6f5f2]">
       <div className="max-w-5xl mx-auto">
-        <SectionLabel>How it works</SectionLabel>
+        <p className="flex items-center gap-2 text-[13px] text-white/50">
+          <Belt className="w-5 text-white" />
+          Fast, and reversible where the chain allows
+        </p>
         <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
           <SplitHeadline text="Three stars to your first payment." />
         </h2>
