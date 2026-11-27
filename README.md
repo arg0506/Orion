@@ -203,3 +203,12 @@ REQUIRE_LOCAL_NODE=1 npm test
 python3 e2e/e2e.py          # needs Python Playwright and a Chromium that allows --load-extension
 ```
 
+## Roadmap
+
+- Multiple accounts per chain and hardware wallets
+- Token balances (ERC-20, SPL, Stellar assets)
+- Soroban `signAuthEntry` and WalletConnect pairing
+- NEAR and more chains
+- Firefox build and a Chrome Web Store release
+- An independent security audit
+
