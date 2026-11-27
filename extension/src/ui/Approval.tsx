@@ -4,8 +4,7 @@ import { AlertTriangle, CheckCircle2, Clock, Zap } from 'lucide-react';
 import { call } from './api';
 import { Badge, Button, Card, FamilyTile, OrionMark, Rise, SplitWords, cx, fmt, short } from './kit';
 import Unlock from './screens/Unlock';
-import Ori from './art/Ori';
-import { Doodles } from './art/Scene';
+import { Annotation, Astrolabe, Orrery, Stipple } from './art/Engraving';
 import type { Approval as A, WalletView } from '../lib/messages';
 
 const TITLES: Record<A['kind'], string> = {
@@ -61,15 +60,9 @@ export default function Approval() {
 
   return (
     <div className="relative isolate h-full flex flex-col dots">
-      <Doodles />
-      <motion.div className="absolute right-3 top-[52px] z-10" initial={{ x: 60, rotate: 25 }} animate={{ x: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 140, damping: 12, delay: 0.2 }}>
-        <Ori
-          size={84}
-          shadow={false}
-          pose={a.kind === 'connect' ? 'wave' : 'stand'}
-          mood={danger ? 'worried' : a.kind === 'connect' ? 'excited' : 'focused'}
-          prop={a.kind === 'connect' ? null : a.kind === 'addChain' ? 'telescope' : 'magnifier'}
-        />
+      <motion.div className="absolute right-3 top-[56px] z-10 flex flex-col items-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.15 }}>
+        {danger ? <Stipple kind="eclipse" size={84} seed={13} /> : a.kind === 'connect' ? <Orrery size={78} families={[a.family]} period={10} /> : a.kind === 'addChain' ? <Stipple kind="ringed" size={84} seed={5} /> : <Astrolabe size={80} />}
+        {danger && <Annotation tone="bad">check carefully</Annotation>}
       </motion.div>
       <div className="relative px-5 pt-5">
         <div className="flex items-center gap-2.5">
@@ -83,7 +76,7 @@ export default function Approval() {
             {net && <Badge tone={net.kind === 'mainnet' ? 'bad' : net.kind === 'local' ? 'info' : 'ok'} dot>{net.name}</Badge>}
           </span>
         </div>
-        <h1 className="font-serif text-[30px] leading-[1.02] mt-6 pr-24">
+        <h1 className="font-serif text-[30px] leading-[1.02] mt-6 pr-[100px]">
           <SplitWords text={TITLES[a.kind]} />
         </h1>
       </div>
