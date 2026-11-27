@@ -1,24 +1,72 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Syne:wght@700;800&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
-  --font-display: "Syne", "Space Grotesk", sans-serif;
+  --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Instrument Sans Variable", sans-serif;
+
+  /* Orion palette — the night sky and its two brightest stars */
+  --color-night: #0b0e1a;     /* page background */
+  --color-deep: #121729;      /* raised surfaces */
+  --color-deeper: #0f1322;    /* inset surfaces / inputs */
+  --color-line: #232a42;      /* borders */
+  --color-line-strong: #343d5c;
+  --color-mist: #8a93b2;      /* secondary text */
+  --color-haze: #5f6886;      /* tertiary text */
+  --color-starlight: #eef1fa; /* primary text */
+  --color-rigel: #8fc1ff;     /* blue-white supergiant: primary, incoming */
+  --color-rigel-deep: #4d8ff0;
+  --color-betel: #ff8a5b;     /* red supergiant: outgoing, attention */
+  --color-ok: #5bd6a0;
+  --color-bad: #ff6b7a;
+  --color-warn: #f5c35b;
 }
 
-/* Metallic Black & Silver Color Theme */
+html { color-scheme: dark; }
+
+body {
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "ss01", "cv11";
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rigel);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}
+
+.num { font-variant-numeric: tabular-nums; }
+
+/* Night-sky backdrop: a few faint stars over a deep indigo gradient */
+.orion-sky {
+  background-color: var(--color-night);
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgba(238,241,250,0.55) 100%, transparent),
+    radial-gradient(1px 1px at 78% 9%, rgba(143,193,255,0.6) 100%, transparent),
+    radial-gradient(1.5px 1.5px at 64% 72%, rgba(238,241,250,0.35) 100%, transparent),
+    radial-gradient(1px 1px at 33% 88%, rgba(255,138,91,0.45) 100%, transparent),
+    radial-gradient(1px 1px at 90% 54%, rgba(238,241,250,0.3) 100%, transparent),
+    radial-gradient(ellipse 80% 60% at 85% -10%, rgba(77,143,240,0.10), transparent 70%),
+    radial-gradient(ellipse 60% 50% at -10% 110%, rgba(255,138,91,0.06), transparent 70%);
+  background-attachment: fixed;
+}
+
+/* Legacy theme (landing page / developer playground) */
 .immersive-bg {
-  background-color: #000000 !important;
+  background-color: var(--color-night) !important;
 }
 
 body, html, #root {
-  background-color: #000000 !important;
+  background-color: var(--color-night) !important;
 }
 
 /* Stardust starry space-like background */
 .space-stardust {
-  background-color: #000000 !important;
+  background-color: var(--color-night) !important;
   background-image: 
     radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.95) 100%, transparent),
     radial-gradient(1.5px 1.5px at 60px 70px, rgba(255, 255, 255, 0.85) 100%, transparent),
@@ -92,23 +140,16 @@ body, html, #root {
 
 /* Metallic button sheen effect */
 .btn-metallic {
-  background: linear-gradient(135deg, #ffffff 0%, #e4e4e7 50%, #a1a1aa 100%);
-  color: #000000;
+  background: var(--color-rigel);
+  color: var(--color-night);
   font-weight: 600;
-  letter-spacing: 0.1em;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 
-    0 4px 12px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.4);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(143, 193, 255, 0.4);
+  box-shadow: 0 8px 24px -8px rgba(143, 193, 255, 0.5);
+  transition: background 0.15s ease;
 }
 
 .btn-metallic:hover {
-  background: linear-gradient(135deg, #f4f4f5 0%, #d4d4d8 50%, #71717a 100%);
-  transform: translateY(-2px);
-  box-shadow: 
-    0 8px 20px rgba(255, 255, 255, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  background: #a9d0ff;
 }
 
 /* Pure monochrome cyber glow */
@@ -141,7 +182,7 @@ body, html, #root {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #000000;
+  background: var(--color-night);
 }
 ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.15);

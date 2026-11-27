@@ -1,356 +1,219 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, Outlet, Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { Wallet, Eye, FlaskConical, LogOut, X, Cloud, ExternalLink, Loader2 } from 'lucide-react';
 import { useWallet } from '../context/WalletContext';
 import { useAuth } from '../context/AuthContext';
 import AuthScreen from './AuthScreen';
-import { motion, AnimatePresence } from 'motion/react';
-import { Wallet, Activity, AlertTriangle, ExternalLink, Compass, Monitor, LogOut, Loader2, Code } from 'lucide-react';
-import orionLogo from '../assets/images/orion_logo_1783011957450.jpg';
+import { Belt, Badge, Button, Logo, cx, shortAddress } from './ui';
+
+const NAV = [
+  { to: '/terminal', label: 'Wallet', icon: Wallet },
+  { to: '/monitor', label: 'Watchlist', icon: Eye },
+  { to: '/developer', label: 'Playground', icon: FlaskConical },
+];
 
 export default function Layout() {
   const { wallet, connect, disconnect } = useWallet();
-  const { user, loading, logout } = useAuth();
+  const { user, logout } = useAuth();
   const location = useLocation();
+  const [authOpen, setAuthOpen] = useState(false);
 
-  const shortenAddress = (addr: string) => {
-    return `${addr.slice(0, 6)}...${addr.slice(-6)}`;
-  };
+  // Close the sign-in sheet as soon as sign-in succeeds
+  React.useEffect(() => {
+    if (user) setAuthOpen(false);
+  }, [user]);
+
+  const connecting = wallet.status === 'connecting';
 
   return (
-    <div className="min-h-screen text-zinc-100 immersive-bg space-stardust font-sans flex flex-col md:flex-row relative overflow-hidden selection:bg-white selection:text-black">
-      
-      {/* Subtle Monochrome Ambient Halo (Deep Silver Glow) */}
-      <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-white/[0.03] rounded-full blur-[140px] pointer-events-none z-0"></div>
-      <div className="absolute bottom-[-100px] left-[-100px] w-[400px] h-[400px] bg-zinc-800/[0.04] rounded-full blur-[120px] pointer-events-none z-0"></div>
+    <div className="min-h-screen orion-sky text-starlight font-sans flex">
+      {/* Sidebar (desktop) */}
+      <aside className="hidden md:flex w-64 shrink-0 flex-col border-r border-line bg-night/70 backdrop-blur-md sticky top-0 h-screen p-5">
+        <Link to="/" className="mb-8 px-1" aria-label="Orion home">
+          <Logo />
+        </Link>
 
-      {/* Sidebar Nav (Desktop Only) with rich silver borders & blur */}
-      <aside className="hidden md:flex w-72 border-r border-zinc-800/80 bg-black/90 backdrop-blur-3xl flex-col p-7 shrink-0 z-10 justify-between">
-        <div className="space-y-10">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 hover:opacity-80 transition-all active:scale-98">
-            <img 
-              src={orionLogo} 
-              alt="Orion Logo" 
-              className="w-9 h-9 rounded-full border border-zinc-500 object-cover shadow-[0_0_12px_rgba(255,255,255,0.2)]"
-              referrerPolicy="no-referrer"
-            />
-            <span className="text-lg font-extrabold tracking-widest text-white font-display uppercase">
-              ORION<span className="text-zinc-500 font-light ml-0.5"> TERMINAL</span>
-            </span>
-          </Link>
-
-          {/* Navigation Links with custom high contrast styling */}
-          <nav className="space-y-2 font-mono text-xs uppercase tracking-widest">
+        <nav className="space-y-1" aria-label="Main">
+          {NAV.map(({ to, label, icon: Icon }) => (
             <NavLink
-              to="/"
+              key={to}
+              to={to}
               className={({ isActive }) =>
-                `flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl font-bold transition-all ${
-                  isActive
-                    ? 'bg-zinc-100 text-black shadow-[0_4px_15px_rgba(255,255,255,0.15)] scale-[1.02]'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`
+                cx(
+                  'group flex items-center gap-3 h-11 px-3 rounded-xl text-[15px] font-medium transition-colors',
+                  isActive ? 'bg-deep text-starlight border border-line' : 'text-mist hover:text-starlight hover:bg-white/[0.03] border border-transparent'
+                )
               }
             >
-              <Compass className="w-4 h-4 shrink-0" />
-              <span>Portal Home</span>
+              {({ isActive }) => (
+                <>
+                  <Icon size={18} className={isActive ? 'text-rigel' : ''} />
+                  <span className="flex-1">{label}</span>
+                  {isActive && <Belt className="w-5 text-rigel" />}
+                </>
+              )}
             </NavLink>
+          ))}
+        </nav>
 
-            <NavLink
-              to="/terminal"
-              className={({ isActive }) =>
-                `flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl font-bold transition-all ${
-                  isActive
-                    ? 'bg-zinc-100 text-black shadow-[0_4px_15px_rgba(255,255,255,0.15)] scale-[1.02]'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`
-              }
-            >
-              <Activity className="w-4 h-4 shrink-0" />
-              <span>Dashboard</span>
-            </NavLink>
-            
-            <NavLink
-              to="/monitor"
-              className={({ isActive }) =>
-                `flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl font-bold transition-all ${
-                  isActive
-                    ? 'bg-zinc-100 text-black shadow-[0_4px_15px_rgba(255,255,255,0.15)] scale-[1.02]'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`
-              }
-            >
-              <Monitor className="w-4 h-4 shrink-0" />
-              <span>Multi-Monitor</span>
-            </NavLink>
-
-            <NavLink
-              to="/developer"
-              className={({ isActive }) =>
-                `flex items-center gap-3.5 px-4.5 py-3.5 rounded-2xl font-bold transition-all ${
-                  isActive
-                    ? 'bg-zinc-100 text-black shadow-[0_4px_15px_rgba(255,255,255,0.15)] scale-[1.02]'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent'
-                }`
-              }
-            >
-              <Code className="w-4 h-4 shrink-0" />
-              <span>Developer Hub</span>
-            </NavLink>
-          </nav>
-        </div>
-
-        {/* Sidebar Footer Indicators */}
-        <div className="space-y-4">
-          {/* Firebase User Indicator */}
-          {user && (
-            <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 space-y-2.5 font-mono">
-              <div className="flex items-center justify-between">
-                <span className="text-[8px] font-black uppercase tracking-widest text-zinc-500">VOYAGER ID</span>
-                <button
-                  onClick={logout}
-                  className="text-[9px] text-zinc-300 hover:text-white hover:underline uppercase tracking-wider font-bold cursor-pointer"
-                  title="Sign out of Firebase Auth"
-                >
-                  LOGOUT
-                </button>
-              </div>
-              <div className="space-y-0.5">
-                <p className="text-[11px] text-zinc-200 font-bold truncate">{user.displayName || 'Pilot Voyager'}</p>
-                <p className="text-[8px] text-zinc-500 truncate">{user.email || 'Anonymous Session'}</p>
-              </div>
-            </div>
-          )}
-
-          {/* Wallet connection indicator */}
-          <div className="p-4 rounded-2xl bg-zinc-950/60 border border-zinc-900 space-y-2 font-mono">
-            <div className="flex items-center gap-2">
-              <div className={`w-1.5 h-1.5 rounded-full ${wallet.isConnected ? 'bg-zinc-100 animate-ping' : 'bg-zinc-700'}`}></div>
-              <span className="text-[9px] font-black uppercase tracking-widest text-zinc-200">
-                {wallet.isConnected ? (wallet.walletType === 'metamask' ? 'EVM_CONNECTED' : 'SDF_CONNECTED') : 'OFFLINE'}
-              </span>
-            </div>
-            {wallet.isConnected && wallet.publicKey ? (
-              <p className="text-[9px] text-zinc-400 font-mono break-all leading-normal">
-                <span className="text-[8px] text-zinc-500 block font-bold uppercase tracking-wider mb-0.5">
-                  {wallet.walletType === 'metamask' ? 'METAMASK:' : 'STELLAR:'}
-                </span>
-                {shortenAddress(wallet.publicKey)}
-              </p>
-            ) : (
-              <p className="text-[9px] text-zinc-500 font-mono leading-normal">NO ACTIVE SESSION</p>
-            )}
-          </div>
+        <div className="mt-auto space-y-3">
+          <AccountPanel onSignIn={() => setAuthOpen(true)} />
+          <p className="px-1 text-[12px] text-haze flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-warn" />
+            Test networks only. Tokens have no real value.
+          </p>
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 z-10">
-        
-        {/* Top Header */}
-        <header className="h-20 border-b border-zinc-800/80 flex items-center justify-between px-6 lg:px-8 bg-black/70 backdrop-blur-3xl">
-          {/* Mobile Brand / Welcome Message */}
-          <div className="flex items-center gap-3 md:gap-0">
-            {/* Mobile-only logo */}
-            <Link to="/" className="flex md:hidden items-center gap-2 mr-4 hover:opacity-85 transition-opacity">
-              <img 
-                src={orionLogo} 
-                alt="Orion Logo" 
-                className="w-8 h-8 rounded-full border border-zinc-500 object-cover shadow-[0_0_10px_rgba(255,255,255,0.25)]"
-                referrerPolicy="no-referrer"
-              />
-              <span className="text-sm font-extrabold tracking-widest text-white font-display uppercase">
-                ORION<span className="text-zinc-500 font-light ml-0.5"> TERMINAL</span>
+      <div className="flex-1 min-w-0 flex flex-col">
+        {/* Top bar */}
+        <header className="sticky top-0 z-30 h-16 border-b border-line bg-night/80 backdrop-blur-md flex items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+          <Link to="/" className="md:hidden" aria-label="Orion home">
+            <Logo />
+          </Link>
+          <div className="hidden md:block" />
+
+          {wallet.isConnected && wallet.publicKey ? (
+            <div className="flex items-center gap-2">
+              <span className="hidden sm:inline-flex">
+                <Badge tone={wallet.networkOk ? 'ok' : 'warning'} dot>
+                  {wallet.walletType === 'metamask' ? 'MetaMask' : 'Freighter'} · {wallet.network}
+                </Badge>
               </span>
-            </Link>
-
-            <div className="hidden sm:block font-mono">
-              <h1 className="text-[8px] font-black text-zinc-500 uppercase tracking-widest mb-0.5">GATEWAY SECURED</h1>
-              <p className="text-xs font-bold text-white uppercase tracking-widest truncate max-w-[200px]">
-                {user ? `PILOT: ${(user.displayName || user.email?.split('@')[0] || 'VOYAGER').toUpperCase()}` : 'PILOT: GUEST'}
-              </p>
-            </div>
-          </div>
-
-          {/* Right Header Controls */}
-          <div className="flex items-center gap-4">
-            {wallet.isConnected && wallet.publicKey ? (
-              <div className="flex items-center gap-3">
-                <div className="hidden sm:flex flex-col items-end font-mono">
-                  <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-bold">
-                    {wallet.walletType === 'metamask' ? 'EVM AGENT' : 'SDF AGENT'}
-                  </span>
-                  <span className="text-[10px] text-zinc-300 flex items-center gap-1.5 font-bold">
-                    CONNECTED <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-                  </span>
-                </div>
-                
-                {/* Public Key Display */}
-                <div className="px-3.5 py-2 rounded-xl bg-white/5 border border-zinc-800 text-xs font-mono text-zinc-300">
-                  {shortenAddress(wallet.publicKey)}
-                </div>
-
-                {/* Disconnect Button */}
-                <button
-                  onClick={disconnect}
-                  className="p-2.5 rounded-xl bg-white/5 border border-zinc-800 hover:bg-white/10 hover:border-zinc-700 text-zinc-400 hover:text-white transition-all cursor-pointer"
-                  title="Disconnect Session"
-                >
-                  <LogOut size={14} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 sm:gap-2.5">
-                <button
-                  id="connect-freighter-btn"
-                  onClick={() => connect('freighter')}
-                  className="flex items-center gap-1 px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-zinc-100 hover:bg-white text-black text-[9px] sm:text-[10px] font-mono font-bold tracking-widest uppercase transition-all cursor-pointer shadow-md"
-                >
-                  <Wallet size={11} />
-                  <span className="hidden sm:inline">FREIGHTER</span>
-                  <span className="sm:hidden">SDF</span>
-                </button>
-                <button
-                  id="connect-metamask-btn"
-                  onClick={() => connect('metamask')}
-                  className="flex items-center gap-1 px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-full bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-white text-[9px] sm:text-[10px] font-mono font-bold tracking-widest uppercase transition-all cursor-pointer"
-                >
-                  <Wallet size={11} />
-                  <span className="hidden sm:inline">METAMASK</span>
-                  <span className="sm:hidden">EVM</span>
-                </button>
-              </div>
-            )}
-          </div>
-        </header>
-
-        {/* Mobile Nav Bar */}
-        <div className="md:hidden flex items-center justify-around border-b border-zinc-800/80 bg-black/95 py-3 z-10 font-mono text-xs uppercase tracking-widest">
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              `flex items-center gap-1 px-2 py-1.5 rounded-full transition-all text-[10px] ${
-                isActive ? 'text-black bg-zinc-100 border border-zinc-200' : 'text-zinc-400'
-              }`
-            }
-          >
-            <Compass className="w-3.5 h-3.5" />
-            Home
-          </NavLink>
-          <NavLink
-            to="/terminal"
-            className={({ isActive }) =>
-              `flex items-center gap-1 px-2 py-1.5 rounded-full transition-all text-[10px] ${
-                isActive ? 'text-black bg-zinc-100 border border-zinc-200' : 'text-zinc-400'
-              }`
-            }
-          >
-            <Activity className="w-3.5 h-3.5" />
-            Dashboard
-          </NavLink>
-          <NavLink
-            to="/monitor"
-            className={({ isActive }) =>
-              `flex items-center gap-1 px-2 py-1.5 rounded-full transition-all text-[10px] ${
-                isActive ? 'text-black bg-zinc-100 border border-zinc-200' : 'text-zinc-400'
-              }`
-            }
-          >
-            <Monitor className="w-3.5 h-3.5" />
-            Monitor
-          </NavLink>
-          <NavLink
-            to="/developer"
-            className={({ isActive }) =>
-              `flex items-center gap-1 px-2 py-1.5 rounded-full transition-all text-[10px] ${
-                isActive ? 'text-black bg-zinc-100 border border-zinc-200' : 'text-zinc-400'
-              }`
-            }
-          >
-            <Code className="w-3.5 h-3.5" />
-            Dev
-          </NavLink>
-        </div>
-
-        {/* Main Content Viewport */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-8 z-10 flex flex-col justify-start relative">
-          {loading ? (
-            <div className="flex-1 flex flex-col items-center justify-center py-24 font-mono text-zinc-500 text-xs">
-              <Loader2 className="w-8 h-8 animate-spin text-white mb-3" />
-              <span>SYNCHRONIZING VOYAGER SECURE GATEWAY...</span>
-            </div>
-          ) : !user ? (
-            <div className="flex-1 flex items-center justify-center py-10">
-              <AuthScreen />
+              <span className="h-9 px-3 rounded-xl bg-deep border border-line font-mono text-[13px] text-starlight flex items-center">
+                {shortAddress(wallet.publicKey, 4, 4)}
+              </span>
+              <Button variant="ghost" size="sm" onClick={disconnect} aria-label="Disconnect wallet" icon={<LogOut size={16} />}>
+                <span className="hidden lg:inline">Disconnect</span>
+              </Button>
             </div>
           ) : (
-            <>
-              {/* Extension Warning Banner (Stark Gray instead of Amber) */}
-              {!wallet.isInstalled && (
-                <div className="mb-8 p-5 rounded-2xl border border-zinc-800 bg-zinc-950/40 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 backdrop-blur-md">
-                  <div className="flex items-start gap-3">
-                    <AlertTriangle className="text-zinc-400 shrink-0 mt-0.5 animate-pulse" size={18} />
-                    <div className="font-mono">
-                      <h4 className="font-bold text-xs text-white uppercase tracking-widest font-display">Wallet Connection Pre-Requisite</h4>
-                      <p className="text-[11px] text-zinc-400 mt-1 leading-relaxed">
-                        A secure cryptographic extension is required to transmit signed transaction payloads. You may monitor on-chain addresses read-only, but injecting transactions demands Freighter or MetaMask.
-                      </p>
-                    </div>
-                  </div>
-                  <a
-                    href="https://www.freighter.app/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="inline-flex items-center gap-1.5 px-4 py-2 text-[9px] font-mono font-bold rounded-full bg-zinc-100 hover:bg-white text-black transition-all shrink-0 self-start md:self-center shadow-md"
-                  >
-                    INSTALL EXTENSION
-                    <ExternalLink size={10} />
-                  </a>
-                </div>
-              )}
-
-              {/* Animated Route Viewport Transition */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={location.pathname}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4, cubicBezier: [0.16, 1, 0.3, 1] }}
-                  className="flex-1 flex flex-col"
-                >
-                  <Outlet />
-                </motion.div>
-              </AnimatePresence>
-            </>
+            <Button variant="primary" size="sm" loading={connecting} onClick={() => connect('freighter')} icon={<Wallet size={15} />}>
+              Connect wallet
+            </Button>
           )}
+        </header>
+
+        <main className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pb-28 md:pb-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
+            >
+              <Outlet context={{ openSignIn: () => setAuthOpen(true) }} />
+            </motion.div>
+          </AnimatePresence>
         </main>
 
-        {/* Universal Footer */}
-        <footer className="border-t border-zinc-900 bg-black/60 py-6 px-6 lg:px-8 text-[9px] text-zinc-500 font-mono flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="uppercase tracking-widest">© 2026 ORION COSMIC TERMINAL LOGS. MONOCHROME EDITION.</p>
-          <div className="flex items-center gap-4 text-zinc-400">
-            <a
-              href="https://horizon-testnet.stellar.org"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-white flex items-center gap-1 transition-colors"
-            >
-              Horizon Node
-              <ExternalLink size={8} />
+        <footer className="hidden md:flex border-t border-line px-8 py-5 text-[13px] text-haze items-center justify-between">
+          <span>Orion · Stellar testnet wallet</span>
+          <span className="flex items-center gap-4">
+            <a className="hover:text-starlight inline-flex items-center gap-1" href="https://stellar.expert/explorer/testnet" target="_blank" rel="noreferrer">
+              Explorer <ExternalLink size={12} />
             </a>
-            <span>•</span>
-            <a
-              href="https://stellar.org"
-              target="_blank"
-              rel="noreferrer"
-              className="hover:text-white flex items-center gap-1 transition-colors"
-            >
-              Stellar Network
-              <ExternalLink size={8} />
+            <a className="hover:text-starlight inline-flex items-center gap-1" href="https://developers.stellar.org" target="_blank" rel="noreferrer">
+              Stellar docs <ExternalLink size={12} />
             </a>
-          </div>
+          </span>
         </footer>
       </div>
+
+      {/* Bottom tabs (mobile) */}
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 border-t border-line bg-night/95 backdrop-blur-md grid grid-cols-4 pb-[env(safe-area-inset-bottom)]" aria-label="Main">
+        {NAV.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            className={({ isActive }) => cx('flex flex-col items-center justify-center gap-1 h-16 text-[12px] font-medium', isActive ? 'text-rigel' : 'text-mist')}
+          >
+            <Icon size={20} />
+            {label}
+          </NavLink>
+        ))}
+        <button
+          onClick={() => (user ? logout() : setAuthOpen(true))}
+          className="flex flex-col items-center justify-center gap-1 h-16 text-[12px] font-medium text-mist"
+        >
+          <Cloud size={20} className={user ? 'text-ok' : ''} />
+          {user ? 'Sign out' : 'Sync'}
+        </button>
+      </nav>
+
+      {/* Sign-in sheet */}
+      <AnimatePresence>
+        {authOpen && (
+          <motion.div
+            className="fixed inset-0 z-50 bg-night/80 backdrop-blur-sm grid place-items-end sm:place-items-center p-0 sm:p-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setAuthOpen(false)}
+          >
+            <motion.div
+              role="dialog"
+              aria-modal="true"
+              aria-label="Sign in"
+              className="relative w-full sm:max-w-md"
+              initial={{ y: 24 }}
+              animate={{ y: 0 }}
+              exit={{ y: 24 }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                onClick={() => setAuthOpen(false)}
+                className="absolute right-4 top-4 z-10 p-2 rounded-lg text-mist hover:text-starlight hover:bg-white/5"
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+              <AuthScreen />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function AccountPanel({ onSignIn }: { onSignIn: () => void }) {
+  const { user, loading, logout } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="rounded-xl border border-line bg-deep/60 p-3.5 text-sm text-mist flex items-center gap-2">
+        <Loader2 size={14} className="animate-spin" /> Checking sign-in…
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="rounded-xl border border-line bg-deep/60 p-3.5">
+        <p className="text-sm font-medium text-starlight">Not signed in</p>
+        <p className="text-[13px] text-mist mt-0.5 leading-snug">Your watchlist and receipts are saved in this browser only.</p>
+        <Button size="sm" className="mt-3 w-full" icon={<Cloud size={14} />} onClick={onSignIn}>
+          Sign in to sync
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-line bg-deep/60 p-3.5 flex items-center gap-3">
+      <span className="w-8 h-8 rounded-full bg-rigel/15 text-rigel grid place-items-center text-sm font-semibold shrink-0">
+        {(user.displayName || user.email || 'G').charAt(0).toUpperCase()}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium text-starlight truncate">{user.displayName || (user.isAnonymous ? 'Guest' : user.email)}</p>
+        <p className="text-[12px] text-ok">Syncing</p>
+      </div>
+      <button onClick={logout} className="p-2 rounded-lg text-mist hover:text-starlight hover:bg-white/5" aria-label="Sign out" title="Sign out">
+        <LogOut size={15} />
+      </button>
     </div>
   );
 }
