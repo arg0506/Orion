@@ -1,12 +1,29 @@
-import React, { useState } from 'react';
-import { useWallet, isIFrame } from '../context/WalletContext';
-import { buildPaymentTransaction, submitSignedTransaction, isValidAddress } from '../services/stellar';
+import React, { useEffect, useState } from 'react';
 import { signTransaction } from '@stellar/freighter-api';
-import { useTransactionHistory } from '../hooks/useTransactionHistory';
 import { motion, AnimatePresence } from 'motion/react';
-import { Send, RefreshCw, CheckCircle2, AlertTriangle, ExternalLink, X, Copy, QrCode } from 'lucide-react';
+import { ArrowUpRight, CheckCircle2, ExternalLink, QrCode, X, XCircle, UserPlus } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { useWallet } from '../context/WalletContext';
+import {
+  accountExists,
+  buildPaymentTransaction,
+  isValidAddress,
+  memoByteLength,
+  MEMO_MAX_BYTES,
+  NETWORK_PASSPHRASE,
+  spendableBalance,
+  submitSignedTransaction,
+} from '../services/stellar';
+import { useTransactionHistory } from '../hooks/useTransactionHistory';
 import { AddressQRCodeScanner } from './QRCodeUtility';
+import { Badge, Button, Card, CardHeader, CopyButton, Field, Mono, formatAmount, inputClass, shortAddress } from './ui';
+
+const EVM_GAS_BUFFER = 0.0005;
+const isValidEVMAddress = (a: string) => /^0x[a-fA-F0-9]{40}$/.test(a);
+
+type Outcome =
+  | { status: 'success'; hash: string; ledger?: number; amount: string; recipient: string; createdAccount?: boolean }
+  | { status: 'failed'; reason: string };
 
 export default function SendTransactionForm() {
   const { wallet, account, refreshAccount } = useWallet();
@@ -16,540 +33,299 @@ export default function SendTransactionForm() {
   const [amount, setAmount] = useState('');
   const [memo, setMemo] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [isScannerOpen, setIsScannerOpen] = useState(false);
+  const [step, setStep] = useState<string>('');
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [touched, setTouched] = useState({ recipient: false, amount: false });
+  const [recipientIsNew, setRecipientIsNew] = useState<boolean | null>(null);
+  const [outcome, setOutcome] = useState<Outcome | null>(null);
 
-  // Validation states
-  const [recipientError, setRecipientError] = useState('');
-  const [amountError, setAmountError] = useState('');
+  const isEvm = wallet.walletType === 'metamask';
+  const symbol = isEvm ? 'ETH' : 'XLM';
+  const balance = account ? parseFloat(account.xlmBalance) : 0;
+  const maxSendable = isEvm ? Math.max(0, balance - EVM_GAS_BUFFER) : spendableBalance(balance, account?.subentryCount ?? 0);
+  const cleanRecipient = recipient.trim();
+  const memoBytes = memoByteLength(memo.trim());
 
-  // Transaction outcome states
-  const [outcome, setOutcome] = useState<{
-    status: 'success' | 'failed';
-    hash?: string;
-    ledger?: number;
-    errorReason?: string;
-    amountSent?: string;
-    recipientAddr?: string;
-    timestamp?: string;
-  } | null>(null);
+  // Validation (pure, recomputed every render)
+  let recipientError = '';
+  if (cleanRecipient) {
+    if (isEvm ? !isValidEVMAddress(cleanRecipient) : !isValidAddress(cleanRecipient)) {
+      recipientError = isEvm ? 'Enter a valid Ethereum address (0x…, 42 characters).' : 'Enter a valid Stellar address (starts with G, 56 characters).';
+    } else if (wallet.publicKey && cleanRecipient.toLowerCase() === wallet.publicKey.toLowerCase()) {
+      recipientError = 'This is your own address.';
+    }
+  }
 
-  const isValidEVMAddress = (address: string) => {
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  let amountError = '';
+  const amt = parseFloat(amount);
+  if (amount.trim()) {
+    if (isNaN(amt) || amt <= 0) amountError = 'Enter an amount greater than 0.';
+    else if (!isEvm && /\.\d{8,}$/.test(amount.trim())) amountError = 'Stellar supports up to 7 decimal places.';
+    else if (account && amt > maxSendable)
+      amountError = isEvm
+        ? `You can send up to ${formatAmount(maxSendable, 6)} ETH (a little is kept for gas).`
+        : `You can send up to ${formatAmount(maxSendable)} XLM. The rest is the minimum balance your account must keep.`;
+    else if (!isEvm && recipientIsNew && amt < 1) amountError = 'This address is new, so you need to send at least 1 XLM to create it.';
+  }
+
+  const memoError = memoBytes > MEMO_MAX_BYTES ? `Memo is ${memoBytes} bytes. Stellar allows ${MEMO_MAX_BYTES}.` : '';
+
+  // Check whether a Stellar recipient already exists (debounced)
+  useEffect(() => {
+    setRecipientIsNew(null);
+    if (isEvm || !isValidAddress(cleanRecipient)) return;
+    let live = true;
+    const id = setTimeout(() => {
+      accountExists(cleanRecipient)
+        .then((exists) => live && setRecipientIsNew(!exists))
+        .catch(() => {});
+    }, 350);
+    return () => {
+      live = false;
+      clearTimeout(id);
+    };
+  }, [cleanRecipient, isEvm]);
+
+  const blocked = !wallet.networkOk || !account || (!isEvm && !account.exists);
+  const canSubmit = !blocked && !isSending && cleanRecipient && amount.trim() && !recipientError && !amountError && !memoError;
+
+  const reset = () => {
+    setRecipient('');
+    setAmount('');
+    setMemo('');
+    setTouched({ recipient: false, amount: false });
   };
 
-  const handleRecipientChange = (val: string) => {
-    setRecipient(val);
-    if (!val.trim()) {
-      setRecipientError('');
-      return;
-    }
-
-    const isMetaMask = wallet.walletType === 'metamask';
-    if (isMetaMask) {
-      if (!isValidEVMAddress(val.trim())) {
-        setRecipientError('Invalid Ethereum address format (0x...).');
-      } else if (wallet.publicKey && val.trim().toLowerCase() === wallet.publicKey.toLowerCase()) {
-        setRecipientError('Cannot send ETH to your own address.');
-      } else {
-        setRecipientError('');
-      }
-    } else {
-      if (!isValidAddress(val.trim())) {
-        setRecipientError('Invalid Stellar G-address format.');
-      } else if (wallet.publicKey && val.trim().toLowerCase() === wallet.publicKey.toLowerCase()) {
-        setRecipientError('Cannot send XLM to your own address.');
-      } else {
-        setRecipientError('');
-      }
-    }
-  };
-
-  const handleAmountChange = (val: string) => {
-    setAmount(val);
-    if (!val.trim()) {
-      setAmountError('');
-      return;
-    }
-    const amt = parseFloat(val);
-    if (isNaN(amt) || amt <= 0) {
-      setAmountError('Amount must be greater than 0.');
-      return;
-    }
-
-    const symbol = wallet.walletType === 'metamask' ? 'ETH' : 'XLM';
-
-    if (account) {
-      const balance = parseFloat(account.xlmBalance);
-      if (amt >= balance) {
-        setAmountError(`Sufficient balance is required. Your balance: ${account.xlmBalance} ${symbol}`);
-      } else {
-        setAmountError('');
-      }
-    } else {
-      setAmountError('');
-    }
-  };
-
-  const handleSendXLM = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!wallet.publicKey) {
-      toast.error('Connect your wallet first.');
-      return;
-    }
-
-    const cleanRecipient = recipient.trim();
-    const cleanAmount = amount.trim();
-    const cleanMemo = memo.trim();
-
-    // Re-validate fields
-    const isMetaMask = wallet.walletType === 'metamask';
-    if (isMetaMask) {
-      if (!cleanRecipient || !isValidEVMAddress(cleanRecipient)) {
-        setRecipientError('A valid Ethereum recipient address is required.');
-        return;
-      }
-    } else {
-      if (!cleanRecipient || !isValidAddress(cleanRecipient)) {
-        setRecipientError('A valid recipient address is required.');
-        return;
-      }
-    }
-
-    if (cleanRecipient.toLowerCase() === wallet.publicKey.toLowerCase()) {
-      setRecipientError('Cannot send to yourself.');
-      return;
-    }
-
-    const parsedAmt = parseFloat(cleanAmount);
-    if (!cleanAmount || isNaN(parsedAmt) || parsedAmt <= 0) {
-      setAmountError('A valid amount greater than 0 is required.');
-      return;
-    }
-
-    const symbol = isMetaMask ? 'ETH' : 'XLM';
-
-    if (account && parsedAmt >= parseFloat(account.xlmBalance)) {
-      setAmountError(`Sufficient balance is required. Your balance: ${account.xlmBalance} ${symbol}`);
-      return;
-    }
+  const send = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    setTouched({ recipient: true, amount: true });
+    if (!canSubmit || !wallet.publicKey) return;
 
     setIsSending(true);
     setOutcome(null);
+    const cleanMemo = memo.trim();
 
-    if (isMetaMask) {
-      const progressToast = toast.loading('Initiating MetaMask transaction...');
-      try {
-        const isSimulated = !(typeof window !== 'undefined' && (window as any).ethereum) || wallet.publicKey?.startsWith('0xSIM_');
-        
-        if (isSimulated) {
-          // Simulate standard transaction latency
-          await new Promise(resolve => setTimeout(resolve, 1500));
-          
-          const mockHash = '0x' + Array.from({length: 64}, () => Math.floor(Math.random()*16).toString(16)).join('');
-          
-          // Deduct from simulated balance
-          const currentBal = account ? parseFloat(account.xlmBalance) : 100;
-          const newBal = Math.max(0, currentBal - parsedAmt - 0.0001);
-          localStorage.setItem('sim_eth_balance', newBal.toFixed(4));
-          
-          addTransaction({
-            hash: mockHash,
-            sender: wallet.publicKey || '0xSIM_f39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
-            recipient: cleanRecipient,
-            amount: cleanAmount,
-            memo: cleanMemo || 'Simulated MetaMask Transfer',
-            status: 'success',
-            ledger: 0,
-          });
-
-          setOutcome({
-            status: 'success',
-            hash: mockHash,
-            amountSent: cleanAmount,
-            recipientAddr: cleanRecipient,
-            timestamp: new Date().toISOString(),
-          });
-
-          toast.success('Simulated MetaMask transaction sent successfully!', { id: progressToast });
-          setRecipient('');
-          setAmount('');
-          setMemo('');
-          refreshAccount();
-        } else {
-          const provider = (window as any).ethereum;
-          // Format values for EVM eth_sendTransaction
-          const valueWei = '0x' + Math.floor(parsedAmt * 1e18).toString(16);
-          
-          const txHash = await provider.request({
-            method: 'eth_sendTransaction',
-            params: [{
-              from: wallet.publicKey,
-              to: cleanRecipient,
-              value: valueWei,
-            }]
-          });
-
-          addTransaction({
-            hash: txHash,
-            sender: wallet.publicKey!,
-            recipient: cleanRecipient,
-            amount: cleanAmount,
-            memo: cleanMemo || 'MetaMask Transfer',
-            status: 'success',
-            ledger: 0,
-          });
-
-          setOutcome({
-            status: 'success',
-            hash: txHash,
-            amountSent: cleanAmount,
-            recipientAddr: cleanRecipient,
-            timestamp: new Date().toISOString(),
-          });
-
-          toast.success('MetaMask transaction sent successfully!', { id: progressToast });
-          setRecipient('');
-          setAmount('');
-          setMemo('');
-          refreshAccount();
-        }
-      } catch (err: any) {
-        console.error('MetaMask submission failed:', err);
-        toast.error('MetaMask transaction failed.', { id: progressToast });
-        setOutcome({
-          status: 'failed',
-          errorReason: err.message || 'Transaction rejected by user or failed on-chain.',
+    try {
+      if (isEvm) {
+        setStep('Confirm in MetaMask…');
+        const provider = (window as any).ethereum;
+        // Convert via gwei to avoid floating-point overflow in wei
+        const valueWeiHex = '0x' + (BigInt(Math.round(amt * 1e9)) * 10n ** 9n).toString(16);
+        const hash: string = await provider.request({
+          method: 'eth_sendTransaction',
+          params: [{ from: wallet.publicKey, to: cleanRecipient, value: valueWeiHex }],
         });
-      } finally {
-        setIsSending(false);
-      }
-    } else {
-      const progressToast = toast.loading('Building transaction...');
-      try {
-        // Step 1: Build the transaction envelope
-        toast.loading('Preparing transaction envelope...', { id: progressToast });
-        const transactionXDR = await buildPaymentTransaction({
+        await addTransaction({ hash, sender: wallet.publicKey, recipient: cleanRecipient, amount: amount.trim(), memo: cleanMemo, status: 'success' });
+        setOutcome({ status: 'success', hash, amount: amount.trim(), recipient: cleanRecipient });
+        toast.success('Sent. Waiting for Sepolia to confirm.');
+      } else {
+        setStep('Preparing transaction…');
+        const { xdr, createsAccount } = await buildPaymentTransaction({
           senderPublicKey: wallet.publicKey,
           recipientAddress: cleanRecipient,
-          amount: cleanAmount,
+          amount: amount.trim(),
           memo: cleanMemo,
         });
 
-        // Step 2: Request signature from Freighter wallet
-        toast.loading('Requesting Freighter signature...', { id: progressToast });
-        let signedXDR: string;
-        try {
-          const signRes = await signTransaction(transactionXDR, {
-            networkPassphrase: 'Test SDF Network ; September 2015',
-          });
-          if (signRes.error) {
-            throw new Error(signRes.error);
-          }
-          signedXDR = signRes.signedTxXdr;
-        } catch (signErr: any) {
-          console.error('Signing rejected:', signErr);
-          throw new Error(signErr.message || 'Transaction signing rejected by Freighter wallet.');
-        }
+        setStep('Approve in Freighter…');
+        const signed = await signTransaction(xdr, { networkPassphrase: NETWORK_PASSPHRASE, address: wallet.publicKey });
+        if (signed.error) throw new Error(signed.error.message || 'You declined the request in Freighter.');
+        if (!signed.signedTxXdr) throw new Error('Freighter did not return a signed transaction.');
 
-        if (!signedXDR) {
-          throw new Error('Freighter failed to return a signed transaction.');
-        }
-
-        // Step 3: Submit signed transaction to Stellar Testnet
-        toast.loading('Submitting transaction to Stellar Testnet...', { id: progressToast });
-        const submitResult = await submitSignedTransaction(signedXDR);
-
-        // Log transaction history
-        addTransaction({
-          hash: submitResult.hash,
+        setStep('Submitting to the testnet…');
+        const res = await submitSignedTransaction(signed.signedTxXdr);
+        await addTransaction({
+          hash: res.hash,
           sender: wallet.publicKey,
           recipient: cleanRecipient,
-          amount: cleanAmount,
+          amount: amount.trim(),
           memo: cleanMemo,
           status: 'success',
-          ledger: submitResult.ledger,
+          ledger: res.ledger,
         });
-
-        // Success state
-        setOutcome({
-          status: 'success',
-          hash: submitResult.hash,
-          ledger: submitResult.ledger,
-          amountSent: cleanAmount,
-          recipientAddr: cleanRecipient,
-          timestamp: new Date().toISOString(),
-        });
-
-        toast.success('Transaction submitted successfully!', { id: progressToast });
-        setRecipient('');
-        setAmount('');
-        setMemo('');
-        refreshAccount();
-      } catch (err: any) {
-        console.error('Submission failed:', err);
-        toast.error('Transaction failed on-chain', { id: progressToast });
-        setOutcome({
-          status: 'failed',
-          errorReason: err.message || 'Unknown network error occurred during broadcast.',
-        });
-      } finally {
-        setIsSending(false);
+        setOutcome({ status: 'success', hash: res.hash, ledger: res.ledger, amount: amount.trim(), recipient: cleanRecipient, createdAccount: createsAccount });
+        toast.success(createsAccount ? 'Account created and funded' : 'Payment sent');
       }
+      reset();
+      refreshAccount({ silent: true });
+    } catch (err: any) {
+      console.error('Send failed:', err);
+      const reason = err?.code === 4001 ? 'You declined the request in MetaMask.' : err?.message || 'The payment could not be sent.';
+      setOutcome({ status: 'failed', reason });
+      toast.error('Payment not sent');
+    } finally {
+      setIsSending(false);
+      setStep('');
     }
   };
 
-  const handleCopyHash = (hash: string) => {
-    navigator.clipboard.writeText(hash);
-    toast.success('Transaction hash copied!');
-  };
-
-  const isMetaMask = wallet.walletType === 'metamask';
-
   return (
-    <div className="p-8 sm:p-10 rounded-[28px] border border-zinc-800 bg-zinc-950/40 backdrop-blur-3xl flex flex-col relative overflow-hidden shadow-2xl font-sans hover:border-zinc-700/80 transition-all duration-300 group">
-      {/* Decorative corners */}
-      <div className="absolute top-0 left-0 w-3 h-3 border-t border-l border-zinc-700 rounded-tl group-hover:border-zinc-500 transition-colors" />
-      <div className="absolute top-0 right-0 w-3 h-3 border-t border-r border-zinc-700 rounded-tr group-hover:border-zinc-500 transition-colors" />
-      <div className="absolute bottom-0 left-0 w-3 h-3 border-b border-l border-zinc-700 rounded-bl group-hover:border-zinc-500 transition-colors" />
-      <div className="absolute bottom-0 right-0 w-3 h-3 border-b border-r border-zinc-700 rounded-br group-hover:border-zinc-500 transition-colors" />
+    <Card>
+      <CardHeader
+        title="Send"
+        description={isEvm ? 'Send Sepolia ETH to any Ethereum address.' : 'Send test XLM to any Stellar address.'}
+        action={isSending ? <Badge tone="info" dot>{step}</Badge> : undefined}
+      />
 
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2 font-mono">
-          <Send size={14} className="text-zinc-400" />
-          {isMetaMask ? 'Send EVM Payment' : 'Send Stellar Payment'}
-        </h3>
-        {isSending && (
-          <span className="flex items-center gap-1.5 text-[9px] font-mono text-white bg-white/5 border border-zinc-800 px-2.5 py-1 rounded-full uppercase tracking-wider">
-            <RefreshCw size={10} className="animate-spin" />
-            Broadcasting
-          </span>
-        )}
-      </div>
-
-      <form onSubmit={handleSendXLM} className="space-y-5">
-        {/* Recipient Input */}
-        <div className="space-y-1.5">
-          <label className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest font-mono">
-            {isMetaMask ? 'Recipient ETH Address (0x)' : 'Recipient G-Address'}
-          </label>
-          <div className="relative">
-            <input
-              type="text"
-              required
-              disabled={isSending || !wallet.publicKey}
-              value={recipient}
-              onChange={(e) => handleRecipientChange(e.target.value)}
-              placeholder={isMetaMask ? "0x... (Ethereum Address)" : "G... (Stellar Public Key)"}
-              className={`w-full bg-zinc-900/40 border rounded-xl pl-4 pr-12 py-3.5 text-xs focus:outline-none transition-all font-mono placeholder:text-zinc-700 text-white ${
-                recipientError
-                  ? 'border-rose-500/30 text-white'
-                  : 'border-zinc-800 focus:border-zinc-500'
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
-            />
-            {wallet.publicKey && (
-              <button
-                type="button"
-                onClick={() => setIsScannerOpen(true)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg border border-zinc-800 hover:border-zinc-700 hover:bg-white/5 text-zinc-400 hover:text-white transition-all cursor-pointer flex items-center justify-center bg-zinc-950/80"
-                title="Scan Address QR Code"
-              >
-                <QrCode size={14} />
-              </button>
-            )}
-          </div>
-          {recipientError && (
-            <p className="mt-1 text-[9px] font-mono text-rose-400 flex items-center gap-1 uppercase tracking-wider">
-              <AlertTriangle size={11} />
-              {recipientError}
-            </p>
-          )}
-        </div>
-
-        {/* Amount Input */}
-        <div className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <label className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest font-mono">
-              Amount
-            </label>
-            {account && (
-              <button
-                type="button"
-                onClick={() => {
-                  const maxAmt = Math.max(0, parseFloat(account.xlmBalance) - (isMetaMask ? 0.005 : 1.5));
-                  handleAmountChange(maxAmt.toFixed(4));
-                }}
-                disabled={isSending || !wallet.publicKey || parseFloat(account.xlmBalance) <= (isMetaMask ? 0.005 : 1.5)}
-                className="text-[9px] text-zinc-400 hover:text-white hover:underline disabled:opacity-50 cursor-pointer uppercase tracking-wider font-mono"
-              >
-                Use Max (~{Math.max(0, parseFloat(account.xlmBalance) - (isMetaMask ? 0.005 : 1.5)).toFixed(3)} {isMetaMask ? 'ETH' : 'XLM'})
-              </button>
-            )}
-          </div>
-          <div className="relative">
-            <input
-              type="number"
-              step="any"
-              required
-              disabled={isSending || !wallet.publicKey}
-              value={amount}
-              onChange={(e) => handleAmountChange(e.target.value)}
-              placeholder="0.00"
-              className={`w-full bg-zinc-900/40 border rounded-xl px-4 py-3.5 text-xs focus:outline-none transition-all font-mono placeholder:text-zinc-700 text-white pr-12 ${
-                amountError
-                  ? 'border-rose-500/30 text-white'
-                  : 'border-zinc-800 focus:border-zinc-500'
-              } disabled:opacity-40 disabled:cursor-not-allowed`}
-            />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[9px] font-bold text-zinc-500 tracking-widest font-mono">
-              {isMetaMask ? 'ETH' : 'XLM'}
-            </span>
-          </div>
-          {amountError && (
-            <p className="mt-1 text-[9px] font-mono text-rose-400 flex items-center gap-1 uppercase tracking-wider">
-              <AlertTriangle size={11} />
-              {amountError}
-            </p>
-          )}
-        </div>
-
-        {/* Memo Input */}
-        <div className="space-y-1.5">
-          <label className="text-[9px] text-zinc-500 uppercase font-bold tracking-widest font-mono">
-            {isMetaMask ? 'Transaction Note' : 'Memo Text'} <span className="text-zinc-600 font-sans font-normal lowercase">(optional)</span>
-          </label>
-          <input
-            type="text"
-            disabled={isSending || !wallet.publicKey}
-            value={memo}
-            onChange={(e) => setMemo(e.target.value)}
-            placeholder={isMetaMask ? "Transfer note" : "Coffee payment / Invoice ID"}
-            maxLength={28}
-            className="w-full bg-zinc-900/40 border border-zinc-800 focus:border-zinc-500 rounded-xl px-4 py-3.5 text-xs focus:outline-none transition-all font-mono placeholder:text-zinc-700 text-white"
-          />
-          <div className="flex justify-between mt-1 text-[9px] text-zinc-600 font-mono">
-            <span>Encodes in UTF-8</span>
-            <span>{memo.length}/28 chars</span>
-          </div>
-        </div>
-
-        {/* Submit Button */}
-        <button
-          type="submit"
-          disabled={isSending || !wallet.publicKey || !!recipientError || !!amountError}
-          className="w-full py-4 rounded-full btn-metallic font-bold text-xs tracking-widest disabled:opacity-30 disabled:cursor-not-allowed transition-all mt-3 cursor-pointer uppercase font-mono shadow-md"
+      <form onSubmit={send} className="space-y-5" noValidate>
+        <Field
+          label="To"
+          htmlFor="send-to"
+          error={touched.recipient ? recipientError : ''}
+          hint={
+            !recipientError && recipientIsNew ? (
+              <span className="text-warn inline-flex items-center gap-1.5">
+                <UserPlus size={13} /> New address. This payment will create the account (minimum 1 XLM).
+              </span>
+            ) : !recipientError && recipientIsNew === false ? (
+              <span className="text-ok">Active testnet account</span>
+            ) : undefined
+          }
         >
-          {isSending ? (
-            <span className="flex items-center justify-center gap-2">
-              <RefreshCw size={12} className="animate-spin" />
-              Broadcasting Shipment...
-            </span>
-          ) : (
-            'Authorize Shipment'
-          )}
-        </button>
+          <div className="relative">
+            <input
+              id="send-to"
+              className={`${inputClass(touched.recipient && !!recipientError)} font-mono text-[14px] pr-12`}
+              value={recipient}
+              disabled={isSending}
+              autoComplete="off"
+              spellCheck={false}
+              placeholder={isEvm ? '0x…' : 'G…'}
+              onChange={(e) => {
+                setRecipient(e.target.value);
+                setTouched((t) => ({ ...t, recipient: e.target.value.trim().length >= (isEvm ? 42 : 56) || t.recipient }));
+              }}
+              onBlur={() => cleanRecipient && setTouched((t) => ({ ...t, recipient: true }))}
+            />
+            <button
+              type="button"
+              onClick={() => setScannerOpen(true)}
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg text-mist hover:text-starlight hover:bg-white/5"
+              aria-label="Scan a QR code"
+              title="Scan a QR code"
+            >
+              <QrCode size={17} />
+            </button>
+          </div>
+        </Field>
 
-        {!wallet.publicKey && (
-          <p className="text-center text-[9px] text-zinc-500 uppercase tracking-widest font-mono pt-1">
-            {isMetaMask ? 'Establish a MetaMask connection to transmit payloads.' : 'Establish a Freighter connection to transmit payloads.'}
+        <Field
+          label="Amount"
+          htmlFor="send-amount"
+          error={touched.amount ? amountError : ''}
+          trailing={
+            account && maxSendable > 0 ? (
+              <button
+                type="button"
+                className="text-[13px] text-rigel hover:underline underline-offset-4 num"
+                onClick={() => {
+                  setAmount(isEvm ? maxSendable.toFixed(6) : maxSendable.toFixed(7).replace(/\.?0+$/, ''));
+                  setTouched((t) => ({ ...t, amount: true }));
+                }}
+              >
+                Max {formatAmount(maxSendable)} {symbol}
+              </button>
+            ) : undefined
+          }
+        >
+          <div className="relative">
+            <input
+              id="send-amount"
+              className={`${inputClass(touched.amount && !!amountError)} num pr-14 text-[17px] font-semibold`}
+              inputMode="decimal"
+              value={amount}
+              disabled={isSending}
+              placeholder="0.00"
+              onChange={(e) => {
+                setAmount(e.target.value.replace(',', '.'));
+                setTouched((t) => ({ ...t, amount: true }));
+              }}
+            />
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-mist">{symbol}</span>
+          </div>
+        </Field>
+
+        {!isEvm && (
+          <Field
+            label="Memo (optional)"
+            htmlFor="send-memo"
+            error={memoError}
+            hint="Some exchanges need a memo to credit your deposit."
+            trailing={<span className={`text-[13px] num ${memoBytes > MEMO_MAX_BYTES ? 'text-bad' : 'text-haze'}`}>{memoBytes}/{MEMO_MAX_BYTES} bytes</span>}
+          >
+            <input id="send-memo" className={inputClass(!!memoError)} value={memo} disabled={isSending} placeholder="e.g. Invoice 1042" onChange={(e) => setMemo(e.target.value)} />
+          </Field>
+        )}
+
+        <Button type="submit" variant="primary" size="lg" className="w-full" loading={isSending} disabled={!canSubmit} icon={!isSending ? <ArrowUpRight size={17} /> : undefined}>
+          {isSending ? step : amount && !amountError && cleanRecipient && !recipientError ? `Send ${formatAmount(amount)} ${symbol}` : 'Send'}
+        </Button>
+
+        {blocked && (
+          <p className="text-[13px] text-mist text-center">
+            {!wallet.networkOk
+              ? 'Sending is paused until your wallet is on the right test network.'
+              : !account
+                ? 'Waiting for your balance to load.'
+                : 'Fund your account with Friendbot before sending.'}
           </p>
         )}
       </form>
 
-      {/* Outcome Banner */}
       <AnimatePresence>
         {outcome && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="mt-6 p-6 rounded-2xl border relative bg-zinc-950/60 border-zinc-800 backdrop-blur-md"
-          >
-            <button
-              onClick={() => setOutcome(null)}
-              className="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors cursor-pointer"
-            >
-              <X size={14} />
-            </button>
-
+          <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6">
             {outcome.status === 'success' ? (
-              <div className="space-y-4 font-mono">
-                <div className="flex items-center gap-2 text-white">
-                  <CheckCircle2 size={14} className="text-emerald-400" />
-                  <h4 className="font-bold text-xs tracking-widest uppercase">Shipment Transmitted</h4>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-[10px] bg-zinc-900/40 p-4 rounded-xl border border-zinc-850">
-                  <div>
-                    <span className="text-zinc-500 block mb-0.5 uppercase tracking-wider font-bold text-[8px]">SENT:</span>
-                    <span className="text-white font-bold">{outcome.amountSent} {isMetaMask ? 'ETH' : 'XLM'}</span>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500 block mb-0.5 uppercase tracking-wider font-bold text-[8px]">{isMetaMask ? 'TX STATUS:' : 'LEDGER INDEX:'}</span>
-                    <span className="text-white font-bold">{isMetaMask ? 'CONFIRMED' : (outcome.ledger || 'N/A')}</span>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="text-zinc-500 block mb-0.5 uppercase tracking-wider font-bold text-[8px]">RECIPIENT:</span>
-                    <span className="text-zinc-300 select-all truncate block font-light" title={outcome.recipientAddr}>
-                      {outcome.recipientAddr}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-2 pt-1">
-                  <button
-                    onClick={() => handleCopyHash(outcome.hash!)}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-full border border-zinc-800 bg-zinc-900/40 hover:bg-zinc-850 hover:text-white text-zinc-400 text-[10px] font-mono font-bold uppercase tracking-widest transition-all cursor-pointer"
-                  >
-                    <Copy size={11} />
-                    Copy Tx Hash
-                  </button>
+              <div className="rounded-2xl border border-ok/25 bg-ok/[0.06] p-5 relative">
+                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-mist hover:text-starlight" aria-label="Dismiss">
+                  <X size={16} />
+                </button>
+                <p className="flex items-center gap-2 font-semibold text-starlight">
+                  <CheckCircle2 size={18} className="text-ok" />
+                  {outcome.createdAccount ? 'Account created' : 'Sent'} {formatAmount(outcome.amount)} {symbol}
+                </p>
+                <p className="text-sm text-mist mt-1">
+                  to <Mono className="text-starlight">{shortAddress(outcome.recipient, 6, 6)}</Mono>
+                  {outcome.ledger ? <> · ledger <span className="num">{outcome.ledger.toLocaleString()}</span></> : null}
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2">
                   <a
-                    href={isMetaMask ? `https://sepolia.etherscan.io/tx/${outcome.hash}` : `https://stellar.expert/explorer/testnet/tx/${outcome.hash}`}
+                    href={isEvm ? `https://sepolia.etherscan.io/tx/${outcome.hash}` : `https://stellar.expert/explorer/testnet/tx/${outcome.hash}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-full btn-metallic text-[10px] font-mono font-bold uppercase tracking-widest transition-all text-center"
                   >
-                    {isMetaMask ? 'Etherscan' : 'Stellar Expert'}
-                    <ExternalLink size={10} />
+                    <Button size="sm" icon={<ExternalLink size={14} />}>
+                      View on {isEvm ? 'Etherscan' : 'Stellar Expert'}
+                    </Button>
                   </a>
+                  <CopyButton value={outcome.hash} label="Copy transaction ID" toastText="Transaction ID copied" />
                 </div>
               </div>
             ) : (
-              <div className="space-y-4 font-mono">
-                <div className="flex items-center gap-2 text-rose-400">
-                  <AlertTriangle size={14} />
-                  <h4 className="font-bold text-xs tracking-widest uppercase">Transmission Fault</h4>
-                </div>
-                <p className="text-[10px] text-zinc-400 bg-zinc-950/80 p-3.5 rounded-xl border border-rose-500/15 whitespace-pre-wrap leading-relaxed font-light">
-                  {outcome.errorReason}
+              <div className="rounded-2xl border border-bad/25 bg-bad/[0.06] p-5 relative">
+                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-mist hover:text-starlight" aria-label="Dismiss">
+                  <X size={16} />
+                </button>
+                <p className="flex items-center gap-2 font-semibold text-starlight">
+                  <XCircle size={18} className="text-bad" /> Payment not sent
                 </p>
-                <div className="pt-1">
-                  <button
-                    onClick={() => {
-                      setOutcome(null);
-                      handleSendXLM({ preventDefault: () => {} } as any);
-                    }}
-                    className="py-3 px-5 rounded-full btn-metallic font-bold text-[10px] tracking-widest uppercase transition-all cursor-pointer shadow-md"
-                  >
-                    Re-authorize Payload
-                  </button>
-                </div>
+                <p className="text-sm text-mist mt-1.5 leading-relaxed pr-6">{outcome.reason}</p>
               </div>
             )}
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* QR Code Scanner Overlay */}
       <AddressQRCodeScanner
-        isOpen={isScannerOpen}
-        onClose={() => setIsScannerOpen(false)}
-        onScanSuccess={(scannedAddr) => {
-          handleRecipientChange(scannedAddr);
-          toast.success(`Address loaded: ${scannedAddr.substring(0, 8)}...${scannedAddr.substring(scannedAddr.length - 8)}`);
+        isOpen={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onScanSuccess={(addr) => {
+          setRecipient(addr);
+          setTouched((t) => ({ ...t, recipient: true }));
+          toast.success(`Address scanned: ${shortAddress(addr, 6, 6)}`);
         }}
-        allowedTypes={isMetaMask ? 'evm' : 'stellar'}
+        allowedTypes={isEvm ? 'evm' : 'stellar'}
       />
-    </div>
+    </Card>
   );
 }
