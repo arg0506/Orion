@@ -114,3 +114,20 @@ const { signedTxXdr } = await window.orion.stellar.signTransaction(xdr, { networ
 
 The full provider reference (every supported method, event and error code) is in the [documentation](#documentation).
 
+## Documentation
+
+The website includes a complete documentation page at **`/#/docs`**, covering:
+
+- Install and quickstart
+- Accounts, networks, sending, cancel & speed-up, approvals
+- Dapp integration for each chain, with copy-paste examples
+- Full EVM, Solana and Stellar provider API reference and error codes
+- Local development with Anvil / Hardhat, solana-test-validator and Stellar Quickstart
+- Security model, architecture, testing, troubleshooting and roadmap
+
+Run the site locally with `npm install && npm run dev` from the repository root, then open `http://localhost:3000/#/docs`.
+
+<div align="center">
+<img src="docs/images/docs.png" alt="The documentation page" width="760">
+</div>
+
