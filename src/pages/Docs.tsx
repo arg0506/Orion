@@ -526,6 +526,19 @@ npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
             <P>Before an <C>eth_sendTransaction</C> approval appears, Orion runs <C>eth_estimateGas</C>. If the call would revert, the approval says "Likely to fail" with the revert reason. It also warns about unlimited ERC-20 approvals and <C>setApprovalForAll(true)</C>.</P>
           </Section>
 
+          {/* ── Security ── */}
+          <Section id="security" eyebrow="Internals" title="Security model" art={<Stipple kind="eclipse" size={120} seed={13} />}>
+            <UL>
+              <li>The recovery phrase is encrypted with PBKDF2-SHA256 (600,000 iterations) and AES-256-GCM, with a fresh salt and IV each time, and stored in <C>chrome.storage.local</C>.</li>
+              <li>While unlocked, the phrase lives only in <C>chrome.storage.session</C>, which is held in memory and never written to disk. It's cleared on lock, auto-lock and browser close.</li>
+              <li>Keys are derived and used only in the background service worker. Web pages receive addresses and signatures, never keys.</li>
+              <li>The origin of every dapp request comes from the browser's message sender, not from anything the page says.</li>
+              <li>The wallet's own API only accepts messages from Orion's extension pages; content scripts can't call it.</li>
+              <li>Every connect, signature and transaction needs explicit approval in an extension-owned window.</li>
+            </UL>
+            <Callout tone="warn" title="Not audited">Treat Orion as developer tooling for test networks until it has had an independent security review.</Callout>
+          </Section>
+
       </div>
     </div>
   );
