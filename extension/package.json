@@ -30,6 +30,7 @@
     "@wallet-standard/base": "^1.1.1",
     "@wallet-standard/features": "^1.1.1",
     "@wallet-standard/wallet": "^1.1.1",
+    "@web3icons/react": "^4.1.27",
     "@wxt-dev/module-react": "^1.2.2",
     "bs58": "^6.0.0",
     "buffer": "^6.0.3",
