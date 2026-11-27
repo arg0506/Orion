@@ -286,6 +286,17 @@ npm run dev`}</Code>
             <P>Then load <C>extension/.output/chrome-mv3</C> with <strong>Load unpacked</strong>. Orion targets Chromium browsers (Chrome, Brave, Edge, Arc).</P>
           </Section>
 
+          {/* ── Quickstart ── */}
+          <Section id="quickstart" eyebrow="Start" title="Quickstart">
+            <OL>
+              <li><strong>Create or import.</strong> Create a wallet and write down the 12-word phrase (Orion checks three words), or import an existing phrase. Set a password of at least 8 characters.</li>
+              <li><strong>Pick a chain.</strong> Use the EVM / Solana / Stellar switch at the top of the popup. Tap the network chip to change networks.</li>
+              <li><strong>Get test funds.</strong> Tap <strong>Faucet</strong>. On Stellar testnet that's Friendbot, on Solana devnet an airdrop, on a local EVM node a balance of 100 ETH.</li>
+              <li><strong>Send.</strong> Choose <em>Fast</em> or <em>Normal</em>. The transaction appears in Activity, where you can speed it up or cancel it while it's pending.</li>
+              <li><strong>Connect a dapp.</strong> Click "Connect wallet" on any EVM, Solana or Stellar dapp and pick Orion. Approve the request in the window that opens.</li>
+            </OL>
+          </Section>
+
       </div>
     </div>
   );
