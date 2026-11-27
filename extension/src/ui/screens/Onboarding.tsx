@@ -4,8 +4,7 @@ import { ArrowLeft, Eye, EyeOff, KeyRound, Plus } from 'lucide-react';
 import { generateMnemonic, validateMnemonic } from '../../lib/keyring/derive';
 import { call } from '../api';
 import { Button, ErrorText, Field, OrionMark, Rise, SplitWords, inputCls, ease } from '../kit';
-import Ori, { type Pose, type Mood, type Prop } from '../art/Ori';
-import { Doodles, OriScene } from '../art/Scene';
+import { Astrolabe, Constellation, Orrery, Stipple, type BodyKind } from '../art/Engraving';
 import type { WalletView } from '../../lib/messages';
 
 type Step = 'welcome' | 'show' | 'verify' | 'password' | 'import';
@@ -18,7 +17,6 @@ export default function Onboarding({ onDone }: { onDone: (v: WalletView) => void
   const go = (s: Step) => setStep(s);
   return (
     <div className="relative isolate h-full flex flex-col dots">
-      <Doodles />
       <AnimatePresence mode="wait">
         <motion.div key={step} className="flex-1 flex flex-col" initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -16 }} transition={{ duration: 0.3, ease }}>
           {step === 'welcome' && (
@@ -52,12 +50,12 @@ export default function Onboarding({ onDone }: { onDone: (v: WalletView) => void
   );
 }
 
-function Header({ onBack, title, sub, ori }: { onBack?: () => void; title: string; sub?: string; ori?: { pose?: Pose; mood?: Mood; prop?: Prop } }) {
+function Header({ onBack, title, sub, art }: { onBack?: () => void; title: string; sub?: string; art?: BodyKind | 'astrolabe' }) {
   return (
     <div className="relative px-5 pt-5">
-      {ori && (
-        <motion.div className="absolute right-3 top-2" initial={{ y: -20, opacity: 0, rotate: 20 }} animate={{ y: 0, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 160, damping: 11, delay: 0.25 }}>
-          <Ori size={78} shadow={false} {...ori} />
+      {art && (
+        <motion.div className="absolute right-3 top-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5, delay: 0.2 }}>
+          {art === 'astrolabe' ? <Astrolabe size={74} /> : <Stipple kind={art} size={74} seed={art.length * 5} />}
         </motion.div>
       )}
       {onBack && (
@@ -65,7 +63,7 @@ function Header({ onBack, title, sub, ori }: { onBack?: () => void; title: strin
           <ArrowLeft size={18} />
         </button>
       )}
-      <h1 className={`font-serif text-[30px] leading-[1.02] tracking-[-0.01em] ${ori ? "pr-20" : ""}`}>
+      <h1 className={`font-serif text-[30px] leading-[1.02] tracking-[-0.01em] ${art ? "pr-20" : ""}`}>
         <SplitWords text={title} />
       </h1>
       {sub && <p className="text-[13px] text-muted mt-2 leading-relaxed">{sub}</p>}
@@ -76,8 +74,9 @@ function Header({ onBack, title, sub, ori }: { onBack?: () => void; title: strin
 function Welcome({ onCreate, onImport }: { onCreate: () => void; onImport: () => void }) {
   return (
     <div className="flex-1 flex flex-col items-center text-center px-6 pt-9">
-      <motion.div initial={{ scale: 0.4, opacity: 0, rotate: -20 }} animate={{ scale: 1, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 120, damping: 11 }}>
-        <OriScene size={224} pose="wave" mood="excited" orbit seed={11} splat="#ffcfdb" />
+      <motion.div className="relative" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6 }}>
+        <div className="absolute -left-10 -top-4 opacity-50"><Constellation size={110} labels={false} /></div>
+        <Orrery size={230} seed={11} />
       </motion.div>
       <h1 className="font-serif text-[44px] leading-[0.95] mt-1 tracking-[-0.02em] flex items-center gap-2">
         <OrionMark className="w-9 h-9" animate />
@@ -103,7 +102,7 @@ function ShowPhrase({ mnemonic, onBack, onNext }: { mnemonic: string; onBack: ()
   const words = mnemonic.split(' ');
   return (
     <div className="flex-1 flex flex-col">
-      <Header onBack={onBack} ori={{ pose: 'shh', mood: 'happy' }} title="Your recovery phrase" sub="These 12 words are the only way back into your wallet on every chain. Write them down and keep them offline. Anyone with them can take your funds." />
+      <Header onBack={onBack} art="eclipse" title="Your recovery phrase" sub="These 12 words are the only way back into your wallet on every chain. Write them down and keep them offline. Anyone with them can take your funds." />
       <div className="px-5 mt-5 relative">
         <div className={`grid grid-cols-3 gap-1.5 transition ${shown ? '' : 'blur-[6px] select-none'}`}>
           {words.map((w, i) => (
@@ -141,7 +140,7 @@ function Verify({ mnemonic, onBack, onNext }: { mnemonic: string; onBack: () => 
   const ok = picks.every((i) => answers[i]?.trim().toLowerCase() === words[i]);
   return (
     <div className="flex-1 flex flex-col">
-      <Header onBack={onBack} ori={{ mood: 'focused', prop: 'magnifier' }} title="Check your phrase" sub="Type these words from your phrase to make sure you saved it." />
+      <Header onBack={onBack} art="astrolabe" title="Check your phrase" sub="Type these words from your phrase to make sure you saved it." />
       <div className="px-5 mt-5 space-y-3">
         {picks.map((i) => (
           <Field key={i} label={`Word #${i + 1}`}>
@@ -164,7 +163,7 @@ function Import({ onBack, onNext }: { onBack: () => void; onNext: (m: string) =>
   const words = text.trim().split(/\s+/).filter(Boolean).length;
   return (
     <div className="flex-1 flex flex-col">
-      <Header onBack={onBack} ori={{ mood: 'excited', prop: 'telescope' }} title="Import a wallet" sub="Paste your 12 or 24-word recovery phrase. Orion derives the same addresses as MetaMask, Phantom and Freighter." />
+      <Header onBack={onBack} art="crescent" title="Import a wallet" sub="Paste your 12 or 24-word recovery phrase. Orion derives the same addresses as MetaMask, Phantom and Freighter." />
       <div className="px-5 mt-5">
         <textarea
           className="w-full h-32 rounded-[14px] bg-card border border-line focus:border-ink focus:outline-none p-3.5 font-mono text-[13px] leading-relaxed resize-none"
@@ -208,7 +207,7 @@ function Password({ mnemonic, mode, onBack, onDone }: { mnemonic: string; mode: 
         }
       }}
     >
-      <Header onBack={onBack} ori={{ mood: 'excited', prop: 'key' }} title="Set a password" sub="It unlocks Orion on this device. It can't recover your wallet; only your phrase can." />
+      <Header onBack={onBack} art="keyhole" title="Set a password" sub="It unlocks Orion on this device. It can't recover your wallet; only your phrase can." />
       <div className="px-5 mt-5 space-y-3">
         <Field label="Password" error={short ? 'At least 8 characters' : undefined}
           trailing={<button type="button" onClick={() => setShow(!show)} className="text-subtle hover:text-ink">{show ? <EyeOff size={14} /> : <Eye size={14} />}</button>}>

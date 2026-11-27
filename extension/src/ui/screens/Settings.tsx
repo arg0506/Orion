@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, Lock, Trash2 } from 'lucide-react';
 import { call } from '../api';
 import { Button, Card, ErrorText, inputCls } from '../kit';
-import Ori from '../art/Ori';
+import { Constellation } from '../art/Engraving';
 import type { WalletView } from '../../lib/messages';
 
 export default function Settings({ view, setView }: { view: WalletView; setView: (v: WalletView) => void }) {
@@ -75,7 +75,7 @@ export default function Settings({ view, setView }: { view: WalletView; setView:
       </div>
       {confirmReset && <p className="text-[12px] text-bad leading-snug">This erases Orion from this browser. You can only get your funds back with your recovery phrase.</p>}
       <div className="flex flex-col items-center pt-2">
-        <Ori size={70} prop="rocket" mood="excited" shadow={false} />
+        <Constellation size={84} labels={false} />
         <p className="text-[11px] text-subtle text-center">Orion v0.1 · account #0 on every chain</p>
       </div>
     </div>
