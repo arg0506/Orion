@@ -503,93 +503,46 @@ function CancelStory() {
           Fast, and reversible where the chain allows
         </p>
         <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
-          <SplitHeadline text="Three stars to your first payment." />
+          <SplitHeadline text="Changed your mind? Race it." />
         </h2>
+        <Reveal delay={0.1}>
+          <p className="mt-5 text-[16px] text-white/60 max-w-2xl leading-relaxed">
+            While a payment is pending, Orion can send a replacement with a higher fee. Whichever lands first wins, and the other can never go through.
+          </p>
+        </Reveal>
 
-        <svg viewBox="0 0 1000 160" className="hidden md:block w-full mt-16 overflow-visible" aria-hidden="true">
-          <motion.path
-            d={`M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y} L${pts[2].x} ${pts[2].y}`}
-            fill="none"
-            stroke="#141414"
-            strokeWidth="1.5"
-            strokeDasharray="1 7"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true, margin: '-120px' }}
-            transition={{ duration: 1.8, ease }}
-          />
-          {pts.map((p, i) => (
-            <motion.g
-              key={i}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true, margin: '-120px' }}
-              transition={{ delay: 0.2 + i * 0.6, type: 'spring', stiffness: 200, damping: 12 }}
-              style={{ transformOrigin: `${p.x}px ${p.y}px` }}
-            >
-              <circle cx={p.x} cy={p.y} r="22" fill="#141414" opacity="0.06" />
-              <circle cx={p.x} cy={p.y} r={i === 1 ? 9 : 7} fill="#141414" />
+        <div ref={ref} className="mt-14 rounded-[24px] border border-white/10 p-6 sm:p-8">
+          <svg viewBox="0 0 800 170" className="w-full" aria-label="A pending payment overtaken by its cancellation">
+            {/* track */}
+            <line x1="40" y1="60" x2="700" y2="60" stroke="#fff" strokeOpacity="0.25" strokeDasharray="2 6" />
+            <line x1="40" y1="120" x2="700" y2="120" stroke="#fff" strokeOpacity="0.25" strokeDasharray="2 6" />
+            <line x1="720" y1="30" x2="720" y2="150" stroke="#fff" strokeWidth="1.5" />
+            <text x="730" y="96" fill="#fff" fontFamily="Gloock, Georgia, serif" fontSize="18">block</text>
+            <text x="40" y="44" fill="#fff" fillOpacity="0.6" fontSize="13">Sent 3.00 ETH · nonce 42</text>
+            <text x="40" y="150" fill="#2f6fe0" fontSize="13" fontWeight={600}>Cancel · nonce 42 · higher fee</text>
+            <motion.g key={`o-${cycle}`} initial={{ x: 0 }} animate={run ? { x: reduced ? 520 : [0, 300, 520] } : {}} transition={{ duration: 4.2, times: [0, 0.4, 1], ease: 'easeOut' }}>
+              <circle cx="60" cy="60" r="9" fill="#e8622f" />
             </motion.g>
-          ))}
-        </svg>
+            <motion.g key={`c-${cycle}`} initial={{ x: 0, opacity: 0 }} animate={run ? { x: reduced ? 660 : [0, 0, 660], opacity: [0, 1, 1] } : {}} transition={{ duration: 4.2, times: [0, 0.35, 0.8], ease: 'easeIn' }}>
+              <circle cx="60" cy="120" r="9" fill="#2f6fe0" />
+            </motion.g>
+            <motion.text key={`r-${cycle}`} x="560" y="44" fill="#e8622f" fontFamily="Gloock, Georgia, serif" fontStyle="italic" fontSize="16" initial={{ opacity: 0 }} animate={run ? { opacity: [0, 0, 1] } : {}} transition={{ duration: 4.2, times: [0, 0.82, 0.9] }}>
+              replaced
+            </motion.text>
+          </svg>
+        </div>
 
-        <ol className="mt-12 md:mt-4 grid md:grid-cols-3 gap-10">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={0.3 + i * 0.25}>
-              <li className="list-none">
-                <span className="font-serif text-[15px] text-[#6b6a66]">Step {i + 1}</span>
-                <h3 className="mt-2 font-serif text-[26px] leading-tight">{s.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#5a5955]">{s.body}</p>
-              </li>
+        <div className="mt-10 grid md:grid-cols-3 gap-px bg-white/10 rounded-[20px] overflow-hidden">
+          {rows.map((r, i) => (
+            <Reveal key={r.chain} delay={i * 0.1} className="bg-[#141414] p-6">
+              <p className="font-serif text-[24px]">{r.chain}</p>
+              <p className="mt-4 text-[12px] uppercase tracking-wide text-white/40">Speed up</p>
+              <p className="text-[14px] text-white/80 mt-1">{r.speed}</p>
+              <p className="mt-4 text-[12px] uppercase tracking-wide text-white/40">Cancel</p>
+              <p className="text-[14px] text-white/80 mt-1">{r.cancel}</p>
             </Reveal>
           ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-function FinalCta() {
-  const reduced = !!useReducedMotion();
-  // a small field of twinkling stars, placed deterministically
-  const stars = Array.from({ length: 26 }, (_, i) => ({
-    x: (i * 37) % 100,
-    y: (i * 53) % 100,
-    s: 2 + (i % 3),
-    d: (i % 7) * 0.4,
-  }));
-  return (
-    <section className="relative px-5 py-32 sm:py-44 text-center overflow-hidden">
-      {stars.map((s, i) => (
-        <motion.span
-          key={i}
-          className="absolute rounded-full bg-[#141414]"
-          style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.s, height: s.s }}
-          initial={{ opacity: 0.15 }}
-          animate={reduced ? undefined : { opacity: [0.1, 0.7, 0.1] }}
-          transition={{ duration: 3 + (i % 4), repeat: Infinity, delay: s.d }}
-          aria-hidden="true"
-        />
-      ))}
-      <div className="relative">
-        <AnimatedMark className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-10 text-[#141414]" inView />
-        <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
-          <SplitHeadline text="Look up," />
-          <br />
-          <SplitHeadline text="then ship." delay={0.2} />
-        </h2>
-        <Reveal delay={0.4}>
-          <p className="mt-6 text-[16px] text-[#5a5955]">Free, open source and no sign-up. All you need is Freighter set to Testnet.</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/terminal" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium hover:bg-black transition-colors">
-              <Wallet size={17} /> Open wallet
-            </Link>
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
-              <Github size={17} /> View source
-            </a>
-          </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );
