@@ -1,77 +1,52 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-  useInView,
-  useReducedMotion,
-  animate,
-  MotionValue,
-} from 'motion/react';
-import { ArrowUpRight, ArrowDownLeft, Droplets, Eye, FlaskConical, QrCode, Radio, Wallet, Github, ShieldCheck, ArrowRight } from 'lucide-react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView, useReducedMotion, MotionValue } from 'motion/react';
+import { ArrowRight, ArrowUpRight, BookOpen, Check, Copy, Github, Puzzle, ShieldCheck, Server, Droplets, ScrollText, FlaskConical, Network } from 'lucide-react';
 import StipplePlanet, { BELT, PLANET } from '../components/landing/StipplePlanet';
+import { Astrolabe, Constellation, Medallion, Stipple, type Family } from '../components/art/Engraving';
 import { Belt, cx, ORION_RING_PATH, ORION_STAR_PATHS } from '../components/ui';
 
 const REPO_URL = 'https://github.com/arg0506/Orion';
 const ease = [0.22, 1, 0.36, 1] as const;
 
-/* ───────────────────────── tiles ───────────────────────── */
+/* ───────────────────────── hero art: chains spilling out of the planet ───────────────────────── */
 
-type TileSpec = {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  bg: string;
-  fg: string;
-  x: number; // % of the art box (centre)
-  y: number;
-  rot: number;
-  depth: number;
-};
-
-const TILES: TileSpec[] = [
-  { id: 'watch', label: 'Watchlist', icon: Eye, bg: 'linear-gradient(160deg,#ff8fa0,#f0506a)', fg: '#fff', x: 7, y: 36, rot: -9, depth: 0.9 },
-  { id: 'receive', label: 'Receive', icon: QrCode, bg: 'linear-gradient(180deg,#ffe27a 0 26%,#fbfaf5 26%)', fg: '#3b3b3b', x: 21, y: 9, rot: -6, depth: 0.6 },
-  { id: 'send', label: 'Send', icon: ArrowUpRight, bg: 'linear-gradient(160deg,#ffffff,#f2f0ea)', fg: '#ff6a3d', x: 37, y: 25, rot: 5, depth: 0.4 },
-  { id: 'wallet', label: 'Connect', icon: Wallet, bg: 'linear-gradient(160deg,#7cc0ff,#2f7cf0)', fg: '#fff', x: 50.5, y: 4, rot: 0, depth: 0.3 },
-  { id: 'fund', label: 'Friendbot', icon: Droplets, bg: 'linear-gradient(160deg,#ffffff,#eef7f1)', fg: '#1fae6a', x: 63, y: 27, rot: 7, depth: 0.45 },
-  { id: 'live', label: 'Live activity', icon: Radio, bg: 'linear-gradient(160deg,#8f8cff,#5b55e8)', fg: '#fff', x: 79, y: 7, rot: 8, depth: 0.7 },
-  { id: 'lab', label: 'Playground', icon: FlaskConical, bg: 'linear-gradient(160deg,#fff4f0,#ffd9cc)', fg: '#e5553a', x: 93, y: 33, rot: -5, depth: 1 },
+type Spec = { id: string; family: Family; networkId?: string; label: string; x: number; y: number; depth: number };
+const MEDALLIONS: Spec[] = [
+  { id: 'arb', family: 'evm', networkId: 'evm:arbitrum-sepolia', label: 'Arbitrum', x: 7, y: 36, depth: 0.9 },
+  { id: 'sol', family: 'solana', label: 'Solana', x: 21, y: 9, depth: 0.6 },
+  { id: 'base', family: 'evm', networkId: 'evm:base', label: 'Base', x: 37, y: 25, depth: 0.4 },
+  { id: 'eth', family: 'evm', networkId: 'evm:mainnet', label: 'Ethereum', x: 50.5, y: 4, depth: 0.3 },
+  { id: 'op', family: 'evm', networkId: 'evm:op-sepolia', label: 'Optimism', x: 63, y: 27, depth: 0.45 },
+  { id: 'xlm', family: 'stellar', label: 'Stellar', x: 79, y: 7, depth: 0.7 },
+  { id: 'sep', family: 'evm', networkId: 'evm:sepolia', label: 'Sepolia', x: 93, y: 33, depth: 1 },
 ];
 
-function Tile({ t, i, mx, my, reduced }: { key?: React.Key; t: TileSpec; i: number; mx: MotionValue<number>; my: MotionValue<number>; reduced: boolean }) {
-  const px = useTransform(mx, (v) => v * 22 * t.depth);
-  const py = useTransform(my, (v) => v * 16 * t.depth);
-  const Icon = t.icon;
-  // start inside the opening of the planet
-  const fromX = `${(PLANET.cx / PLANET.W) * 100 - t.x}%`;
-  const fromY = `${(PLANET.openY / PLANET.H) * 100 - t.y}%`;
-
+function FloatingMedallion({ m, i, mx, my, reduced }: { key?: React.Key; m: Spec; i: number; mx: MotionValue<number>; my: MotionValue<number>; reduced: boolean }) {
+  const px = useTransform(mx, (v) => v * 22 * m.depth);
+  const py = useTransform(my, (v) => v * 16 * m.depth);
+  const fromX = `${(PLANET.cx / PLANET.W) * 100 - m.x}%`;
+  const fromY = `${(PLANET.openY / PLANET.H) * 100 - m.y}%`;
   return (
-    <motion.div className="absolute z-10" style={{ left: `${t.x}%`, top: `${t.y}%`, x: px, y: py }}>
+    <motion.div className="absolute z-10" style={{ left: `${m.x}%`, top: `${m.y}%`, x: px, y: py }}>
       <motion.div
-        initial={reduced ? false : { left: fromX, top: fromY, scale: 0.2, opacity: 0, rotate: 0 }}
-        animate={{ left: '0%', top: '0%', scale: 1, opacity: 1, rotate: t.rot }}
+        initial={reduced ? false : { left: fromX, top: fromY, scale: 0.2, opacity: 0 }}
+        animate={{ left: '0%', top: '0%', scale: 1, opacity: 1 }}
         transition={{ delay: 0.9 + i * 0.09, type: 'spring', stiffness: 70, damping: 13 }}
         className="relative -translate-x-1/2 -translate-y-1/2"
       >
         <motion.div
-          animate={reduced ? undefined : { y: [0, -7, 0] }}
+          animate={reduced ? undefined : { y: [0, -7, 0], rotate: [-4, 4, -4] }}
           transition={{ duration: 4 + (i % 3), repeat: Infinity, ease: 'easeInOut', delay: 2 + i * 0.3 }}
-          whileHover={{ scale: 1.12, rotate: 0 }}
+          whileHover={{ scale: 1.12 }}
           className="group relative"
         >
-          <span
-            className="grid place-items-center w-11 h-11 sm:w-[58px] sm:h-[58px] rounded-[13px] sm:rounded-[16px] shadow-[0_10px_24px_-10px_rgba(0,0,0,0.35),0_1px_0_rgba(255,255,255,0.6)_inset] ring-1 ring-black/5"
-            style={{ background: t.bg, color: t.fg }}
-          >
-            <Icon className="w-5 h-5 sm:w-[26px] sm:h-[26px]" strokeWidth={2.2} />
+          {/* One instance only: duplicated SVG logos would share gradient ids */}
+          <span className="block scale-[0.7] sm:scale-100">
+            <Medallion family={m.family} networkId={m.networkId} size={60} />
           </span>
-          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 text-[12px] font-medium text-[#141414] bg-white rounded-full px-2.5 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            {t.label}
+          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-1.5 font-serif italic text-[13px] text-[#141414] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {m.label}
           </span>
         </motion.div>
       </motion.div>
@@ -83,7 +58,6 @@ export function HeroArt({ className }: { className?: string }) {
   const reduced = !!useReducedMotion();
   const mx = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
   const my = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
-
   return (
     <div
       className={cx('relative w-full max-w-[600px] mx-auto', className)}
@@ -98,7 +72,6 @@ export function HeroArt({ className }: { className?: string }) {
       }}
     >
       <StipplePlanet className="w-full h-auto" reduced={reduced} />
-      {/* belt stars glinting in the carved-out holes */}
       {BELT.map((b, i) => (
         <motion.span
           key={i}
@@ -109,48 +82,14 @@ export function HeroArt({ className }: { className?: string }) {
           transition={{ delay: 1.8 + i * 0.15, duration: 1.2 }}
         />
       ))}
-      {TILES.map((t, i) => (
-        <Tile key={t.id} t={t} i={i} mx={mx} my={my} reduced={reduced} />
+      {MEDALLIONS.map((m, i) => (
+        <FloatingMedallion key={m.id} m={m} i={i} mx={mx} my={my} reduced={reduced} />
       ))}
     </div>
   );
 }
 
-/* ───────────────────────── logo ───────────────────────── */
-
-/** The Orion mark, animated: the O settles in, then the belt stars rise through it one by one. */
-function AnimatedMark({ className, delay = 0, inView = false }: { className?: string; delay?: number; inView?: boolean }) {
-  const reduced = !!useReducedMotion();
-  const trigger = inView ? 'whileInView' : 'animate';
-  const ring = { initial: reduced ? false : { scale: 0.6, opacity: 0, rotate: -40 }, [trigger]: { scale: 1, opacity: 1, rotate: 0 } };
-  return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      <motion.path
-        d={ORION_RING_PATH}
-        fill="currentColor"
-        fillRule="evenodd"
-        style={{ transformOrigin: '50px 50px' }}
-        {...ring}
-        viewport={{ once: true }}
-        transition={{ delay, duration: 0.9, ease }}
-      />
-      {ORION_STAR_PATHS.map((d, i) => (
-        <motion.path
-          key={i}
-          d={d}
-          fill="currentColor"
-          style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-          initial={reduced ? false : { scale: 0, opacity: 0, x: -8, y: 8 }}
-          {...{ [trigger]: { scale: 1, opacity: 1, x: 0, y: 0 } }}
-          viewport={{ once: true }}
-          transition={{ delay: delay + 0.45 + i * 0.14, type: 'spring', stiffness: 260, damping: 14 }}
-        />
-      ))}
-    </svg>
-  );
-}
-
-/* ───────────────────────── helpers ───────────────────────── */
+/* ───────────────────────── motion helpers ───────────────────────── */
 
 function Reveal({ children, delay = 0, className, y = 28 }: { key?: React.Key; children: React.ReactNode; delay?: number; className?: string; y?: number }) {
   return (
