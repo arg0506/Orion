@@ -90,3 +90,27 @@ npm run build          # outputs extension/.output/chrome-mv3
 
 Works in Chromium browsers (Chrome, Brave, Edge, Arc). For live reload while developing, run `npm run dev`.
 
+## Integrate with your dapp
+
+**EVM**: any EIP-6963-aware library (wagmi v2, RainbowKit, Reown AppKit, ConnectKit) lists Orion automatically. Directly:
+
+```js
+window.addEventListener('eip6963:announceProvider', (e) => {
+  if (e.detail.info.rdns === 'app.orion.wallet') {
+    e.detail.provider.request({ method: 'eth_requestAccounts' });
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+```
+
+**Solana**: nothing to install. Orion registers with the Wallet Standard and appears in `@solana/wallet-adapter` as "Orion".
+
+**Stellar**: a SEP-43 interface at `window.orion.stellar` (errors are returned, not thrown):
+
+```js
+const { address } = await window.orion.stellar.getAddress();
+const { signedTxXdr } = await window.orion.stellar.signTransaction(xdr, { networkPassphrase });
+```
+
+The full provider reference (every supported method, event and error code) is in the [documentation](#documentation).
+
