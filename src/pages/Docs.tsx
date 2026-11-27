@@ -297,6 +297,22 @@ npm run dev`}</Code>
             </OL>
           </Section>
 
+          {/* ── Accounts ── */}
+          <Section id="accounts" eyebrow="Using Orion" title="Accounts & recovery phrase" art={<Stipple kind="keyhole" size={120} seed={4} />}>
+            <P>Everything is derived from one BIP-39 recovery phrase using the same paths as the most popular wallet on each chain, so importing your phrase shows the accounts you already have.</P>
+            <Table
+              head={['Chain', 'Curve', 'Derivation path', 'Matches']}
+              rows={[
+                ['EVM', 'secp256k1 (BIP-32)', <C>m/44'/60'/0'/0/0</C>, 'MetaMask, Rabby, Hardhat, Anvil'],
+                ['Solana', 'ed25519 (SLIP-10)', <C>m/44'/501'/0'/0'</C>, 'Phantom, Solflare'],
+                ['Stellar', 'ed25519 (SLIP-10, SEP-5)', <C>m/44'/148'/0'</C>, 'Freighter, Lobstr'],
+              ]}
+            />
+            <P>v0.1 uses account index 0 on every chain. Your phrase is encrypted with your password and never leaves the extension. See <button className="underline underline-offset-4" onClick={() => go('security')}>Security model</button>.</P>
+            <H3>Locking</H3>
+            <P>Orion locks after 30 minutes without activity (configurable from 5 minutes to 4 hours in Settings), when you press the lock icon, or when the browser closes. While locked, dapps can still ask to connect; the approval window asks for your password first.</P>
+          </Section>
+
       </div>
     </div>
   );
