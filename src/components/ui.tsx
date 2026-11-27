@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Check, Copy, AlertTriangle, Info, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { SplitWords } from './motion';
 
 /* ───────────── helpers ───────────── */
 
@@ -68,9 +69,9 @@ export function OrionMark({ className, title, starClassName }: { className?: str
 
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="flex items-center gap-2.5 text-starlight">
-      <OrionMark className="w-8 h-8" />
-      {!compact && <span className="font-serif text-[23px] leading-none tracking-tight">Orion</span>}
+    <span className="flex items-center gap-2 text-ink">
+      <OrionMark className="w-7 h-7" />
+      {!compact && <span className="font-serif text-[22px] leading-none tracking-tight">Orion</span>}
     </span>
   );
 }
@@ -85,7 +86,7 @@ export function Card({
   ...rest
 }: React.HTMLAttributes<HTMLElement> & { as?: any; padded?: boolean }) {
   return (
-    <Tag className={cx('rounded-2xl border border-line bg-deep/80 backdrop-blur-sm', padded && 'p-5 sm:p-6', className)} {...rest}>
+    <Tag className={cx('rounded-[24px] border border-line bg-card shadow-card', padded && 'p-5 sm:p-7', className)} {...rest}>
       {children}
     </Tag>
   );
@@ -95,11 +96,11 @@ export function CardHeader({ title, description, action, icon }: { title: string
   return (
     <div className="flex items-start justify-between gap-4 mb-5">
       <div className="min-w-0">
-        <h3 className="font-display font-semibold text-[17px] text-starlight flex items-center gap-2">
-          {icon && <span className="text-mist">{icon}</span>}
+        <h3 className="font-serif text-[24px] leading-tight text-ink flex items-center gap-2.5">
+          {icon && <span className="text-muted">{icon}</span>}
           {title}
         </h3>
-        {description && <p className="text-sm text-mist mt-1 leading-relaxed">{description}</p>}
+        {description && <p className="text-[14px] text-muted mt-1.5 leading-relaxed">{description}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </div>
@@ -110,9 +111,16 @@ export function PageHeader({ eyebrow, title, description, action }: { eyebrow?: 
   return (
     <header className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
       <div>
-        {eyebrow && <p className="text-[13px] font-medium text-rigel mb-1.5">{eyebrow}</p>}
-        <h1 className="font-display font-bold text-[28px] sm:text-[34px] leading-tight tracking-tight text-starlight">{title}</h1>
-        {description && <p className="text-[15px] text-mist mt-2 max-w-2xl leading-relaxed">{description}</p>}
+        {eyebrow && (
+          <p className="flex items-center gap-2 text-[13px] text-muted mb-3">
+            <Belt className="w-5 text-ink" />
+            {eyebrow}
+          </p>
+        )}
+        <h1 className="font-serif text-[40px] sm:text-[56px] leading-[1] tracking-[-0.02em] text-ink">
+          <SplitWords text={title} />
+        </h1>
+        {description && <p className="text-[16px] text-muted mt-3 max-w-2xl leading-relaxed">{description}</p>}
       </div>
       {action}
     </header>
@@ -134,9 +142,9 @@ export function Button({
   ...rest
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: ButtonVariant; size?: 'sm' | 'md' | 'lg'; loading?: boolean; icon?: React.ReactNode }) {
   const variants: Record<ButtonVariant, string> = {
-    primary: 'bg-rigel text-night hover:bg-[#a9d0ff] shadow-[0_0_0_1px_rgba(143,193,255,0.4),0_8px_24px_-8px_rgba(143,193,255,0.5)]',
-    secondary: 'bg-deeper text-starlight border border-line hover:border-line-strong hover:bg-[#161c31]',
-    ghost: 'text-mist hover:text-starlight hover:bg-white/5',
+    primary: 'bg-ink text-paper hover:bg-black shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)]',
+    secondary: 'bg-card text-ink border border-line hover:border-line-strong',
+    ghost: 'text-muted hover:text-ink hover:bg-black/[0.04]',
     danger: 'text-bad border border-bad/30 hover:bg-bad/10',
   };
   const sizes = { sm: 'h-8 px-3 text-[13px] gap-1.5', md: 'h-10 px-4 text-sm gap-2', lg: 'h-12 px-5 text-[15px] gap-2' };
@@ -144,7 +152,7 @@ export function Button({
     <button
       disabled={disabled || loading}
       className={cx(
-        'inline-flex items-center justify-center rounded-xl font-semibold transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap',
+        'inline-flex items-center justify-center rounded-[12px] font-medium transition-[background,border-color,color,transform] active:scale-[0.98] cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed whitespace-nowrap',
         variants[variant],
         sizes[size],
         className
@@ -197,7 +205,7 @@ export function Field({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2">
-        <label htmlFor={htmlFor} className="text-[13px] font-medium text-starlight/90">
+        <label htmlFor={htmlFor} className="text-[13px] font-medium text-ink/90">
           {label}
         </label>
         {trailing}
@@ -209,7 +217,7 @@ export function Field({
           {error}
         </p>
       ) : (
-        hint && <p className="text-[13px] text-haze">{hint}</p>
+        hint && <p className="text-[13px] text-subtle">{hint}</p>
       )}
     </div>
   );
@@ -217,8 +225,8 @@ export function Field({
 
 export const inputClass = (invalid?: boolean) =>
   cx(
-    'w-full h-11 rounded-xl bg-deeper border px-3.5 text-[15px] text-starlight placeholder:text-haze transition-colors focus:outline-none',
-    invalid ? 'border-bad/50 focus:border-bad' : 'border-line hover:border-line-strong focus:border-rigel/70',
+    'w-full h-12 rounded-[12px] bg-paper border px-4 text-[15px] text-ink placeholder:text-subtle transition-colors focus:outline-none focus:bg-card',
+    invalid ? 'border-bad/50 focus:border-bad' : 'border-line hover:border-line-strong focus:border-ink',
     'disabled:opacity-50 disabled:cursor-not-allowed'
   );
 
@@ -227,7 +235,7 @@ export const inputClass = (invalid?: boolean) =>
 type Tone = 'neutral' | 'info' | 'ok' | 'warning' | 'bad' | 'in' | 'out';
 
 const toneClasses: Record<Tone, string> = {
-  neutral: 'text-mist bg-white/5 border-line',
+  neutral: 'text-muted bg-inset border-line',
   info: 'text-rigel bg-rigel/10 border-rigel/25',
   ok: 'text-ok bg-ok/10 border-ok/25',
   warning: 'text-warn bg-warn/10 border-warn/25',
@@ -258,12 +266,12 @@ export function Notice({
 }) {
   const Icon = tone === 'ok' ? CheckCircle2 : tone === 'bad' ? XCircle : tone === 'warning' ? AlertTriangle : Info;
   return (
-    <div className={cx('rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4', toneClasses[tone])}>
+    <div className={cx('rounded-[20px] border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center gap-4', toneClasses[tone])}>
       <div className="flex items-start gap-3 flex-1 min-w-0">
         <Icon size={18} className="shrink-0 mt-0.5" />
         <div className="min-w-0">
-          <p className="font-semibold text-[15px] text-starlight">{title}</p>
-          {children && <div className="text-sm text-mist mt-1 leading-relaxed">{children}</div>}
+          <p className="font-serif text-[19px] leading-snug text-ink">{title}</p>
+          {children && <div className="text-sm text-muted mt-1 leading-relaxed">{children}</div>}
         </div>
       </div>
       {action && <div className="shrink-0 sm:ml-auto">{action}</div>}
@@ -276,15 +284,15 @@ export function Mono({ children, className }: { children: React.ReactNode; class
 }
 
 export function Skeleton({ className }: { className?: string; key?: React.Key }) {
-  return <span className={cx('block rounded-md bg-white/[0.06] animate-pulse', className)} />;
+  return <span className={cx('block rounded-md bg-black/[0.06] animate-pulse', className)} />;
 }
 
 export function EmptyState({ icon, title, children, action }: { icon?: React.ReactNode; title: string; children?: React.ReactNode; action?: React.ReactNode }) {
   return (
     <div className="text-center py-10 px-4">
-      {icon && <div className="mx-auto w-11 h-11 rounded-xl grid place-items-center bg-deeper border border-line text-mist mb-4">{icon}</div>}
-      <p className="font-semibold text-starlight">{title}</p>
-      {children && <p className="text-sm text-mist mt-1.5 max-w-sm mx-auto leading-relaxed">{children}</p>}
+      {icon && <div className="mx-auto w-12 h-12 rounded-[14px] grid place-items-center bg-inset text-muted mb-4">{icon}</div>}
+      <p className="font-serif text-[22px] text-ink">{title}</p>
+      {children && <p className="text-sm text-muted mt-1.5 max-w-sm mx-auto leading-relaxed">{children}</p>}
       {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
