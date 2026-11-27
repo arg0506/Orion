@@ -346,6 +346,38 @@ npm run dev`}</Code>
             </UL>
           </Section>
 
+          {/* ── Cancel ── */}
+          <Section id="cancel" eyebrow="Using Orion" title="Cancel & speed up" art={<Astrolabe size={130} />}>
+            <P>While a transaction is pending, Orion can send a <em>replacement</em>: the same transaction with a higher fee (speed up), or a harmless one that takes its place (cancel). The network only ever accepts one of them, so whichever lands first wins and the other can never go through.</P>
+            <H3>EVM</H3>
+            <UL>
+              <li><strong>Speed up</strong> re-signs the same transaction with the same nonce, raising both <C>maxPriorityFeePerGas</C> and <C>maxFeePerGas</C> by at least 12.5% (nodes require 10%), or to the current fast fee if that's higher.</li>
+              <li><strong>Cancel</strong> sends a 0-value transfer to yourself with the same nonce and higher fees. If it's mined first, the original's nonce is used up.</li>
+              <li>Orion detects the outcome by checking receipts and the account's mined nonce.</li>
+            </UL>
+            <H3>Stellar</H3>
+            <UL>
+              <li><strong>Speed up</strong> wraps the pending transaction in a <em>fee-bump transaction</em> paying 10× the fee (stellar-core only replaces a queued transaction for a 10× fee). The inner transaction, and its hash, stay the same.</li>
+              <li><strong>Cancel</strong> submits a transaction with the <em>same sequence number</em> containing a no-op <C>bumpSequence</C>, at 10× the fee.</li>
+              <li>Every transaction also has a time bound (30 s fast, 2 min normal), so it can't linger.</li>
+            </UL>
+            <H3>Solana</H3>
+            <P>
+              Solana has no way to cancel or replace a transaction once it's sent. Instead, Orion rebroadcasts it every 2.5 seconds until it lands and shows a countdown to its blockhash expiry (about 60 to 90 seconds). After that the transaction can never be included, so if it hasn't landed, no funds moved.
+            </P>
+            <H3>Statuses</H3>
+            <Table
+              head={['Status', 'Meaning']}
+              rows={[
+                ['Pending', 'Submitted, not yet in a block or ledger.'],
+                ['Confirmed', 'Included and successful.'],
+                ['Replaced', 'A cancel or speed-up (or the original) landed first; this one can no longer go through.'],
+                ['Expired', 'Its time bound or blockhash ran out before it landed. No funds moved.'],
+                ['Failed', 'Included, but it reverted or failed on chain. Fees may still have been charged.'],
+              ]}
+            />
+          </Section>
+
       </div>
     </div>
   );
