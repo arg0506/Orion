@@ -5,7 +5,11 @@
   <img src="public/orion-logo-ink.svg" alt="Orion" width="260">
 </picture>
 
-### A Modern Web3 Wallet Dashboard for the Stellar Testnet
+### A multi-chain wallet built for developers
+
+> **New: the Orion browser extension** — one recovery phrase for Ethereum & EVM L2s, Solana and Stellar, with dapp sync on every chain, fast sends, and real cancel / speed-up. See [`extension/`](extension/README.md).
+
+#### This repo also contains the Orion web dashboard for the Stellar Testnet
 
 Manage • Monitor • Transact • Explore
 
