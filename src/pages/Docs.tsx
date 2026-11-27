@@ -539,6 +539,31 @@ npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
             <Callout tone="warn" title="Not audited">Treat Orion as developer tooling for test networks until it has had an independent security review.</Callout>
           </Section>
 
+          {/* ── Architecture ── */}
+          <Section id="architecture" eyebrow="Internals" title="Architecture">
+            <Code lang="text">{`extension/
+├─ entrypoints/
+│  ├─ background.ts        service worker: routes popup + dapp messages, auto-lock alarm
+│  ├─ inpage.content.ts    MAIN world: installs the EVM, Solana and Stellar providers
+│  ├─ bridge.content.ts    ISOLATED world: relays page <-> background
+│  ├─ popup/               the wallet UI
+│  └─ approval/            the approval window
+└─ src/
+   ├─ lib/keyring/         BIP-39 / BIP-32 / SLIP-10 derivation, encrypted vault
+   ├─ lib/chains/          evm.ts, solana.ts, stellar.ts adapters
+   ├─ lib/dapp/            per-chain request handlers + permissions
+   ├─ lib/tracker.ts       polls pending txs, rebroadcasts Solana, resolves races
+   ├─ inpage/              the providers dapps talk to
+   └─ ui/                  React screens and the illustration system`}</Code>
+            <H3>Request flow</H3>
+            <OL>
+              <li>The dapp calls the provider in the page (MAIN world).</li>
+              <li>The provider posts a message; the bridge content script forwards it to the background with <C>runtime.sendMessage</C>.</li>
+              <li>The background checks permissions, opens an approval window if needed, signs with the right chain adapter, logs the request, and replies.</li>
+              <li>Account and network changes are pushed back to every tab, filtered by each site's permissions.</li>
+            </OL>
+          </Section>
+
       </div>
     </div>
   );
