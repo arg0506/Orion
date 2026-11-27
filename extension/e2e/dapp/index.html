@@ -1,0 +1,19 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Orion test dapp</title></head>
+<body style="font-family:sans-serif">
+<h1>Orion test dapp</h1>
+<pre id="out"></pre>
+<script>
+  // EIP-6963 discovery
+  window.eip6963 = [];
+  window.addEventListener('eip6963:announceProvider', (e) => window.eip6963.push(e.detail));
+  window.dispatchEvent(new Event('eip6963:requestProvider'));
+  // Wallet Standard discovery (what @solana/wallet-adapter does under the hood)
+  window.standardWallets = [];
+  const register = (...ws) => { window.standardWallets.push(...ws); return () => {}; };
+  window.addEventListener('wallet-standard:register-wallet', (e) => e.detail({ register }));
+  window.dispatchEvent(new CustomEvent('wallet-standard:app-ready', { detail: { register } }));
+  window.orionEvm = () => window.eip6963.find((d) => d.info.rdns === 'app.orion.wallet')?.provider;
+  window.orionSol = () => window.standardWallets.find((w) => w.name === 'Orion');
+</script>
+</body></html>
