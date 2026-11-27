@@ -1,6 +1,9 @@
 <div align="center">
 
-# 🌌 Orion
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="public/orion-logo-light.svg">
+  <img src="public/orion-logo-ink.svg" alt="Orion" width="260">
+</picture>
 
 ### A Modern Web3 Wallet Dashboard for the Stellar Testnet
 

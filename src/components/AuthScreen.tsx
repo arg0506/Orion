@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserRound, Cloud } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { Belt, Button, CopyButton, Notice } from './ui';
+import { Button, CopyButton, Notice, OrionMark } from './ui';
 
 export default function AuthScreen() {
   const { loginWithGoogle, loginAnonymously, authError, clearAuthError, busy } = useAuth();
@@ -12,8 +12,8 @@ export default function AuthScreen() {
 
   return (
     <div className="rounded-t-3xl sm:rounded-3xl border border-line bg-deep p-6 sm:p-8 shadow-2xl">
-      <div className="text-rigel mb-5">
-        <Belt className="w-10" glow />
+      <div className="text-starlight mb-5">
+        <OrionMark className="w-11 h-11" />
       </div>
       <h2 className="font-display font-bold text-2xl text-starlight">Sync across devices</h2>
       <p className="text-[15px] text-mist mt-2 leading-relaxed">

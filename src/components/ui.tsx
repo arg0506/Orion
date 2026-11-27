@@ -46,13 +46,31 @@ export function Belt({ className, glow = false }: { className?: string; glow?: b
   );
 }
 
+/* Orion logo: a high-contrast serif "O" with Orion's belt rising through its counter. */
+export const ORION_RING_PATH =
+  'M6 50a44 44 0 1 0 88 0a44 44 0 1 0-88 0ZM73.070 43.385A24 35.5 -16 1 0 26.930 56.615A24 35.5 -16 1 0 73.070 43.385Z';
+export const ORION_STAR_PATHS = [
+  'M36.5 55.3Q38.24 59.76 42.7 61.5Q38.24 63.24 36.5 67.7Q34.76 63.24 30.3 61.5Q34.76 59.76 36.5 55.3Z',
+  'M50 41.9Q52.41 48.09 58.6 50.5Q52.41 52.91 50 59.1Q47.59 52.91 41.4 50.5Q47.59 48.09 50 41.9Z',
+  'M63.5 33.7Q65.12 37.88 69.3 39.5Q65.12 41.12 63.5 45.3Q61.88 41.12 57.7 39.5Q61.88 37.88 63.5 33.7Z',
+];
+
+export function OrionMark({ className, title, starClassName }: { className?: string; title?: string; starClassName?: string }) {
+  return (
+    <svg viewBox="0 0 100 100" className={cx('shrink-0', className)} role={title ? 'img' : undefined} aria-hidden={title ? undefined : true} aria-label={title}>
+      <path d={ORION_RING_PATH} fill="currentColor" fillRule="evenodd" />
+      {ORION_STAR_PATHS.map((d, i) => (
+        <path key={i} d={d} fill="currentColor" className={starClassName} />
+      ))}
+    </svg>
+  );
+}
+
 export function Logo({ compact = false }: { compact?: boolean }) {
   return (
-    <span className="flex items-center gap-2.5">
-      <span className="grid place-items-center w-9 h-9 rounded-xl bg-deep border border-line text-rigel">
-        <Belt className="w-6" glow />
-      </span>
-      {!compact && <span className="font-display font-bold text-[19px] tracking-tight text-starlight">Orion</span>}
+    <span className="flex items-center gap-2.5 text-starlight">
+      <OrionMark className="w-8 h-8" />
+      {!compact && <span className="font-serif text-[23px] leading-none tracking-tight">Orion</span>}
     </span>
   );
 }
