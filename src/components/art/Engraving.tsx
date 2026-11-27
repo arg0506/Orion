@@ -139,3 +139,79 @@ export function Medallion({ family, networkId, size = 40 }: { family: Family; ne
 }
 
 /** A stippled planet with chain medallions on tilted elliptical orbits. */
+export function Orrery({ size = 220, families = ['evm', 'solana', 'stellar'] as Family[], seed = 7, period = 14 }: { size?: number; families?: Family[]; seed?: number; period?: number }) {
+  const reduced = useReducedMotion();
+  const [t, setT] = useState(0);
+  useAnimationFrame((ms) => {
+    if (!reduced) setT(ms / 1000);
+  });
+  const a = size * 0.46, b = size * 0.15, tilt = -14;
+  const rad = (tilt * Math.PI) / 180;
+  const med = Math.max(22, size * 0.15);
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg viewBox={`0 0 ${size} ${size}`} className="absolute inset-0" aria-hidden="true">
+        <g transform={`rotate(${tilt} ${size / 2} ${size / 2})`} fill="none" stroke={INK}>
+          <ellipse cx={size / 2} cy={size / 2} rx={a} ry={b} strokeWidth="0.9" strokeDasharray="1.5 3.5" />
+          <ellipse cx={size / 2} cy={size / 2} rx={a * 0.74} ry={b * 1.55} strokeWidth="0.6" opacity="0.5" />
+        </g>
+      </svg>
+      {families.map((f, i) => {
+        const ang = (t / period) * Math.PI * 2 + (i * Math.PI * 2) / families.length;
+        const ex = a * Math.cos(ang), ey = b * Math.sin(ang);
+        const x = size / 2 + ex * Math.cos(rad) - ey * Math.sin(rad);
+        const y = size / 2 + ex * Math.sin(rad) + ey * Math.cos(rad);
+        const front = Math.sin(ang) > 0;
+        const s = 0.82 + 0.18 * Math.sin(ang);
+        return (
+          <div key={f} className="absolute" style={{ left: x - med / 2, top: y - med / 2, zIndex: front ? 3 : 1, transform: `scale(${s})` }}>
+            <Medallion family={f} size={med} />
+          </div>
+        );
+      })}
+      <div className="absolute inset-0 grid place-items-center" style={{ zIndex: 2 }}>
+        <Stipple kind="sphere" size={size * 0.62} seed={seed} />
+      </div>
+    </div>
+  );
+}
+
+/** Orion as drawn in an old atlas: seven stars, hairline figure, tiny italic names. */
+const ORION_STARS: [string, number, number, number][] = [
+  ['Betelgeuse', 0.28, 0.16, 3.4],
+  ['Bellatrix', 0.72, 0.22, 2.4],
+  ['Alnitak', 0.42, 0.5, 2.2],
+  ['Alnilam', 0.5, 0.48, 2.4],
+  ['Mintaka', 0.58, 0.46, 2.1],
+  ['Saiph', 0.33, 0.84, 2.3],
+  ['Rigel', 0.74, 0.8, 3.4],
+];
+const ORION_LINES = [[0, 1], [0, 2], [1, 4], [2, 3], [3, 4], [2, 5], [4, 6], [5, 6]];
+
+export function Constellation({ size = 120, labels = true, draw = true }: { size?: number; labels?: boolean; draw?: boolean }) {
+  const reduced = useReducedMotion();
+  const P = (i: number) => [ORION_STARS[i]![1] * size, ORION_STARS[i]![2] * size] as const;
+  return (
+    <svg viewBox={`0 0 ${size} ${size}`} width={size} height={size} aria-hidden="true">
+      {ORION_LINES.map(([a, b], i) => {
+        const [x1, y1] = P(a!), [x2, y2] = P(b!);
+        return (
+          <motion.line key={i} x1={x1} y1={y1} x2={x2} y2={y2} stroke={INK} strokeWidth={0.7} strokeDasharray="2 2.5"
+            initial={draw && !reduced ? { pathLength: 0, opacity: 0 } : false} animate={{ pathLength: 1, opacity: 0.7 }} transition={{ duration: 0.8, delay: 0.2 + i * 0.12 }} />
+        );
+      })}
+      {ORION_STARS.map(([name, x, y, r], i) => (
+        <g key={name}>
+          <motion.circle cx={x * size} cy={y * size} r={r * (size / 120)} fill={name === 'Betelgeuse' ? BETEL : name === 'Rigel' ? RIGEL : INK}
+            initial={!reduced ? { scale: 0 } : false} animate={{ scale: 1 }} style={{ transformBox: 'fill-box', transformOrigin: 'center' }} transition={{ delay: 0.1 + i * 0.08, type: 'spring', stiffness: 260, damping: 14 }} />
+          {labels && size >= 110 && (
+            <text x={x * size + 5} y={y * size - 4} fontFamily="Gloock, Georgia, serif" fontStyle="italic" fontSize={size / 22} fill={INK} opacity={0.6}>
+              {name}
+            </text>
+          )}
+        </g>
+      ))}
+    </svg>
+  );
+}
+
