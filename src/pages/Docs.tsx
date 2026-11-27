@@ -266,6 +266,26 @@ export default function Docs() {
             <P>This repository also contains Orion's web dashboard for the Stellar testnet, which you can open from the site's footer. These docs cover the extension.</P>
           </Section>
 
+          {/* ── Install ── */}
+          <Section id="install" eyebrow="Start" title="Install">
+            <P>Orion isn't on the Chrome Web Store yet. Install it as an unpacked extension, either from a prebuilt zip or by building it yourself.</P>
+            <H3>From a build zip</H3>
+            <OL>
+              <li>Download and unzip the Orion build.</li>
+              <li>Open <C>chrome://extensions</C> and switch on <strong>Developer mode</strong> (top right).</li>
+              <li>Click <strong>Load unpacked</strong> and choose the unzipped folder (the one containing <C>manifest.json</C>).</li>
+              <li>Pin Orion from the puzzle-piece menu so it's always one click away.</li>
+            </OL>
+            <H3>From source</H3>
+            <Code lang="bash">{`git clone https://github.com/arg0506/Orion
+cd Orion/extension
+npm install
+npm run build        # outputs .output/chrome-mv3
+# or, with live reload while you work:
+npm run dev`}</Code>
+            <P>Then load <C>extension/.output/chrome-mv3</C> with <strong>Load unpacked</strong>. Orion targets Chromium browsers (Chrome, Brave, Edge, Arc).</P>
+          </Section>
+
       </div>
     </div>
   );
