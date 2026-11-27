@@ -244,6 +244,28 @@ export default function Docs() {
         <aside className="hidden lg:block sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 pr-2">{Sidebar}</aside>
 
         <motion.main ref={mainRef} className="min-w-0 max-w-[760px] py-10 sm:py-14 pb-32" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
+          {/* ── Introduction ── */}
+          <Section id="introduction" eyebrow="Start" title="Orion documentation" art={<Constellation size={150} />}>
+            <P>
+              Orion is a browser-extension wallet for developers who build on more than one chain. One recovery phrase gives you accounts on <strong>Ethereum and EVM chains</strong>, <strong>Solana</strong> and <strong>Stellar</strong>. Dapps find Orion through each ecosystem's standard discovery mechanism, sending is fast by default, and pending transactions can be cancelled or sped up wherever the chain makes that possible.
+            </P>
+            <div className="my-8 grid sm:grid-cols-3 gap-3">
+              {(['evm', 'solana', 'stellar'] as const).map((f) => (
+                <div key={f} className="rounded-[18px] border border-[#e4e2dc] bg-white p-4 flex items-center gap-3">
+                  <Medallion family={f} size={44} />
+                  <div>
+                    <p className="font-serif text-[18px] leading-tight">{f === 'evm' ? 'EVM' : f === 'solana' ? 'Solana' : 'Stellar'}</p>
+                    <p className="text-[12px] text-[#8a8984]">{f === 'evm' ? 'EIP-6963' : f === 'solana' ? 'Wallet Standard' : 'SEP-43'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Callout tone="warn" title="v0.1, testnet-first">
+              Orion has not been security-audited. Mainnets are hidden by default. Don't keep real funds in it yet.
+            </Callout>
+            <P>This repository also contains Orion's web dashboard for the Stellar testnet, which you can open from the site's footer. These docs cover the extension.</P>
+          </Section>
+
       </div>
     </div>
   );
