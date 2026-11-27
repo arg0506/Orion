@@ -17,6 +17,7 @@ import { toast } from 'react-hot-toast';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  busy: boolean;
   authError: string | null;
   clearAuthError: () => void;
   loginWithGoogle: () => Promise<void>;
@@ -29,6 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -44,7 +46,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           await setDoc(userDocRef, {
             uid: currentUser.uid,
             email: currentUser.email || 'anonymous',
-            displayName: currentUser.displayName || 'Pilot Voyager',
+            displayName: currentUser.displayName || 'Orion user',
             lastLogin: new Date().toISOString(),
           }, { merge: true });
         } catch (err) {
@@ -58,52 +60,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const loginWithGoogle = async () => {
     try {
-      setLoading(true);
+      setBusy(true);
       setAuthError(null);
       await signInWithPopup(auth, googleProvider);
-      toast.success('Successfully logged in with Google!');
+      toast.success('Signed in with Google');
     } catch (error: any) {
       console.error('Google Sign-In Error:', error);
       setAuthError(error.code || error.message || 'auth/unauthorized-domain');
       toast.error(error.message || 'Failed to authenticate via Google.');
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   const loginAnonymously = async () => {
     try {
-      setLoading(true);
+      setBusy(true);
       setAuthError(null);
       await signInAnonymously(auth);
-      toast.success('Signed in as Guest Voyager.');
+      toast.success('Signed in as a guest');
     } catch (error: any) {
       console.error('Anonymous Sign-In Error:', error);
       setAuthError(error.code || error.message || 'auth/admin-restricted-operation');
       toast.error(error.message || 'Failed to sign in anonymously.');
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   const logout = async () => {
     try {
-      setLoading(true);
+      setBusy(true);
       setAuthError(null);
       await signOut(auth);
-      toast.success('Signed out successfully.');
+      toast.success('Signed out');
     } catch (error: any) {
       console.error('Sign-Out Error:', error);
       toast.error('Failed to log out.');
     } finally {
-      setLoading(false);
+      setBusy(false);
     }
   };
 
   const clearAuthError = () => setAuthError(null);
 
   return (
-    <AuthContext.Provider value={{ user, loading, authError, clearAuthError, loginWithGoogle, loginAnonymously, logout }}>
+    <AuthContext.Provider value={{ user, loading, busy, authError, clearAuthError, loginWithGoogle, loginAnonymously, logout }}>
       {children}
     </AuthContext.Provider>
   );
