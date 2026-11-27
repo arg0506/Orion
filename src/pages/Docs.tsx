@@ -520,6 +520,12 @@ npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
             </Callout>
           </Section>
 
+          {/* ── Devtools ── */}
+          <Section id="devtools" eyebrow="Developers" title="Request log & simulation">
+            <P>The <strong>Log</strong> tab records every request a site made: method, params, result or error, and how long it took (including time spent waiting for you to approve). Filter by method or site. It keeps the last 300 entries.</P>
+            <P>Before an <C>eth_sendTransaction</C> approval appears, Orion runs <C>eth_estimateGas</C>. If the call would revert, the approval says "Likely to fail" with the revert reason. It also warns about unlimited ERC-20 approvals and <C>setApprovalForAll(true)</C>.</P>
+          </Section>
+
       </div>
     </div>
   );
