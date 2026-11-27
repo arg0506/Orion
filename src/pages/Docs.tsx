@@ -471,6 +471,24 @@ const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassp
             <P>Supported chains: <C>solana:devnet</C>, <C>solana:testnet</C>, <C>solana:localnet</C>, and <C>solana:mainnet</C> when mainnets are enabled.</P>
           </Section>
 
+          {/* ── Stellar API ── */}
+          <Section id="api-stellar" eyebrow="Developers" title="Stellar wallet API">
+            <Table
+              head={['Method', 'Returns', 'Notes']}
+              rows={[
+                [<C>getAddress()</C>, <C>{'{ address }'}</C>, 'Asks to connect if the site isn’t yet.'],
+                [<C>requestAccess()</C>, <C>{'{ address }'}</C>, 'Same as getAddress.'],
+                [<C>isConnected()</C>, <C>{'{ isConnected }'}</C>, 'Always true when the extension is installed.'],
+                [<C>isAllowed()</C>, <C>{'{ isAllowed }'}</C>, 'Whether this site is connected and Orion is unlocked.'],
+                [<C>getNetwork()</C>, <C>{'{ network, networkPassphrase }'}</C>, ''],
+                [<C>signTransaction(xdr, opts?)</C>, <C>{'{ signedTxXdr, signerAddress }'}</C>, <>Uses <C>opts.networkPassphrase</C> or the active network.</>],
+                [<C>signMessage(message)</C>, <C>{'{ signedMessage, signerAddress }'}</C>, <>SEP-53: signs <C>sha256("Stellar Signed Message:\n" + message)</C>; base64 signature.</>],
+                [<C>signAuthEntry()</C>, <C>{'{ error }'}</C>, 'Not supported yet (Soroban auth).'],
+                [<C>onChange(fn)</C>, 'unsubscribe fn', 'Called with the address and network when they change.'],
+              ]}
+            />
+          </Section>
+
       </div>
     </div>
   );
