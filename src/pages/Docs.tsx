@@ -432,6 +432,29 @@ const { networkPassphrase } = await stellar.getNetwork();
 const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassphrase });`}</Code>
           </Section>
 
+          {/* ── EVM API ── */}
+          <Section id="api-evm" eyebrow="Developers" title="EVM provider API">
+            <Table
+              head={['Method', 'Approval', 'Notes']}
+              rows={[
+                [<C>eth_requestAccounts</C>, 'Connect', 'Returns the account. Also unlocks Orion if needed.'],
+                [<C>eth_accounts</C>, '—', 'Empty array unless this site is connected and Orion is unlocked.'],
+                [<C>eth_chainId</C> , '—', 'Follows the active EVM network.'],
+                [<C>personal_sign</C>, 'Sign', 'Hex or text message; shown as text when printable.'],
+                [<C>eth_signTypedData_v4</C>, 'Sign', 'EIP-712; domain, type and message are shown.'],
+                [<C>eth_sendTransaction</C>, 'Send', 'Simulated first; you can choose Fast or Normal. Returns the hash, which is tracked for cancel / speed up.'],
+                [<C>wallet_switchEthereumChain</C>, '—', 'Switches to a known network; 4902 if unknown or a hidden mainnet.'],
+                [<C>wallet_addEthereumChain</C>, 'Add network', 'Adds and switches to a custom chain.'],
+                [<C>wallet_requestPermissions</C> , 'Connect', <>Returns <C>[{'{'} parentCapability: 'eth_accounts' {'}'}]</C>.</>],
+                [<C>wallet_getPermissions</C>, '—', ''],
+                [<C>wallet_revokePermissions</C>, '—', 'Disconnects the site for EVM.'],
+                [<>Read methods (<C>eth_call</C>, <C>eth_getBalance</C>, <C>eth_estimateGas</C>, …)</>, '—', 'Proxied to the active network RPC.'],
+                [<><C>eth_sign</C>, <C>eth_signTransaction</C>, typed data v1/v3</>, '—', 'Rejected with 4200 (unsafe or deprecated).'],
+              ]}
+            />
+            <P>Events: <C>connect</C>, <C>accountsChanged</C>, <C>chainChanged</C>. The provider also exposes <C>isOrion: true</C> and <C>isMetaMask: false</C>.</P>
+          </Section>
+
       </div>
     </div>
   );
