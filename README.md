@@ -212,3 +212,12 @@ python3 e2e/e2e.py          # needs Python Playwright and a Chromium that allows
 - Firefox build and a Chrome Web Store release
 - An independent security audit
 
+## Stellar web dashboard
+
+This repository also contains Orion's original web dashboard for the Stellar testnet (`/#/terminal`): connect Freighter, fund an account with Friendbot, send XLM, and watch addresses. It shares the website's design and is a handy companion when you're testing Stellar flows without the extension.
+
+---
+
+<div align="center">
+<sub>Built by <a href="https://github.com/arg0506">Arpan Roy</a> · Look up, then ship.</sub>
+</div>
