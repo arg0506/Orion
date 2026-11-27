@@ -564,6 +564,20 @@ npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
             </OL>
           </Section>
 
+          {/* ── Testing ── */}
+          <Section id="testing" eyebrow="Internals" title="Testing">
+            <Code lang="bash">{`cd extension
+npm test                        # unit + integration tests (vitest)
+REQUIRE_LOCAL_NODE=1 npm test   # fail instead of skip without a node on :8545
+python3 e2e/e2e.py              # end-to-end in Chrome (see the script header)`}</Code>
+            <UL>
+              <li><strong>Key derivation</strong> is checked against the official SLIP-10 and SEP-5 test vectors and Hardhat's default accounts.</li>
+              <li><strong>EVM speed-up and cancel</strong> run against a real local node with automining off, proving the replacement wins and the original never lands.</li>
+              <li><strong>Solana and Stellar</strong> transaction builders (priority fees, fee-bump, same-sequence cancel, SEP-53) are tested offline.</li>
+              <li><strong>End to end</strong>, the built extension is loaded in Chrome, onboarded through the UI, and driven by a test dapp across all three chains, including cancelling a pending transaction from the popup (18 checks).</li>
+            </UL>
+          </Section>
+
       </div>
     </div>
   );
