@@ -1,0 +1,61 @@
+@import 'tailwindcss';
+@source "../../entrypoints";
+@source "../";
+
+@theme {
+  --font-sans: 'Instrument Sans Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Gloock', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --color-paper: #f6f5f2;
+  --color-card: #ffffff;
+  --color-inset: #efede8;
+  --color-line: #e4e2dc;
+  --color-line-strong: #cfccc4;
+  --color-muted: #5a5955;
+  --color-subtle: #8a8984;
+  --color-ink: #141414;
+  --color-rigel: #2f6fe0;
+  --color-betel: #e8622f;
+  --color-ok: #1f9d5c;
+  --color-bad: #d93b4b;
+  --color-warn: #b7791f;
+}
+
+html,
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+.num {
+  font-variant-numeric: tabular-nums;
+}
+.tile {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 11px;
+  box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  outline: 1px solid rgba(0, 0, 0, 0.05);
+}
+.shadow-card {
+  box-shadow: 0 1px 0 rgba(20, 20, 20, 0.02), 0 10px 28px -18px rgba(20, 20, 20, 0.2);
+}
+.dots {
+  background-image: radial-gradient(rgba(20, 20, 20, 0.07) 1px, transparent 1.2px);
+  background-size: 22px 22px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
