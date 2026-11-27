@@ -73,3 +73,20 @@ Building across chains usually means juggling MetaMask for EVM, Phantom for Sola
 <img src="docs/images/09-log.png" width="250" alt="The developer request log">
 </div>
 
+## Install
+
+Orion isn't on the Chrome Web Store yet; load it as an unpacked extension.
+
+```bash
+git clone https://github.com/arg0506/Orion
+cd Orion/extension
+npm install
+npm run build          # outputs extension/.output/chrome-mv3
+```
+
+1. Open `chrome://extensions` and switch on **Developer mode**.
+2. Click **Load unpacked** and choose `extension/.output/chrome-mv3`.
+3. Pin Orion, then create a wallet or import a recovery phrase.
+
+Works in Chromium browsers (Chrome, Brave, Edge, Arc). For live reload while developing, run `npm run dev`.
+
