@@ -48,22 +48,22 @@ export function AddressQRCodeGenerator({ address, label = 'Stellar Address', net
   };
 
   return (
-    <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10 backdrop-blur-xl relative overflow-hidden group">
+    <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10 backdrop-blur-xl relative overflow-hidden group">
       {/* Decorative corner lines */}
-      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-white/20 group-hover:border-white/40 transition-colors" />
-      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-white/20 group-hover:border-white/40 transition-colors" />
-      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-white/20 group-hover:border-white/40 transition-colors" />
-      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-white/20 group-hover:border-white/40 transition-colors" />
+      <div className="absolute top-0 left-0 w-2 h-2 border-t border-l border-ink/20 group-hover:border-ink/40 transition-colors" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-ink/20 group-hover:border-ink/40 transition-colors" />
+      <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-ink/20 group-hover:border-ink/40 transition-colors" />
+      <div className="absolute bottom-0 right-0 w-2 h-2 border-b border-r border-ink/20 group-hover:border-ink/40 transition-colors" />
 
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="flex items-center gap-2 justify-between w-full">
           <div className="flex items-center gap-1.5">
-            <QrCode size={14} className="text-white/60" />
-            <span className="text-[13px] font-bold text-gray-400 font-mono">
+            <QrCode size={14} className="text-ink/60" />
+            <span className="text-[13px] font-bold text-muted font-mono">
               {label}
             </span>
           </div>
-          <span className="px-2 py-0.5 rounded bg-white/10 border border-white/10 text-[12px] text-white font-bold font-mono">
+          <span className="px-2 py-0.5 rounded bg-black/10 border border-ink/10 text-[12px] text-ink font-bold font-mono">
             {network}
           </span>
         </div>
@@ -71,7 +71,7 @@ export function AddressQRCodeGenerator({ address, label = 'Stellar Address', net
         {/* QR Core Container with High Contrast Dark Glass Styling */}
         <div 
           ref={qrRef} 
-          className="p-4 rounded-xl bg-night/80 border border-white/10 shadow-inner relative flex items-center justify-center group-hover:scale-102 transition-transform duration-300"
+          className="p-4 rounded-xl bg-paper/80 border border-ink/10 shadow-inner relative flex items-center justify-center group-hover:scale-102 transition-transform duration-300"
         >
           <QRCodeSVG
             value={address}
@@ -85,17 +85,17 @@ export function AddressQRCodeGenerator({ address, label = 'Stellar Address', net
 
         {/* Address text string */}
         <div className="w-full">
-          <p className="text-[13px] text-gray-500 font-mono mb-1">Public Wallet Address</p>
-          <div className="p-2.5 rounded bg-night/80 border border-white/5 flex items-center justify-between gap-2 overflow-hidden w-full">
-            <span className="text-xs font-mono text-gray-300 truncate select-all block text-left">
+          <p className="text-[13px] text-muted font-mono mb-1">Public Wallet Address</p>
+          <div className="p-2.5 rounded bg-paper/80 border border-ink/5 flex items-center justify-between gap-2 overflow-hidden w-full">
+            <span className="text-xs font-mono text-ink truncate select-all block text-left">
               {address}
             </span>
             <button
               onClick={handleCopy}
-              className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all cursor-pointer"
+              className="p-1 rounded hover:bg-black/10 text-muted hover:text-ink transition-all cursor-pointer"
               title="Copy Address"
             >
-              {copied ? <Check size={14} className="text-emerald-500" /> : <Copy size={14} />}
+              {copied ? <Check size={14} className="text-ok" /> : <Copy size={14} />}
             </button>
           </div>
         </div>
@@ -104,14 +104,14 @@ export function AddressQRCodeGenerator({ address, label = 'Stellar Address', net
         <div className="grid grid-cols-2 gap-3 w-full pt-1">
           <button
             onClick={handleCopy}
-            className="flex items-center justify-center gap-1.5 py-2 px-3 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-[13px] transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 py-2 px-3 border border-ink/10 hover:border-ink/20 bg-black/5 hover:bg-black/10 text-ink font-mono text-[13px] transition-all cursor-pointer"
           >
-            {copied ? <Check size={12} className="text-emerald-500" /> : <Copy size={12} />}
+            {copied ? <Check size={12} className="text-ok" /> : <Copy size={12} />}
             {copied ? 'COPIED' : 'COPY'}
           </button>
           <button
             onClick={handleDownloadSVG}
-            className="flex items-center justify-center gap-1.5 py-2 px-3 border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-white font-mono text-[13px] transition-all cursor-pointer"
+            className="flex items-center justify-center gap-1.5 py-2 px-3 border border-ink/10 hover:border-ink/20 bg-black/5 hover:bg-black/10 text-ink font-mono text-[13px] transition-all cursor-pointer"
           >
             <Download size={12} />
             DOWNLOAD
@@ -352,7 +352,7 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
             stopCamera();
             onClose();
           }}
-          className="absolute inset-0 bg-night/80 backdrop-blur-md"
+          className="absolute inset-0 bg-paper/80 backdrop-blur-md"
         />
 
         {/* Modal Panel */}
@@ -360,19 +360,19 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
           initial={{ opacity: 0, scale: 0.95, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 15 }}
-          className="relative w-full max-w-md rounded-lg border border-white/10 bg-deeper/95 shadow-2xl p-6 z-10 font-mono text-xs overflow-hidden"
+          className="relative w-full max-w-md rounded-lg border border-ink/10 bg-inset/95 shadow-2xl p-6 z-10 font-mono text-xs overflow-hidden"
         >
           {/* Decorative scanner lines or corners */}
-          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white/40" />
-          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white/40" />
-          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white/40" />
-          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white/40" />
+          <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-ink/40" />
+          <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-ink/40" />
+          <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-ink/40" />
+          <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-ink/40" />
 
           {/* Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-white/10 mb-5">
+          <div className="flex items-center justify-between pb-4 border-b border-ink/10 mb-5">
             <div className="flex items-center gap-2">
-              <ScanLine className="text-white animate-pulse" size={16} />
-              <h3 className="font-display font-bold text-sm text-white">
+              <ScanLine className="text-ink animate-pulse" size={16} />
+              <h3 className="font-display font-bold text-sm text-ink">
                 QR ADDRESS SCANNER
               </h3>
             </div>
@@ -381,20 +381,20 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
                 stopCamera();
                 onClose();
               }}
-              className="p-1 rounded hover:bg-white/10 text-gray-400 hover:text-white transition-all cursor-pointer"
+              className="p-1 rounded hover:bg-black/10 text-muted hover:text-ink transition-all cursor-pointer"
             >
               <X size={16} />
             </button>
           </div>
 
           {/* Mode Switcher Tabs */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-white/5 border border-white/10 rounded mb-5">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-black/5 border border-ink/10 rounded mb-5">
             <button
               onClick={() => setActiveTab('camera')}
               className={`flex items-center justify-center gap-2 py-2 px-3 font-bold transition-all cursor-pointer ${
                 activeTab === 'camera' 
-                  ? 'bg-white text-black font-semibold' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-ink text-paper font-semibold' 
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <Camera size={14} />
@@ -404,8 +404,8 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
               onClick={() => setActiveTab('upload')}
               className={`flex items-center justify-center gap-2 py-2 px-3 font-bold transition-all cursor-pointer ${
                 activeTab === 'upload' 
-                  ? 'bg-white text-black font-semibold' 
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-ink text-paper font-semibold' 
+                  : 'text-muted hover:text-ink'
               }`}
             >
               <Upload size={14} />
@@ -416,26 +416,26 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
           {/* ACTIVE VIEW CONTENT */}
           <div className="min-h-[260px] flex flex-col justify-center">
             {activeTab === 'camera' ? (
-              <div className="relative rounded overflow-hidden bg-night/80 border border-white/5 flex flex-col items-center justify-center min-h-[260px]">
+              <div className="relative rounded overflow-hidden bg-paper/80 border border-ink/5 flex flex-col items-center justify-center min-h-[260px]">
                 {cameraError ? (
                   <div className="p-6 text-center space-y-4 max-w-sm">
-                    <div className="p-3 bg-red-950/40 border border-red-500/20 text-red-400 rounded-full w-12 h-12 flex items-center justify-center mx-auto">
+                    <div className="p-3 bg-bad/10 border border-bad/25 text-bad rounded-full w-12 h-12 flex items-center justify-center mx-auto">
                       <AlertTriangle size={20} />
                     </div>
-                    <p className="text-[13px] text-gray-400 leading-relaxed">
+                    <p className="text-[13px] text-muted leading-relaxed">
                       {cameraError}
                     </p>
                     <button
                       onClick={startCamera}
-                      className="px-4 py-2 border border-white/10 hover:border-white text-white transition-all text-[13px] font-bold"
+                      className="px-4 py-2 border border-ink/10 hover:border-ink text-ink transition-all text-[13px] font-bold"
                     >
                       TRY CAMERA AGAIN
                     </button>
                   </div>
                 ) : !cameraActive ? (
                   <div className="text-center space-y-3">
-                    <RefreshCw size={24} className="animate-spin text-white/40 mx-auto" />
-                    <span className="text-[13px] text-gray-500 block">
+                    <RefreshCw size={24} className="animate-spin text-ink/40 mx-auto" />
+                    <span className="text-[13px] text-muted block">
                       Locking Video Feed...
                     </span>
                   </div>
@@ -451,26 +451,26 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
                     
                     {/* Floating Target Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      <div className="w-40 h-40 border-2 border-dashed border-white/60 rounded-lg relative">
-                        <div className="absolute -top-1.5 -left-1.5 w-4 h-4 border-t-4 border-l-4 border-white" />
-                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 border-t-4 border-r-4 border-white" />
-                        <div className="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-4 border-l-4 border-white" />
-                        <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-4 border-r-4 border-white" />
+                      <div className="w-40 h-40 border-2 border-dashed border-ink/60 rounded-lg relative">
+                        <div className="absolute -top-1.5 -left-1.5 w-4 h-4 border-t-4 border-l-4 border-ink" />
+                        <div className="absolute -top-1.5 -right-1.5 w-4 h-4 border-t-4 border-r-4 border-ink" />
+                        <div className="absolute -bottom-1.5 -left-1.5 w-4 h-4 border-b-4 border-l-4 border-ink" />
+                        <div className="absolute -bottom-1.5 -right-1.5 w-4 h-4 border-b-4 border-r-4 border-ink" />
                         
                         {/* Moving Scanning Line Animation */}
-                        <div className="w-full h-0.5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.8)] absolute animate-bounce top-1/2" />
+                        <div className="w-full h-0.5 bg-ink shadow-[0_0_8px_rgba(255,255,255,0.8)] absolute animate-bounce top-1/2" />
                       </div>
                     </div>
 
                     {/* Camera Control Panel */}
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between px-3 py-1.5 bg-night/80 backdrop-blur-md rounded border border-white/10 z-10">
-                      <span className="text-[12px] text-emerald-400 font-bold flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between px-3 py-1.5 bg-paper/80 backdrop-blur-md rounded border border-ink/10 z-10">
+                      <span className="text-[12px] text-ok font-bold flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-ok animate-ping"></span>
                         LIVE_FEED_ONLINE
                       </span>
                       <button
                         onClick={flipCamera}
-                        className="px-2 py-1 bg-white/10 hover:bg-white text-white hover:text-black transition-colors rounded text-[12px] font-bold cursor-pointer"
+                        className="px-2 py-1 bg-black/10 hover:bg-ink text-ink hover:text-paper transition-colors rounded text-[12px] font-bold cursor-pointer"
                       >
                         FLIP CAMERA
                       </button>
@@ -489,24 +489,24 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
                 onDrop={handleDrop}
                 className={`relative rounded-lg border-2 border-dashed flex flex-col items-center justify-center min-h-[260px] p-6 text-center transition-all ${
                   dragActive 
-                    ? 'border-white bg-white/[0.05]' 
-                    : 'border-white/20 bg-white/[0.01] hover:border-white/40 hover:bg-white/[0.02]'
+                    ? 'border-ink bg-black/[0.05]' 
+                    : 'border-ink/20 bg-black/[0.01] hover:border-ink/40 hover:bg-black/[0.02]'
                 }`}
               >
                 <div className="space-y-4 max-w-xs">
-                  <div className="p-3.5 bg-white/5 border border-white/10 text-white rounded-full w-14 h-14 flex items-center justify-center mx-auto shadow-inner">
-                    <QrCode size={24} className="text-gray-300" />
+                  <div className="p-3.5 bg-black/5 border border-ink/10 text-ink rounded-full w-14 h-14 flex items-center justify-center mx-auto shadow-inner">
+                    <QrCode size={24} className="text-ink" />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-white font-bold tracking-wide text-[13px]">
+                    <p className="text-ink font-bold tracking-wide text-[13px]">
                       DRAG & DROP IMAGE FILE
                     </p>
-                    <p className="text-[13px] text-gray-500 leading-relaxed">
+                    <p className="text-[13px] text-muted leading-relaxed">
                       Drop any file image containing a Stellar G-Address or MetaMask (0x) QR code.
                     </p>
                   </div>
                   <div>
-                    <label className="inline-block px-5 py-2 bg-white text-black font-bold text-[12px] hover:bg-gray-200 transition-all cursor-pointer">
+                    <label className="inline-block px-5 py-2 bg-ink text-paper font-bold text-[12px] hover:bg-black transition-all cursor-pointer">
                       BROWSE STORAGE
                       <input 
                         type="file" 
@@ -521,7 +521,7 @@ export function AddressQRCodeScanner({ onScanSuccess, isOpen, onClose, allowedTy
             )}
           </div>
 
-          <div className="mt-5 pt-3 border-t border-white/5 flex items-center justify-between text-[12px] text-gray-500">
+          <div className="mt-5 pt-3 border-t border-ink/5 flex items-center justify-between text-[12px] text-muted">
             <span>ALLOWED TYPES: {allowedTypes.toUpperCase()}</span>
             <span>JSQR SYSTEM V1.0</span>
           </div>

@@ -79,14 +79,14 @@ function Tile({ t, i, mx, my, reduced }: { key?: React.Key; t: TileSpec; i: numb
   );
 }
 
-function HeroArt() {
+export function HeroArt({ className }: { className?: string }) {
   const reduced = !!useReducedMotion();
   const mx = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
   const my = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
 
   return (
     <div
-      className="relative w-full max-w-[600px] mx-auto"
+      className={cx('relative w-full max-w-[600px] mx-auto', className)}
       onMouseMove={(e) => {
         const r = e.currentTarget.getBoundingClientRect();
         mx.set((e.clientX - r.left) / r.width - 0.5);
@@ -365,11 +365,11 @@ export default function LandingPage() {
           <div>
             <SectionLabel>The wallet</SectionLabel>
             <h2 className="mt-6 font-serif text-[38px] sm:text-[56px] leading-[1] tracking-[-0.02em]">
-              <SplitHeadline text="Dark sky, bright numbers." />
+              <SplitHeadline text="Ink on paper, numbers that count." />
             </h2>
             <Reveal delay={0.2}>
               <p className="mt-5 text-[16px] leading-relaxed text-[#5a5955] max-w-md">
-                Inside, Orion turns to night. Money coming in glows Rigel blue, money going out burns Betelgeuse orange, and everything else stays out of your way.
+                The wallet looks just like this page. Your balance is set big in serif, money coming in is Rigel blue, money going out is Betelgeuse orange, and everything else stays out of your way.
               </p>
               <Link to="/terminal" className="mt-7 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
                 Open the wallet <ArrowUpRight size={16} />
@@ -382,16 +382,16 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
             viewport={{ once: true, margin: '-100px' }}
             transition={{ duration: 1.1, ease }}
-            className="relative rounded-[28px] bg-[#0b0e1a] text-[#eef1fa] p-6 sm:p-7 shadow-[0_40px_80px_-30px_rgba(11,14,26,0.6)]"
+            className="relative rounded-[28px] bg-white border border-[#e4e2dc] p-6 sm:p-7 shadow-[0_40px_80px_-40px_rgba(20,20,20,0.45)]"
           >
             <div className="flex items-center justify-between text-[13px]">
-              <span className="text-[#8a93b2]">Testnet balance</span>
-              <span className="rounded-full border border-[#232a42] px-2.5 py-0.5 text-[#8a93b2]">Example</span>
+              <span className="text-[#5a5955]">Testnet balance</span>
+              <span className="rounded-full bg-[#efede8] px-2.5 py-0.5 text-[#5a5955]">Example</span>
             </div>
-            <p className="font-display font-bold text-[44px] sm:text-[52px] leading-none mt-3 tabular-nums">
-              <CountUp to={10000} /> <span className="text-xl text-[#8a93b2] font-semibold">XLM</span>
+            <p className="font-serif text-[52px] sm:text-[64px] leading-none mt-3 tabular-nums tracking-[-0.03em]">
+              <CountUp to={10000} /> <span className="text-2xl text-[#5a5955] tracking-normal">XLM</span>
             </p>
-            <ul className="mt-6 divide-y divide-[#232a42]">
+            <ul className="mt-6 divide-y divide-[#e4e2dc]">
               {[
                 { inc: true, who: 'GDF7…MHHP', amt: '+250.00', when: 'just now' },
                 { inc: false, who: 'GCAK…EYFP', amt: '−1,200.00', when: '2 h ago' },
@@ -405,16 +405,16 @@ export default function LandingPage() {
                   transition={{ delay: 0.5 + i * 0.15, duration: 0.6, ease }}
                   className="flex items-center gap-3 py-3"
                 >
-                  <span className={cx('w-9 h-9 rounded-xl grid place-items-center border', r.inc ? 'text-[#8fc1ff] bg-[#8fc1ff]/10 border-[#8fc1ff]/20' : 'text-[#ff8a5b] bg-[#ff8a5b]/10 border-[#ff8a5b]/20')}>
+                  <span className={cx('tile w-10 h-10', r.fund ? 'bg-[linear-gradient(160deg,#fff,#eef7f1)] text-[#1f9d5c]' : r.inc ? 'bg-[linear-gradient(160deg,#7cc0ff,#2f7cf0)] text-white' : 'bg-[linear-gradient(160deg,#fff,#f2f0ea)] text-[#e8622f]')}>
                     {r.fund ? <Droplets size={15} /> : r.inc ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
                   </span>
                   <span className="flex-1 min-w-0 text-left">
                     <span className="block text-sm">
                       {r.inc ? 'Received from' : 'Sent to'} <span className="font-mono text-[13px]">{r.who}</span>
                     </span>
-                    <span className="block text-[12px] text-[#5f6886]">{r.when}</span>
+                    <span className="block text-[12px] text-[#8a8984]">{r.when}</span>
                   </span>
-                  <span className={cx('text-sm font-semibold tabular-nums', r.inc ? 'text-[#8fc1ff]' : '')}>{r.amt}</span>
+                  <span className={cx('font-serif text-[18px] tabular-nums', r.inc ? 'text-[#2f6fe0]' : '')}>{r.amt}</span>
                 </motion.li>
               ))}
             </ul>

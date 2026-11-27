@@ -6,24 +6,24 @@
   --font-serif: "Gloock", Georgia, serif;
   --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Instrument Sans Variable", sans-serif;
 
-  /* Orion palette — the night sky and its two brightest stars */
-  --color-night: #0b0e1a;     /* page background */
-  --color-deep: #121729;      /* raised surfaces */
-  --color-deeper: #0f1322;    /* inset surfaces / inputs */
-  --color-line: #232a42;      /* borders */
-  --color-line-strong: #343d5c;
-  --color-mist: #8a93b2;      /* secondary text */
-  --color-haze: #5f6886;      /* tertiary text */
-  --color-starlight: #eef1fa; /* primary text */
-  --color-rigel: #8fc1ff;     /* blue-white supergiant: primary, incoming */
-  --color-rigel-deep: #4d8ff0;
-  --color-betel: #ff8a5b;     /* red supergiant: outgoing, attention */
-  --color-ok: #5bd6a0;
-  --color-bad: #ff6b7a;
-  --color-warn: #f5c35b;
+  /* Orion paper palette — ink on paper, with Orion's two brightest stars as accents */
+  --color-paper: #f6f5f2;     /* page background */
+  --color-card: #ffffff;      /* raised surfaces */
+  --color-inset: #efede8;     /* inputs, wells, chips */
+  --color-line: #e4e2dc;      /* hairlines */
+  --color-line-strong: #cfccc4;
+  --color-muted: #5a5955;     /* secondary text */
+  --color-subtle: #8a8984;    /* tertiary text */
+  --color-ink: #141414;       /* primary text, primary buttons */
+  --color-rigel: #2f6fe0;     /* blue-white supergiant: incoming, links */
+  --color-rigel-strong: #1f56c0;
+  --color-betel: #e8622f;     /* red supergiant: outgoing */
+  --color-ok: #1f9d5c;
+  --color-bad: #d93b4b;
+  --color-warn: #b7791f;
 }
 
-html { color-scheme: dark; }
+html { color-scheme: light; }
 
 body {
   font-size: 15px;
@@ -42,32 +42,40 @@ body {
 
 .num { font-variant-numeric: tabular-nums; }
 
-/* Night-sky backdrop: a few faint stars over a deep indigo gradient */
+/* Paper backdrop with a faint dotted star grid */
 .orion-sky {
-  background-color: var(--color-night);
-  background-image:
-    radial-gradient(1px 1px at 12% 18%, rgba(238,241,250,0.55) 100%, transparent),
-    radial-gradient(1px 1px at 78% 9%, rgba(143,193,255,0.6) 100%, transparent),
-    radial-gradient(1.5px 1.5px at 64% 72%, rgba(238,241,250,0.35) 100%, transparent),
-    radial-gradient(1px 1px at 33% 88%, rgba(255,138,91,0.45) 100%, transparent),
-    radial-gradient(1px 1px at 90% 54%, rgba(238,241,250,0.3) 100%, transparent),
-    radial-gradient(ellipse 80% 60% at 85% -10%, rgba(77,143,240,0.10), transparent 70%),
-    radial-gradient(ellipse 60% 50% at -10% 110%, rgba(255,138,91,0.06), transparent 70%);
+  background-color: var(--color-paper);
+  background-image: radial-gradient(rgba(20, 20, 20, 0.07) 1px, transparent 1.2px);
+  background-size: 28px 28px;
   background-attachment: fixed;
+}
+
+/* Soft card shadow used across the app */
+.shadow-card {
+  box-shadow: 0 1px 0 rgba(20, 20, 20, 0.02), 0 12px 32px -18px rgba(20, 20, 20, 0.18);
+}
+
+/* App-icon tile, as on the landing page */
+.tile {
+  display: inline-grid;
+  place-items: center;
+  border-radius: 13px;
+  box-shadow: 0 8px 18px -10px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+  outline: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 /* Legacy theme (landing page / developer playground) */
 .immersive-bg {
-  background-color: var(--color-night) !important;
+  background-color: var(--color-paper) !important;
 }
 
 body, html, #root {
-  background-color: var(--color-night) !important;
+  background-color: var(--color-paper) !important;
 }
 
 /* Stardust starry space-like background */
 .space-stardust {
-  background-color: var(--color-night) !important;
+  background-color: var(--color-paper) !important;
   background-image: 
     radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.95) 100%, transparent),
     radial-gradient(1.5px 1.5px at 60px 70px, rgba(255, 255, 255, 0.85) 100%, transparent),
@@ -96,27 +104,17 @@ body, html, #root {
 
 /* Liquid Silver Metallic Shimmer */
 .silver-text-glow {
-  background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 50%, #f4f4f5 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.25));
+  color: var(--color-ink);
 }
 
 .silver-border-metallic {
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1),
-    0 10px 30px -10px rgba(0, 0, 0, 0.7);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid var(--color-line);
+  background: var(--color-card);
+  transition: border-color 0.2s ease;
 }
 
 .silver-border-metallic:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  box-shadow: 
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.2),
-    0 0 20px rgba(255, 255, 255, 0.1),
-    0 15px 35px -10px rgba(0, 0, 0, 0.8);
+  border-color: var(--color-line-strong);
 }
 
 /* Sleek iPhone Notch Header shape */
@@ -141,40 +139,38 @@ body, html, #root {
 
 /* Metallic button sheen effect */
 .btn-metallic {
-  background: var(--color-rigel);
-  color: var(--color-night);
+  background: var(--color-ink);
+  color: var(--color-paper);
   font-weight: 600;
-  border: 1px solid rgba(143, 193, 255, 0.4);
-  box-shadow: 0 8px 24px -8px rgba(143, 193, 255, 0.5);
+  border: 1px solid var(--color-ink);
+  box-shadow: 0 8px 20px -10px rgba(0, 0, 0, 0.6);
   transition: background 0.15s ease;
 }
 
 .btn-metallic:hover {
-  background: #a9d0ff;
+  background: #000;
 }
 
 /* Pure monochrome cyber glow */
 .cyber-glow-white {
-  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 16px rgba(255, 255, 255, 0.3);
+  text-shadow: none;
 }
 
 .cyber-border-white {
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--color-line-strong);
 }
 
 /* Glass panel */
 .glass-panel {
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
 }
 
 .glass-panel-monochrome {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(255, 255, 255, 0.002) 100%);
-  backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9);
+  background: var(--color-card);
+  border: 1px solid var(--color-line);
+  box-shadow: 0 1px 0 rgba(20, 20, 20, 0.02), 0 12px 32px -18px rgba(20, 20, 20, 0.18);
+  border-radius: 24px;
 }
 
 /* Custom Scrollbar */
@@ -183,14 +179,14 @@ body, html, #root {
   height: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-night);
+  background: var(--color-paper);
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(20, 20, 20, 0.15);
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(20, 20, 20, 0.3);
 }
 
 /* Animations */
@@ -203,3 +199,7 @@ body, html, #root {
   animation: pulse-slow 8s infinite ease-in-out;
 }
 
+
+/* Playground: soften the legacy square controls */
+.devhub button, .devhub select, .devhub textarea, .devhub input { border-radius: 12px; }
+.devhub .rounded { border-radius: 14px; }

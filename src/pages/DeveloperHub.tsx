@@ -577,7 +577,7 @@ export default function DeveloperHub() {
   });
 
   return (
-    <div className="space-y-8 font-sans text-xs text-starlight/90">
+    <div className="devhub space-y-8 font-sans text-xs text-ink/90">
       
       {/* Page header */}
       <PageHeader
@@ -610,8 +610,8 @@ export default function DeveloperHub() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-5 py-3.5 font-bold border-b-2 text-[13px] font-mono whitespace-nowrap transition-all cursor-pointer ${
                 isActive
-                  ? 'border-white text-white bg-white/5'
-                  : 'border-transparent text-mist hover:text-starlight/90 hover:bg-zinc-900/10'
+                  ? 'border-ink text-ink bg-black/5'
+                  : 'border-transparent text-muted hover:text-ink/90 hover:bg-black/[0.03]'
               }`}
             >
               <Icon size={12} />
@@ -630,14 +630,14 @@ export default function DeveloperHub() {
             
             {/* Left side: Code Template & Editor */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 relative overflow-hidden flex flex-col">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/5 pb-4 mb-4">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 relative overflow-hidden flex flex-col">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-ink/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-ink flex items-center gap-2">
                       <Code size={14} />
                       Interactive Source Code Sandbox
                     </h3>
-                    <p className="text-[13px] text-gray-500 mt-1 font-mono">
+                    <p className="text-[13px] text-muted mt-1 font-mono">
                       Select custom templates to check syntax structure
                     </p>
                   </div>
@@ -647,7 +647,7 @@ export default function DeveloperHub() {
                       const matched = templates.find(t => t.name === e.target.value);
                       if (matched) handleTemplateChange(matched);
                     }}
-                    className="bg-deeper border border-white/10 text-[13px] font-bold font-mono px-3 py-2 rounded text-white focus:border-white focus:outline-none cursor-pointer"
+                    className="bg-inset border border-ink/10 text-[13px] font-bold font-mono px-3 py-2 rounded text-ink focus:border-ink focus:outline-none cursor-pointer"
                   >
                     {templates.map(t => (
                       <option key={t.name} value={t.name}>{t.name}</option>
@@ -655,25 +655,25 @@ export default function DeveloperHub() {
                   </select>
                 </div>
 
-                <div className="p-4 bg-white/[0.02] border border-white/5 rounded mb-4">
-                  <span className="text-[12px] font-bold text-gray-500 block mb-1">CONTRACT METRICS</span>
-                  <p className="text-[13px] text-gray-300 leading-relaxed font-mono">
+                <div className="p-4 bg-black/[0.02] border border-ink/5 rounded mb-4">
+                  <span className="text-[12px] font-bold text-muted block mb-1">CONTRACT METRICS</span>
+                  <p className="text-[13px] text-ink leading-relaxed font-mono">
                     {selectedTemplate.description}
                   </p>
                 </div>
 
                 {/* Simulated Editor */}
-                <div className="relative border border-white/10 rounded overflow-hidden">
-                  <div className="bg-deeper px-4 py-2 border-b border-white/5 text-[12px] text-gray-500 flex justify-between items-center">
+                <div className="relative border border-ink/10 rounded overflow-hidden">
+                  <div className="bg-inset px-4 py-2 border-b border-ink/5 text-[12px] text-muted flex justify-between items-center">
                     <span>
-                      Language: <strong className="text-white">{selectedTemplate.language}</strong>
+                      Language: <strong className="text-ink">{selectedTemplate.language}</strong>
                     </span>
                     <span>READ-WRITE SIMULATED IDE</span>
                   </div>
                   <textarea
                     value={editorCode}
                     onChange={(e) => setEditorCode(e.target.value)}
-                    className="w-full h-96 bg-deeper text-[13px] font-mono p-4 text-gray-300 focus:outline-none leading-relaxed resize-none font-medium text-left"
+                    className="w-full h-96 bg-inset text-[13px] font-mono p-4 text-ink focus:outline-none leading-relaxed resize-none font-medium text-left"
                     spellCheck="false"
                   />
                 </div>
@@ -682,7 +682,7 @@ export default function DeveloperHub() {
                   <button
                     onClick={handleCompile}
                     disabled={isCompiling}
-                    className="flex-1 py-3.5 bg-white text-black hover:bg-gray-200 font-bold text-[13px] transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 bg-ink text-paper hover:bg-black font-bold text-[13px] transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isCompiling ? (
                       <>
@@ -703,7 +703,7 @@ export default function DeveloperHub() {
                       setCompileLogs([]);
                       toast.success('Reset source code to default template.');
                     }}
-                    className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-[13px] transition-all cursor-pointer"
+                    className="px-4 py-3 bg-black/5 hover:bg-black/10 border border-ink/10 text-ink font-bold text-[13px] transition-all cursor-pointer"
                   >
                     RESET
                   </button>
@@ -715,37 +715,37 @@ export default function DeveloperHub() {
             <div className="lg:col-span-5 space-y-6">
               
               {/* Compiler Logs */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 relative flex flex-col h-112 justify-between">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 relative flex flex-col h-112 justify-between">
                 <div>
-                  <div className="flex items-center justify-between border-b border-white/5 pb-4 mb-4">
+                  <div className="flex items-center justify-between border-b border-ink/5 pb-4 mb-4">
                     <div>
-                      <h4 className="text-xs font-bold text-white flex items-center gap-2">
+                      <h4 className="text-xs font-bold text-ink flex items-center gap-2">
                         <Terminal size={14} />
                         Compiler Logs
                       </h4>
-                      <p className="text-[13px] text-gray-500 mt-1">
+                      <p className="text-[13px] text-muted mt-1">
                         Outputs of the wasm/solc compilation run
                       </p>
                     </div>
                     {compileSuccess && (
-                      <span className="px-2.5 py-1 rounded bg-emerald-950/40 border border-emerald-500/20 text-emerald-400 text-[12px] font-bold">
+                      <span className="px-2.5 py-1 rounded bg-ok/10 border border-ok/25 text-ok text-[12px] font-bold">
                         SUCCESS
                       </span>
                     )}
                   </div>
 
-                  <div className="space-y-2 max-h-72 overflow-y-auto font-mono text-[13px] bg-deeper p-4 rounded border border-white/5 h-64 text-left">
+                  <div className="space-y-2 max-h-72 overflow-y-auto font-mono text-[13px] bg-inset p-4 rounded border border-ink/5 h-64 text-left">
                     {compileLogs.length === 0 ? (
-                      <div className="text-gray-600 flex flex-col items-center justify-center h-full space-y-2">
-                        <Cpu className="w-8 h-8 animate-pulse text-gray-700" />
+                      <div className="text-subtle flex flex-col items-center justify-center h-full space-y-2">
+                        <Cpu className="w-8 h-8 animate-pulse text-subtle" />
                         <span className="text-[12px]">Compiler idle. Click 'Compile Contract' to test target.</span>
                       </div>
                     ) : (
                       compileLogs.map((log, i) => (
                         <div key={i} className={`py-0.5 leading-relaxed ${
-                          log.includes('SUCCESS') ? 'text-white font-bold' :
-                          log.includes('error') ? 'text-rose-400' :
-                          'text-gray-400'
+                          log.includes('SUCCESS') ? 'text-ink font-bold' :
+                          log.includes('error') ? 'text-bad' :
+                          'text-muted'
                         }`}>
                           {log}
                         </div>
@@ -755,21 +755,21 @@ export default function DeveloperHub() {
                 </div>
 
                 {compileSuccess && (
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.02] space-y-3 font-mono">
-                    <span className="text-[12px] text-gray-500 block font-bold">COMPILER BINARY OUTPUT</span>
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.02] space-y-3 font-mono">
+                    <span className="text-[12px] text-muted block font-bold">COMPILER BINARY OUTPUT</span>
                     <div className="grid grid-cols-2 gap-3 text-[13px]">
                       <div>
-                        <span className="text-gray-500 block text-[12px]">Artifact Format:</span>
-                        <span className="text-white font-bold">{selectedTemplate.language === 'rust' ? 'WASM Binary' : 'ABI JSON'}</span>
+                        <span className="text-muted block text-[12px]">Artifact Format:</span>
+                        <span className="text-ink font-bold">{selectedTemplate.language === 'rust' ? 'WASM Binary' : 'ABI JSON'}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500 block text-[12px]">File Size:</span>
-                        <span className="text-white font-bold">{selectedTemplate.language === 'rust' ? '44.5 KB' : '1.4 KB'}</span>
+                        <span className="text-muted block text-[12px]">File Size:</span>
+                        <span className="text-ink font-bold">{selectedTemplate.language === 'rust' ? '44.5 KB' : '1.4 KB'}</span>
                       </div>
                     </div>
                     <button
                       onClick={() => toast.success('Smart Contract artifacts downloaded to workspace!')}
-                      className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[13px] font-bold transition-all cursor-pointer"
+                      className="w-full py-2 bg-black/5 hover:bg-black/10 border border-ink/10 text-ink text-[13px] font-bold transition-all cursor-pointer"
                     >
                       DOWNLOAD COMPILED SPECS
                     </button>
@@ -778,12 +778,12 @@ export default function DeveloperHub() {
               </div>
 
               {/* Architectural Insight */}
-              <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10 font-mono text-left">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5 mb-2">
-                  <Info size={13} className="text-white" />
+              <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10 font-mono text-left">
+                <h4 className="text-xs font-bold text-ink flex items-center gap-1.5 mb-2">
+                  <Info size={13} className="text-ink" />
                   Stellar Soroban vs. EVM Solidity
                 </h4>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Soroban relies on a WebAssembly (WASM) runtime environment executing optimized Rust binaries, guaranteeing low compute footprints and deterministic storage scaling. Solidity contracts run directly on the Ethereum Virtual Machine (EVM) interpreting compiled OPCODES via storage slots. Both use unique gas structures.
                 </p>
               </div>
@@ -798,19 +798,19 @@ export default function DeveloperHub() {
             
             {/* Visualizer and Simulator */}
             <div className="lg:col-span-7 space-y-6">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 flex flex-col relative text-left">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 flex flex-col relative text-left">
                 <div>
-                  <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                  <h3 className="text-xs font-bold text-ink flex items-center gap-2">
                     <Layers size={14} />
                     Inter-Contract Invocation Visualizer
                   </h3>
-                  <p className="text-[13px] text-gray-500 mt-1 font-mono mb-6">
+                  <p className="text-[13px] text-muted mt-1 font-mono mb-6">
                     Analyze recursive cross-contract call flows and callback data passing mechanics
                   </p>
                 </div>
 
                 {/* Animated Diagram */}
-                <div className="bg-deeper border border-white/10 rounded p-6 h-64 flex flex-col justify-center relative overflow-hidden">
+                <div className="bg-inset border border-ink/10 rounded p-6 h-64 flex flex-col justify-center relative overflow-hidden">
                   
                   {/* Grid Lines background */}
                   <div className="absolute inset-0 bg-grid-pattern opacity-5 pointer-events-none"></div>
@@ -821,18 +821,18 @@ export default function DeveloperHub() {
                     <div className="flex flex-col items-center space-y-2">
                       <div className={`p-3 rounded border font-bold text-[13px] transition-all ${
                         interconnectStep === 1 || interconnectStep === 2
-                          ? 'bg-white text-black border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                          : 'bg-deeper border-white/10 text-gray-500'
+                          ? 'bg-ink text-paper border-ink scale-110 '
+                          : 'bg-inset border-ink/10 text-muted'
                       }`}>
                         Client App
                       </div>
-                      <span className="text-[12px] text-gray-600 font-mono">DEX_ROUTER</span>
+                      <span className="text-[12px] text-subtle font-mono">DEX_ROUTER</span>
                     </div>
 
                     {/* Connector 1 */}
-                    <div className="flex-1 h-0.5 bg-white/10 relative mx-4">
+                    <div className="flex-1 h-0.5 bg-black/10 relative mx-4">
                       {isInterconnecting && (interconnectStep >= 1) && (
-                        <div className="absolute top-0 left-0 h-full bg-white animate-pulse-width" style={{
+                        <div className="absolute top-0 left-0 h-full bg-ink animate-pulse-width" style={{
                           animation: 'pulse 1s infinite',
                           width: interconnectStep > 2 ? '100%' : '50%'
                         }}></div>
@@ -843,18 +843,18 @@ export default function DeveloperHub() {
                     <div className="flex flex-col items-center space-y-2">
                       <div className={`p-3 rounded border font-bold text-[13px] transition-all ${
                         interconnectStep === 3 || interconnectStep === 4 || interconnectStep === 8
-                          ? 'bg-white text-black border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                          : 'bg-deeper border-white/10 text-gray-500'
+                          ? 'bg-ink text-paper border-ink scale-110 '
+                          : 'bg-inset border-ink/10 text-muted'
                       }`}>
                         DEX Contract
                       </div>
-                      <span className="text-[12px] text-gray-600 font-mono">CC_INVOKER</span>
+                      <span className="text-[12px] text-subtle font-mono">CC_INVOKER</span>
                     </div>
 
                     {/* Connector 2 */}
-                    <div className="flex-1 h-0.5 bg-white/10 relative mx-4">
+                    <div className="flex-1 h-0.5 bg-black/10 relative mx-4">
                       {isInterconnecting && (interconnectStep >= 3) && (
-                        <div className="absolute top-0 left-0 h-full bg-white animate-pulse-width" style={{
+                        <div className="absolute top-0 left-0 h-full bg-ink animate-pulse-width" style={{
                           animation: 'pulse 1s infinite',
                           width: interconnectStep > 5 ? '100%' : '50%'
                         }}></div>
@@ -865,21 +865,21 @@ export default function DeveloperHub() {
                     <div className="flex flex-col items-center space-y-2">
                       <div className={`p-3 rounded border font-bold text-[13px] transition-all ${
                         interconnectStep === 5 || interconnectStep === 6 || interconnectStep === 7
-                          ? 'bg-white text-black border-white scale-110 shadow-[0_0_15px_rgba(255,255,255,0.4)]'
-                          : 'bg-deeper border-white/10 text-gray-500'
+                          ? 'bg-ink text-paper border-ink scale-110 '
+                          : 'bg-inset border-ink/10 text-muted'
                       }`}>
                         Price Oracle
                       </div>
-                      <span className="text-[12px] text-gray-600 font-mono">CC_RESOLVER</span>
+                      <span className="text-[12px] text-subtle font-mono">CC_RESOLVER</span>
                     </div>
 
                   </div>
 
                   <div className="mt-8 text-center">
-                    <p className="text-[13px] text-white font-mono font-bold">
+                    <p className="text-[13px] text-ink font-mono font-bold">
                       {isInterconnecting ? (
                         <span className="animate-pulse flex items-center justify-center gap-2">
-                          <Zap size={11} className="text-white" />
+                          <Zap size={11} className="text-ink" />
                           Cascade Execution in Progress: Step {interconnectStep}/10
                         </span>
                       ) : interconnectStep > 0 ? (
@@ -895,7 +895,7 @@ export default function DeveloperHub() {
                   <button
                     onClick={handleSimulateInterconnect}
                     disabled={isInterconnecting}
-                    className="flex-1 py-3.5 bg-white text-black hover:bg-gray-200 font-bold text-[13px] transition-all cursor-pointer flex items-center justify-center gap-2"
+                    className="flex-1 py-3.5 bg-ink text-paper hover:bg-black font-bold text-[13px] transition-all cursor-pointer flex items-center justify-center gap-2"
                   >
                     {isInterconnecting ? (
                       <>
@@ -914,7 +914,7 @@ export default function DeveloperHub() {
                       setInterconnectStep(0);
                       setInterconnectLogs([]);
                     }}
-                    className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold text-[13px] transition-all cursor-pointer"
+                    className="px-4 py-3 bg-black/5 hover:bg-black/10 border border-ink/10 text-ink font-bold text-[13px] transition-all cursor-pointer"
                   >
                     RESET
                   </button>
@@ -922,12 +922,12 @@ export default function DeveloperHub() {
               </div>
 
               {/* Source Code Snippets explaining Cross-Contract Calls */}
-              <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10 text-left space-y-4">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10 text-left space-y-4">
+                <h4 className="text-xs font-bold text-ink flex items-center gap-1.5">
                   <Code size={13} />
                   Soroban Cross-Contract client binding invocation pattern
                 </h4>
-                <div className="bg-deeper rounded p-4 font-mono text-[13px] text-gray-400 overflow-x-auto border border-white/5 leading-relaxed">
+                <div className="bg-inset rounded p-4 font-mono text-[13px] text-muted overflow-x-auto border border-ink/5 leading-relaxed">
                   <pre>{`// Caller Rust Contract
 use soroban_sdk::{contract, contractimpl, Address, Env};
 
@@ -953,27 +953,27 @@ impl CallerContract {
 
             {/* Simulated Live Logs terminal */}
             <div className="lg:col-span-5 space-y-6 text-left">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 flex flex-col h-112 justify-between">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 flex flex-col h-112 justify-between">
                 <div>
-                  <h4 className="text-xs font-bold text-white flex items-center gap-2 border-b border-white/5 pb-4 mb-4">
+                  <h4 className="text-xs font-bold text-ink flex items-center gap-2 border-b border-ink/5 pb-4 mb-4">
                     <Terminal size={14} />
                     Cascade Call Stack Logs
                   </h4>
 
-                  <div className="space-y-2 max-h-72 overflow-y-auto font-mono text-[13px] bg-deeper p-4 rounded border border-white/5 h-64">
+                  <div className="space-y-2 max-h-72 overflow-y-auto font-mono text-[13px] bg-inset p-4 rounded border border-ink/5 h-64">
                     {interconnectLogs.length === 0 ? (
-                      <div className="text-gray-600 flex flex-col items-center justify-center h-full space-y-2">
-                        <Terminal className="w-8 h-8 animate-pulse text-gray-700" />
+                      <div className="text-subtle flex flex-col items-center justify-center h-full space-y-2">
+                        <Terminal className="w-8 h-8 animate-pulse text-subtle" />
                         <span className="text-[12px] text-center">Invoker stack idle. Initiate simulation above.</span>
                       </div>
                     ) : (
                       interconnectLogs.map((log, i) => (
-                        <div key={i} className={`py-1.5 leading-relaxed border-b border-white/5 last:border-0 ${
-                          log.includes('ROUTER') ? 'text-white' :
-                          log.includes('CROSS-CONTRACT') ? 'text-gray-300 font-bold' :
-                          log.includes('CALLBACK') ? 'text-emerald-400 font-semibold' :
-                          log.includes('COMPLETED') ? 'text-white font-bold underline' :
-                          'text-gray-400'
+                        <div key={i} className={`py-1.5 leading-relaxed border-b border-ink/5 last:border-0 ${
+                          log.includes('ROUTER') ? 'text-ink' :
+                          log.includes('CROSS-CONTRACT') ? 'text-ink font-bold' :
+                          log.includes('CALLBACK') ? 'text-ok font-semibold' :
+                          log.includes('COMPLETED') ? 'text-ink font-bold underline' :
+                          'text-muted'
                         }`}>
                           {log}
                         </div>
@@ -983,16 +983,16 @@ impl CallerContract {
                 </div>
 
                 {interconnectStep > 0 && (
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.02] space-y-2.5">
-                    <span className="text-[12px] text-gray-500 block font-bold">TRANSACTION METADATA</span>
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.02] space-y-2.5">
+                    <span className="text-[12px] text-muted block font-bold">TRANSACTION METADATA</span>
                     <div className="grid grid-cols-2 gap-3 text-[13px]">
                       <div>
-                        <span className="text-gray-500 block text-[12px]">Gas Incurred:</span>
-                        <span className="text-white font-bold">12,842 CPU</span>
+                        <span className="text-muted block text-[12px]">Gas Incurred:</span>
+                        <span className="text-ink font-bold">12,842 CPU</span>
                       </div>
                       <div>
-                        <span className="text-gray-500 block text-[12px]">Call Depth:</span>
-                        <span className="text-white font-bold">3 contracts</span>
+                        <span className="text-muted block text-[12px]">Call Depth:</span>
+                        <span className="text-ink font-bold">3 contracts</span>
                       </div>
                     </div>
                   </div>
@@ -1000,11 +1000,11 @@ impl CallerContract {
               </div>
 
               {/* Architectural Warning Card */}
-              <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10 flex items-start gap-3">
-                <AlertTriangle className="text-white shrink-0 mt-0.5 animate-pulse" size={16} />
+              <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10 flex items-start gap-3">
+                <AlertTriangle className="text-ink shrink-0 mt-0.5 animate-pulse" size={16} />
                 <div className="space-y-1">
-                  <h4 className="text-[13px] font-bold text-white">Reentrancy Risk Warning</h4>
-                  <p className="text-[13px] text-gray-400 leading-relaxed">
+                  <h4 className="text-[13px] font-bold text-ink">Reentrancy Risk Warning</h4>
+                  <p className="text-[13px] text-muted leading-relaxed">
                     Always invoke state-writing updates BEFORE making cross-contract transfers. External callbacks to untrusted recipient addresses open contract workflows to malicious reentrant loops, risking vault depletion.
                   </p>
                 </div>
@@ -1020,14 +1020,14 @@ impl CallerContract {
             
             {/* Live event stream logs */}
             <div className="lg:col-span-8 space-y-6">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 relative">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-white/5 pb-4 mb-4">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 relative">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-ink/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
-                      <Activity size={14} className="text-white animate-pulse" />
+                    <h3 className="text-xs font-bold text-ink flex items-center gap-2">
+                      <Activity size={14} className="text-ink animate-pulse" />
                       Live Ledger Event Streamer
                     </h3>
-                    <p className="text-[13px] text-gray-500 mt-1 font-mono">
+                    <p className="text-[13px] text-muted mt-1 font-mono">
                       Subscribed to local sandbox nodes. Double click events to copy arguments.
                     </p>
                   </div>
@@ -1037,8 +1037,8 @@ impl CallerContract {
                       onClick={() => setIsStreaming(!isStreaming)}
                       className={`p-2 rounded border text-[13px] font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                         isStreaming
-                          ? 'bg-white/10 border-white/20 text-white'
-                          : 'bg-white text-black border-white'
+                          ? 'bg-black/10 border-ink/20 text-ink'
+                          : 'bg-ink text-paper border-ink'
                       }`}
                     >
                       {isStreaming ? (
@@ -1055,7 +1055,7 @@ impl CallerContract {
                     </button>
                     <button
                       onClick={() => setEvents([])}
-                      className="p-2 rounded border border-white/10 hover:border-white/20 bg-deeper text-gray-400 hover:text-white transition-all cursor-pointer"
+                      className="p-2 rounded border border-ink/10 hover:border-ink/20 bg-inset text-muted hover:text-ink transition-all cursor-pointer"
                       title="Clear Event Stream Log"
                     >
                       <Trash2 size={11} />
@@ -1064,7 +1064,7 @@ impl CallerContract {
                 </div>
 
                 {/* Filter Sub-menu */}
-                <div className="flex flex-wrap gap-1.5 mb-4 border-b border-white/5 pb-3">
+                <div className="flex flex-wrap gap-1.5 mb-4 border-b border-ink/5 pb-3">
                   {[
                     { id: 'all', label: 'ALL EVENTS' },
                     { id: 'swap', label: 'SWAPS' },
@@ -1076,8 +1076,8 @@ impl CallerContract {
                       onClick={() => setEventFilter(filt.id as any)}
                       className={`px-3 py-1 rounded text-[12px] font-bold transition-all cursor-pointer ${
                         eventFilter === filt.id
-                          ? 'bg-white text-black border border-white font-bold'
-                          : 'bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400'
+                          ? 'bg-ink text-paper border border-ink font-bold'
+                          : 'bg-black/5 hover:bg-black/10 border border-ink/10 text-muted'
                       }`}
                     >
                       {filt.label}
@@ -1086,11 +1086,11 @@ impl CallerContract {
                 </div>
 
                 {/* Event Logs display */}
-                <div className="bg-deeper rounded border border-white/10 h-96 overflow-y-auto p-4 space-y-2 font-mono text-[13px]">
+                <div className="bg-inset rounded border border-ink/10 h-96 overflow-y-auto p-4 space-y-2 font-mono text-[13px]">
                   <AnimatePresence initial={false}>
                     {filteredEvents.length === 0 ? (
-                      <div className="text-gray-600 flex flex-col items-center justify-center h-full space-y-2">
-                        <Activity className="w-8 h-8 animate-pulse text-gray-700" />
+                      <div className="text-subtle flex flex-col items-center justify-center h-full space-y-2">
+                        <Activity className="w-8 h-8 animate-pulse text-subtle" />
                         <span>No ledger events streamed. Start generator above or emit custom event.</span>
                       </div>
                     ) : (
@@ -1101,23 +1101,23 @@ impl CallerContract {
                           animate={{ opacity: 1, x: 0, height: 'auto' }}
                           exit={{ opacity: 0, height: 0 }}
                           transition={{ duration: 0.2 }}
-                          className="py-2.5 px-3 rounded border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex justify-between items-start gap-4 hover:border-white/10"
+                          className="py-2.5 px-3 rounded border border-ink/5 bg-black/[0.01] hover:bg-black/[0.03] transition-all flex justify-between items-start gap-4 hover:border-ink/10"
                         >
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="text-gray-500 font-bold text-[12px]">{ev.timestamp}</span>
+                              <span className="text-muted font-bold text-[12px]">{ev.timestamp}</span>
                               <span className={`px-2 py-0.5 rounded text-[12px] font-bold font-mono ${
-                                ev.badge === 'SWAP' ? 'bg-white/10 text-white' :
-                                ev.badge === 'LIQUIDITY' ? 'bg-white/10 text-white' :
-                                ev.badge === 'ORACLE' ? 'bg-white/10 text-white animate-pulse' :
-                                ev.badge === 'CUSTOM' ? 'bg-white text-black' :
-                                'bg-white/5 text-gray-400'
+                                ev.badge === 'SWAP' ? 'bg-black/10 text-ink' :
+                                ev.badge === 'LIQUIDITY' ? 'bg-black/10 text-ink' :
+                                ev.badge === 'ORACLE' ? 'bg-black/10 text-ink animate-pulse' :
+                                ev.badge === 'CUSTOM' ? 'bg-ink text-paper' :
+                                'bg-black/5 text-muted'
                               }`}>
                                 {ev.badge}
                               </span>
-                              <span className="text-[12px] text-gray-600 font-mono">TX_REF: {ev.id}</span>
+                              <span className="text-[12px] text-subtle font-mono">TX_REF: {ev.id}</span>
                             </div>
-                            <p className="text-gray-300 select-all font-medium leading-relaxed">
+                            <p className="text-ink select-all font-medium leading-relaxed">
                               {ev.message}
                             </p>
                           </div>
@@ -1133,21 +1133,21 @@ impl CallerContract {
             {/* Custom event injector form */}
             <div className="lg:col-span-4 space-y-6">
               
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10">
-                <h4 className="text-xs font-bold text-white flex items-center gap-2 border-b border-white/5 pb-4 mb-4">
+              <div className="p-6 glass-panel-monochrome border border-ink/10">
+                <h4 className="text-xs font-bold text-ink flex items-center gap-2 border-b border-ink/5 pb-4 mb-4">
                   <Plus size={14} />
                   Inject Custom Event
                 </h4>
 
                 <form onSubmit={handleInjectEvent} className="space-y-4 font-mono text-[13px]">
                   <div className="space-y-1.5">
-                    <label className="text-[12px] text-gray-500 font-bold">
+                    <label className="text-[12px] text-muted font-bold">
                       Event Identifier / Name
                     </label>
                     <select
                       value={customEventName}
                       onChange={(e) => setCustomEventName(e.target.value)}
-                      className="w-full bg-deeper border border-white/10 rounded px-3 py-2 text-white focus:outline-none focus:border-white font-mono cursor-pointer"
+                      className="w-full bg-inset border border-ink/10 rounded px-3 py-2 text-ink focus:outline-none focus:border-ink font-mono cursor-pointer"
                     >
                       <option value="SwapEvent">SwapEvent</option>
                       <option value="LiquidityAdded">LiquidityAdded</option>
@@ -1157,7 +1157,7 @@ impl CallerContract {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[12px] text-gray-500 font-bold">
+                    <label className="text-[12px] text-muted font-bold">
                       Event Arguments / Payload
                     </label>
                     <textarea
@@ -1166,13 +1166,13 @@ impl CallerContract {
                       onChange={(e) => setCustomEventArgs(e.target.value)}
                       placeholder="Enter details..."
                       rows={4}
-                      className="w-full bg-deeper border border-white/10 rounded px-3 py-2.5 text-white focus:outline-none focus:border-white font-mono text-[13px] leading-normal resize-none"
+                      className="w-full bg-inset border border-ink/10 rounded px-3 py-2.5 text-ink focus:outline-none focus:border-ink font-mono text-[13px] leading-normal resize-none"
                     />
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full py-3.5 bg-white text-black hover:bg-gray-200 font-bold transition-all cursor-pointer font-mono"
+                    className="w-full py-3.5 bg-ink text-paper hover:bg-black font-bold transition-all cursor-pointer font-mono"
                   >
                     EMIT SIMULATED EVENT
                   </button>
@@ -1180,12 +1180,12 @@ impl CallerContract {
               </div>
 
               {/* Dev Note */}
-              <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10 font-mono">
-                <h4 className="text-[13px] font-bold text-white flex items-center gap-1 mb-2">
+              <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10 font-mono">
+                <h4 className="text-[13px] font-bold text-ink flex items-center gap-1 mb-2">
                   <Sparkles size={11} />
                   Event-Driven DApp Architecture
                 </h4>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Smart contract event emissions are optimal interfaces for server microservices. Indexers (such as Subgraph/The Graph or Stellar Mercury) capture block event logs asynchronously, indexing relational datasets to populate frontend states in real-time, completely bypassing slow on-chain queries.
                 </p>
               </div>
@@ -1200,14 +1200,14 @@ impl CallerContract {
             
             {/* Left Column: Visual Pipeline Stages */}
             <div className="lg:col-span-8 space-y-6">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10">
-                <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-6">
+              <div className="p-6 glass-panel-monochrome border border-ink/10">
+                <div className="flex justify-between items-center border-b border-ink/5 pb-4 mb-6">
                   <div>
-                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-ink flex items-center gap-2">
                       <Sliders size={14} />
                       Automated CI/CD Workflow Runner
                     </h3>
-                    <p className="text-[13px] text-gray-500 mt-1 font-mono">
+                    <p className="text-[13px] text-muted mt-1 font-mono">
                       Simulate a full Github Actions commit push deploy cycle
                     </p>
                   </div>
@@ -1215,7 +1215,7 @@ impl CallerContract {
                   <button
                     onClick={handleTriggerPipeline}
                     disabled={pipelineState === 'running'}
-                    className="px-4 py-2.5 bg-white text-black hover:bg-gray-200 font-bold text-[13px] transition-all cursor-pointer disabled:opacity-50"
+                    className="px-4 py-2.5 bg-ink text-paper hover:bg-black font-bold text-[13px] transition-all cursor-pointer disabled:opacity-50"
                   >
                     {pipelineState === 'running' ? 'EXECUTING PIPELINE...' : 'TRIGGER DEVOPS PIPELINE'}
                   </button>
@@ -1225,108 +1225,108 @@ impl CallerContract {
                 <div className="space-y-6">
                   
                   {/* Stage 1: Lint */}
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded border font-mono font-bold text-[12px] ${
-                        activePipelineStep === 'lint' ? 'bg-white text-black border-white animate-pulse' :
-                        pipelineStepLogs.lint.length > 0 ? 'bg-white/10 text-white border-white/20' :
-                        'bg-deeper text-gray-600 border-white/5'
+                        activePipelineStep === 'lint' ? 'bg-ink text-paper border-ink animate-pulse' :
+                        pipelineStepLogs.lint.length > 0 ? 'bg-black/10 text-ink border-ink/20' :
+                        'bg-inset text-subtle border-ink/5'
                       }`}>
                         STEP_01
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-bold text-white">Static Analysis & Linter checks</h4>
-                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">ESLint (TypeScript) & Cargo Clippy (Rust)</p>
+                        <h4 className="text-[13px] font-bold text-ink">Static Analysis & Linter checks</h4>
+                        <p className="text-[12px] text-muted font-mono mt-0.5">ESLint (TypeScript) & Cargo Clippy (Rust)</p>
                       </div>
                     </div>
                     
-                    <div className="w-full md:w-96 bg-deeper p-3 rounded font-mono text-[12px] text-gray-400 border border-white/5 max-h-24 overflow-y-auto">
+                    <div className="w-full md:w-96 bg-inset p-3 rounded font-mono text-[12px] text-muted border border-ink/5 max-h-24 overflow-y-auto">
                       {pipelineStepLogs.lint.length === 0 ? (
-                        <span className="text-gray-700">Awaiting pipeline trigger...</span>
+                        <span className="text-subtle">Awaiting pipeline trigger...</span>
                       ) : (
                         pipelineStepLogs.lint.map((line, idx) => (
-                          <div key={idx} className={line.includes('✓') ? 'text-emerald-400' : 'text-gray-400'}>{line}</div>
+                          <div key={idx} className={line.includes('✓') ? 'text-ok' : 'text-muted'}>{line}</div>
                         ))
                       )}
                     </div>
                   </div>
 
                   {/* Stage 2: Tests */}
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded border font-mono font-bold text-[12px] ${
-                        activePipelineStep === 'test' ? 'bg-white text-black border-white animate-pulse' :
-                        pipelineStepLogs.test.length > 0 ? 'bg-white/10 text-white border-white/20' :
-                        'bg-deeper text-gray-600 border-white/5'
+                        activePipelineStep === 'test' ? 'bg-ink text-paper border-ink animate-pulse' :
+                        pipelineStepLogs.test.length > 0 ? 'bg-black/10 text-ink border-ink/20' :
+                        'bg-inset text-subtle border-ink/5'
                       }`}>
                         STEP_02
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-bold text-white">On-Chain Unit Testing</h4>
-                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">Solidity (Hardhat) & Soroban (Cargo Test)</p>
+                        <h4 className="text-[13px] font-bold text-ink">On-Chain Unit Testing</h4>
+                        <p className="text-[12px] text-muted font-mono mt-0.5">Solidity (Hardhat) & Soroban (Cargo Test)</p>
                       </div>
                     </div>
                     
-                    <div className="w-full md:w-96 bg-deeper p-3 rounded font-mono text-[12px] text-gray-400 border border-white/5 max-h-24 overflow-y-auto">
+                    <div className="w-full md:w-96 bg-inset p-3 rounded font-mono text-[12px] text-muted border border-ink/5 max-h-24 overflow-y-auto">
                       {pipelineStepLogs.test.length === 0 ? (
-                        <span className="text-gray-700">Awaiting pipeline trigger...</span>
+                        <span className="text-subtle">Awaiting pipeline trigger...</span>
                       ) : (
                         pipelineStepLogs.test.map((line, idx) => (
-                          <div key={idx} className={line.includes('✓') ? 'text-emerald-400' : 'text-gray-400'}>{line}</div>
+                          <div key={idx} className={line.includes('✓') ? 'text-ok' : 'text-muted'}>{line}</div>
                         ))
                       )}
                     </div>
                   </div>
 
                   {/* Stage 3: Build */}
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded border font-mono font-bold text-[12px] ${
-                        activePipelineStep === 'build' ? 'bg-white text-black border-white animate-pulse' :
-                        pipelineStepLogs.build.length > 0 ? 'bg-white/10 text-white border-white/20' :
-                        'bg-deeper text-gray-600 border-white/5'
+                        activePipelineStep === 'build' ? 'bg-ink text-paper border-ink animate-pulse' :
+                        pipelineStepLogs.build.length > 0 ? 'bg-black/10 text-ink border-ink/20' :
+                        'bg-inset text-subtle border-ink/5'
                       }`}>
                         STEP_03
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-bold text-white">Optimized Compile Target</h4>
-                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">Size limits check, optimizer enablement</p>
+                        <h4 className="text-[13px] font-bold text-ink">Optimized Compile Target</h4>
+                        <p className="text-[12px] text-muted font-mono mt-0.5">Size limits check, optimizer enablement</p>
                       </div>
                     </div>
                     
-                    <div className="w-full md:w-96 bg-deeper p-3 rounded font-mono text-[12px] text-gray-400 border border-white/5 max-h-24 overflow-y-auto">
+                    <div className="w-full md:w-96 bg-inset p-3 rounded font-mono text-[12px] text-muted border border-ink/5 max-h-24 overflow-y-auto">
                       {pipelineStepLogs.build.length === 0 ? (
-                        <span className="text-gray-700">Awaiting pipeline trigger...</span>
+                        <span className="text-subtle">Awaiting pipeline trigger...</span>
                       ) : (
                         pipelineStepLogs.build.map((line, idx) => (
-                          <div key={idx} className={line.includes('✓') ? 'text-emerald-400' : 'text-gray-400'}>{line}</div>
+                          <div key={idx} className={line.includes('✓') ? 'text-ok' : 'text-muted'}>{line}</div>
                         ))
                       )}
                     </div>
                   </div>
 
                   {/* Stage 4: Deploy */}
-                  <div className="p-4 rounded border border-white/10 bg-white/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
+                  <div className="p-4 rounded border border-ink/10 bg-black/[0.01] flex flex-col md:flex-row gap-4 items-start justify-between">
                     <div className="flex items-start gap-3">
                       <div className={`p-2 rounded border font-mono font-bold text-[12px] ${
-                        activePipelineStep === 'deploy' ? 'bg-white text-black border-white animate-pulse' :
-                        pipelineStepLogs.deploy.length > 0 ? 'bg-white/10 text-white border-white/20' :
-                        'bg-deeper text-gray-600 border-white/5'
+                        activePipelineStep === 'deploy' ? 'bg-ink text-paper border-ink animate-pulse' :
+                        pipelineStepLogs.deploy.length > 0 ? 'bg-black/10 text-ink border-ink/20' :
+                        'bg-inset text-subtle border-ink/5'
                       }`}>
                         STEP_04
                       </div>
                       <div>
-                        <h4 className="text-[13px] font-bold text-white">Testnet Deploy & Verify</h4>
-                        <p className="text-[12px] text-gray-500 font-mono mt-0.5">Broadcasting to Sepolia & Stellar Testnet</p>
+                        <h4 className="text-[13px] font-bold text-ink">Testnet Deploy & Verify</h4>
+                        <p className="text-[12px] text-muted font-mono mt-0.5">Broadcasting to Sepolia & Stellar Testnet</p>
                       </div>
                     </div>
                     
-                    <div className="w-full md:w-96 bg-deeper p-3 rounded font-mono text-[12px] text-gray-400 border border-white/5 max-h-24 overflow-y-auto">
+                    <div className="w-full md:w-96 bg-inset p-3 rounded font-mono text-[12px] text-muted border border-ink/5 max-h-24 overflow-y-auto">
                       {pipelineStepLogs.deploy.length === 0 ? (
-                        <span className="text-gray-700">Awaiting pipeline trigger...</span>
+                        <span className="text-subtle">Awaiting pipeline trigger...</span>
                       ) : (
                         pipelineStepLogs.deploy.map((line, idx) => (
-                          <div key={idx} className={line.includes('✓') ? 'text-emerald-400' : 'text-gray-400'}>{line}</div>
+                          <div key={idx} className={line.includes('✓') ? 'text-ok' : 'text-muted'}>{line}</div>
                         ))
                       )}
                     </div>
@@ -1340,16 +1340,16 @@ impl CallerContract {
             <div className="lg:col-span-4 space-y-6">
               
               {/* Copy-Paste Pipeline Configuration sample */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-4">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-4">
                 <div>
-                  <h4 className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <h4 className="text-xs font-bold text-ink flex items-center gap-1.5">
                     <FileText size={13} />
                     GitHub Actions: Deploy YAML
                   </h4>
-                  <p className="text-[12px] text-gray-500 mt-0.5">Production-ready template</p>
+                  <p className="text-[12px] text-muted mt-0.5">Production-ready template</p>
                 </div>
 
-                <div className="bg-deeper p-3 rounded font-mono text-[12px] text-gray-400 border border-white/5 max-h-64 overflow-y-auto leading-relaxed">
+                <div className="bg-inset p-3 rounded font-mono text-[12px] text-muted border border-ink/5 max-h-64 overflow-y-auto leading-relaxed">
                   <pre>{`name: Smart Contract Deploy
 on:
   push:
@@ -1387,7 +1387,7 @@ jobs:
                     navigator.clipboard.writeText(`name: Smart Contract Deploy...`);
                     toast.success('CI/CD YAML configuration copied!');
                   }}
-                  className="w-full py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-white text-[13px] font-bold transition-all cursor-pointer"
+                  className="w-full py-2 bg-black/5 hover:bg-black/10 border border-ink/10 text-ink text-[13px] font-bold transition-all cursor-pointer"
                 >
                   COPY CONFIG
                 </button>
@@ -1403,14 +1403,14 @@ jobs:
             
             {/* Interactive Test Suite execution terminal */}
             <div className="lg:col-span-8 space-y-6">
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10">
-                <div className="flex justify-between items-center border-b border-white/5 pb-4 mb-4">
+              <div className="p-6 glass-panel-monochrome border border-ink/10">
+                <div className="flex justify-between items-center border-b border-ink/5 pb-4 mb-4">
                   <div>
-                    <h3 className="text-xs font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-ink flex items-center gap-2">
                       <Terminal size={14} />
                       Interactive Unit Test Engine
                     </h3>
-                    <p className="text-[13px] text-gray-500 mt-1 font-mono">
+                    <p className="text-[13px] text-muted mt-1 font-mono">
                       Run automated mock testing framework for contracts
                     </p>
                   </div>
@@ -1418,7 +1418,7 @@ jobs:
                   <button
                     onClick={handleRunTests}
                     disabled={isTesting}
-                    className="px-4 py-2.5 bg-white text-black hover:bg-gray-200 font-bold text-[13px] transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                    className="px-4 py-2.5 bg-ink text-paper hover:bg-black font-bold text-[13px] transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
                   >
                     {isTesting ? (
                       <>
@@ -1432,18 +1432,18 @@ jobs:
                 </div>
 
                 {/* Simulated terminal */}
-                <div className="bg-deeper p-4 rounded border border-white/10 h-80 overflow-y-auto font-mono text-[13px] leading-relaxed">
+                <div className="bg-inset p-4 rounded border border-ink/10 h-80 overflow-y-auto font-mono text-[13px] leading-relaxed">
                   {testLogs.length === 0 ? (
-                    <div className="text-gray-600 flex flex-col items-center justify-center h-full space-y-2">
-                      <Terminal className="w-8 h-8 animate-pulse text-gray-700" />
+                    <div className="text-subtle flex flex-col items-center justify-center h-full space-y-2">
+                      <Terminal className="w-8 h-8 animate-pulse text-subtle" />
                       <span>Test runner idle. Execute test suite above.</span>
                     </div>
                   ) : (
                     testLogs.map((log, i) => (
                       <div key={i} className={`py-0.5 ${
-                        log.includes('✓') ? 'text-emerald-400 font-semibold' :
-                        log.includes('Failed') ? 'text-rose-400 font-bold' :
-                        'text-gray-400'
+                        log.includes('✓') ? 'text-ok font-semibold' :
+                        log.includes('Failed') ? 'text-bad font-bold' :
+                        'text-muted'
                       }`}>
                         {log}
                       </div>
@@ -1452,18 +1452,18 @@ jobs:
                 </div>
 
                 {testResult && (
-                  <div className="mt-4 p-4 rounded border border-white/10 bg-white/[0.01] grid grid-cols-3 gap-4 text-center font-mono text-[13px]">
+                  <div className="mt-4 p-4 rounded border border-ink/10 bg-black/[0.01] grid grid-cols-3 gap-4 text-center font-mono text-[13px]">
                     <div>
-                      <span className="text-gray-500 block text-[12px] mb-1">TESTS PASSED</span>
-                      <span className="text-white font-bold text-sm">{testResult.passed} / {testResult.passed}</span>
+                      <span className="text-muted block text-[12px] mb-1">TESTS PASSED</span>
+                      <span className="text-ink font-bold text-sm">{testResult.passed} / {testResult.passed}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block text-[12px] mb-1">FAILED</span>
-                      <span className="text-rose-400 font-bold text-sm">{testResult.failed}</span>
+                      <span className="text-muted block text-[12px] mb-1">FAILED</span>
+                      <span className="text-bad font-bold text-sm">{testResult.failed}</span>
                     </div>
                     <div>
-                      <span className="text-gray-500 block text-[12px] mb-1">CODE COVERAGE</span>
-                      <span className="text-emerald-400 font-bold text-sm">{testResult.coverage}</span>
+                      <span className="text-muted block text-[12px] mb-1">CODE COVERAGE</span>
+                      <span className="text-ok font-bold text-sm">{testResult.coverage}</span>
                     </div>
                   </div>
                 )}
@@ -1473,12 +1473,12 @@ jobs:
             {/* Test script explainers */}
             <div className="lg:col-span-4 space-y-6">
               
-              <div className="p-6 rounded-lg bg-white/[0.02] border border-white/10">
-                <h4 className="text-xs font-bold text-white flex items-center gap-1.5 mb-3">
+              <div className="p-6 rounded-lg bg-black/[0.02] border border-ink/10">
+                <h4 className="text-xs font-bold text-ink flex items-center gap-1.5 mb-3">
                   <CheckCircle2 size={13} />
                   Writing Robust Tests
                 </h4>
-                <div className="space-y-3 font-mono text-[13px] text-gray-400 leading-relaxed">
+                <div className="space-y-3 font-mono text-[13px] text-muted leading-relaxed">
                   <p>
                     Effective smart contract test suites are built around complete state isolation:
                   </p>
@@ -1508,67 +1508,67 @@ jobs:
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               
               {/* Card 1: Security & Guard Checks */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <Shield size={14} />
                   <h4 className="font-bold text-[13px]">Security & Guard checks</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Always use standard multipliers for state validation. Integrate vetted open-source modifiers like OpenZeppelin's ReentrancyGuard, ensure strict access control boundaries with Ownable pattern, and provide emergency circuit breaker pause capabilities.
                 </p>
               </div>
 
               {/* Card 2: Gas & Storage Optimization */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <Database size={14} />
                   <h4 className="font-bold text-[13px]">Gas & Storage Optimization</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   On-chain storage is highly expensive. Pack adjacent storage variables inside Solidity structs (uint128 side-by-side with uint128 fits 1 slot), minimize external contract calls where caching works, and prioritize Soroban's Temporary vs Instance storage models based on TTL requirements.
                 </p>
               </div>
 
               {/* Card 3: Error and Timeout Management */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <AlertTriangle size={14} />
                   <h4 className="font-bold text-[13px]">Error & Timeout States</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Transactions broadcast into high volatility environments. Implement clean fallback state handlers in your frontend, process transaction rejection gracefully, configure customized polling deadlines with custom sequence states, and parse contract revert logs to present readable error strings.
                 </p>
               </div>
 
               {/* Card 4: Mobile Responsive Guidelines */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <Sliders size={14} />
                   <h4 className="font-bold text-[13px]">Mobile Responsive UI</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Ensure seamless cross-device operations. UI targets must exceed 44px to accommodate touch devices comfortably. Employ adaptive layouts wrapping complex balance grids, and optimize layout spacing to preserve high-density data legibility on smaller mobile displays.
                 </p>
               </div>
 
               {/* Card 5: Architecture & Decoupled State */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <Layers size={14} />
                   <h4 className="font-bold text-[13px]">Production Architecture</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Decouple complex state machines from view layouts. Wrap core wallet operations and chain configurations in centralized React Context hooks. Cache transactions locally to prevent sudden UI flickering, and implement retry logic with exponential backoff on server nodes.
                 </p>
               </div>
 
               {/* Card 6: CI/CD Delivery pipelines */}
-              <div className="p-6 rounded-lg glass-panel-monochrome border border-white/10 space-y-3">
-                <div className="flex items-center gap-2 text-white border-b border-white/5 pb-3">
+              <div className="p-6 glass-panel-monochrome border border-ink/10 space-y-3">
+                <div className="flex items-center gap-2 text-ink border-b border-ink/5 pb-3">
                   <Zap size={14} />
                   <h4 className="font-bold text-[13px]">CI/CD automated flows</h4>
                 </div>
-                <p className="text-[13px] text-gray-400 leading-relaxed">
+                <p className="text-[13px] text-muted leading-relaxed">
                   Automate deployment safeguards. Trigger static linter checks and mock test runs on every pull request. Require successful verification on target testnets (Etherscan, Stellar Expert) and compile optimized builds inside container sandboxes prior to release execution.
                 </p>
               </div>
@@ -1576,25 +1576,25 @@ jobs:
             </div>
 
             {/* Comprehensive Documentation Presentation */}
-            <div className="p-6 sm:p-8 rounded-lg bg-white/[0.02] border border-white/10 space-y-6">
-              <div className="flex items-center gap-2 border-b border-white/5 pb-4">
-                <FileText className="text-white" size={18} />
-                <h3 className="text-xs font-bold text-white">
+            <div className="p-6 sm:p-8 rounded-lg bg-black/[0.02] border border-ink/10 space-y-6">
+              <div className="flex items-center gap-2 border-b border-ink/5 pb-4">
+                <FileText className="text-ink" size={18} />
+                <h3 className="text-xs font-bold text-ink">
                   Comprehensive Project Reference Documentation
                 </h3>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 leading-relaxed text-[13px]">
                 <div className="space-y-4">
-                  <h5 className="font-bold text-white">1. Smart Contract Lifecycle</h5>
-                  <p className="text-gray-400">
+                  <h5 className="font-bold text-ink">1. Smart Contract Lifecycle</h5>
+                  <p className="text-muted">
                     Smart contract execution must follow strict linear phases to preserve decentralization guarantees. In Soroban, this requires deploying target WASM bytecodes to register on-chain instance addresses, then invoking initialization methods directly. Developers are encouraged to structure workflows utilizing localized test sandboxes prior to mainnet execution.
                   </p>
                 </div>
 
                 <div className="space-y-4">
-                  <h5 className="font-bold text-white">2. Error Handling & Loading Feedback</h5>
-                  <p className="text-gray-400">
+                  <h5 className="font-bold text-ink">2. Error Handling & Loading Feedback</h5>
+                  <p className="text-muted">
                     Broadcasting signed transactions exposes frontend workflows to network latencies. Loading state machines should follow distinct transition stages (e.g., preparing envelope, signing, broadcasting, confirming), reporting granular visual logs to prevent user anxiety. Handlers should intercept contract revert exceptions, mapping low-level exit codes to clean error banners.
                   </p>
                 </div>

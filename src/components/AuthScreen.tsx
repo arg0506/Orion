@@ -11,12 +11,12 @@ export default function AuthScreen() {
   const isAnonymousDisabled = authError?.includes('admin-restricted-operation') || authError?.includes('restricted');
 
   return (
-    <div className="rounded-t-3xl sm:rounded-3xl border border-line bg-deep p-6 sm:p-8 shadow-2xl">
-      <div className="text-starlight mb-5">
+    <div className="rounded-t-3xl sm:rounded-3xl border border-line bg-card p-6 sm:p-8 shadow-2xl">
+      <div className="text-ink mb-5">
         <OrionMark className="w-11 h-11" />
       </div>
-      <h2 className="font-display font-bold text-2xl text-starlight">Sync across devices</h2>
-      <p className="text-[15px] text-mist mt-2 leading-relaxed">
+      <h2 className="font-display font-bold text-2xl text-ink">Sync across devices</h2>
+      <p className="text-[15px] text-muted mt-2 leading-relaxed">
         Signing in is optional. It saves your watchlist and payment receipts to your account so they follow you to other
         browsers. Your wallet keys always stay in Freighter or MetaMask.
       </p>
@@ -35,8 +35,8 @@ export default function AuthScreen() {
             {isUnauthorizedDomain ? (
               <>
                 Add this domain under Firebase Console → Authentication → Settings → Authorized domains:
-                <span className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-night/60 border border-line px-3 py-1.5">
-                  <span className="font-mono text-[13px] text-starlight truncate">{currentDomain}</span>
+                <span className="mt-2 flex items-center justify-between gap-2 rounded-lg bg-paper/60 border border-line px-3 py-1.5">
+                  <span className="font-mono text-[13px] text-ink truncate">{currentDomain}</span>
                   <CopyButton value={currentDomain} toastText="Domain copied" />
                 </span>
               </>
@@ -63,7 +63,7 @@ export default function AuthScreen() {
           Continue as guest
         </Button>
       </div>
-      <p className="text-[13px] text-haze mt-4 flex items-start gap-2">
+      <p className="text-[13px] text-subtle mt-4 flex items-start gap-2">
         <Cloud size={14} className="shrink-0 mt-0.5" />
         A guest account syncs on this device only, and is lost if you sign out.
       </p>

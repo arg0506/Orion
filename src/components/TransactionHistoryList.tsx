@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowDownLeft, ArrowUpRight, ExternalLink, RefreshCw, Trash2, UserPlus, Activity, Radio } from 'lucide-react';
 import { toast } from 'react-hot-toast';
+import { motion, AnimatePresence } from 'motion/react';
 import { useWallet } from '../context/WalletContext';
 import { useTransactionHistory, TX_ADDED_EVENT } from '../hooks/useTransactionHistory';
 import { fetchOnChainPayments, streamPayments, OnChainPayment } from '../services/stellar';
@@ -144,7 +145,7 @@ export default function TransactionHistoryList() {
       />
 
       {!isEvm && (
-        <div role="tablist" className="inline-flex p-1 rounded-xl bg-deeper border border-line mb-4">
+        <div role="tablist" className="inline-flex p-1 rounded-[14px] bg-[#e9e8e4]/85 border border-black/[0.04] mb-5">
           {(
             [
               ['ledger', 'On the ledger'],
@@ -156,9 +157,10 @@ export default function TransactionHistoryList() {
               role="tab"
               aria-selected={tab === id}
               onClick={() => setTab(id)}
-              className={cx('h-8 px-3.5 rounded-lg text-sm font-medium transition-colors', tab === id ? 'bg-deep text-starlight border border-line' : 'text-mist hover:text-starlight')}
+              className={cx('relative h-9 px-4 rounded-[10px] text-[14px] transition-colors', tab === id ? 'text-ink' : 'text-muted hover:text-ink')}
             >
-              {label}
+              {tab === id && <motion.span layoutId="activity-tab" className="absolute inset-0 rounded-[10px] bg-card shadow-[0_2px_8px_-2px_rgba(0,0,0,0.15)]" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+              <span className="relative">{label}</span>
             </button>
           ))}
         </div>
@@ -178,45 +180,60 @@ export default function TransactionHistoryList() {
         </EmptyState>
       ) : (
         <ul className="divide-y divide-line -mx-2">
-          {rows.map((r) => (
-            <li key={r.key} className="flex items-center gap-3 sm:gap-4 px-2 py-3">
+          <AnimatePresence initial={true}>
+          {rows.map((r, idx) => (
+            <motion.li
+              key={r.key}
+              layout
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1], delay: Math.min(idx, 8) * 0.05 }}
+              className="flex items-center gap-3 sm:gap-4 px-2 py-3.5"
+            >
               <span
                 className={cx(
-                  'w-10 h-10 rounded-xl grid place-items-center shrink-0 border',
-                  !r.ok ? 'text-bad bg-bad/10 border-bad/20' : r.incoming ? 'text-rigel bg-rigel/10 border-rigel/20' : 'text-betel bg-betel/10 border-betel/20'
+                  'tile w-11 h-11 shrink-0',
+                  !r.ok
+                    ? 'bg-[linear-gradient(160deg,#fff,#fdecee)] text-bad'
+                    : r.kind === 'Account created'
+                      ? 'bg-[linear-gradient(160deg,#fff,#eef7f1)] text-ok'
+                      : r.incoming
+                        ? 'bg-[linear-gradient(160deg,#7cc0ff,#2f7cf0)] text-white'
+                        : 'bg-[linear-gradient(160deg,#fff,#f2f0ea)] text-betel'
                 )}
                 aria-hidden="true"
               >
-                {r.kind === 'Account created' ? <UserPlus size={17} /> : r.incoming ? <ArrowDownLeft size={17} /> : <ArrowUpRight size={17} />}
+                {r.kind === 'Account created' ? <UserPlus size={18} strokeWidth={2.2} /> : r.incoming ? <ArrowDownLeft size={18} strokeWidth={2.2} /> : <ArrowUpRight size={18} strokeWidth={2.2} />}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="text-[15px] text-starlight font-medium truncate">
+                <p className="text-[15px] text-ink font-medium truncate">
                   {r.kind ?? (r.incoming ? 'Received' : 'Sent')}
-                  <span className="text-mist font-normal"> {r.incoming ? 'from' : 'to'} </span>
+                  <span className="text-muted font-normal"> {r.incoming ? 'from' : 'to'} </span>
                   <span className="font-mono text-[13px]">{shortAddress(r.counterparty, 4, 4)}</span>
                 </p>
-                <p className="text-[13px] text-haze truncate">
+                <p className="text-[13px] text-subtle truncate">
                   {timeAgo(r.timestamp)}
                   {r.memo ? ` · “${r.memo}”` : ''}
                   {!r.ok && <span className="text-bad"> · Failed</span>}
                 </p>
               </div>
-              <span className={cx('num font-semibold text-[15px] text-right whitespace-nowrap', r.incoming ? 'text-rigel' : 'text-starlight')}>
-                {r.amount === '—' ? '—' : `${r.incoming ? '+' : '−'}${formatAmount(r.amount)}`}
-                <span className="text-mist font-normal text-[13px] ml-1">{r.asset}</span>
+              <span className={cx('num font-serif text-[19px] text-right whitespace-nowrap', r.incoming ? 'text-rigel' : 'text-ink')}>
+                {r.amount === '—' ? '—' : <><span className="font-sans text-[16px] mr-0.5">{r.incoming ? '+' : '−'}</span>{formatAmount(r.amount)}</>}
+                <span className="text-muted font-sans text-[13px] ml-1">{r.asset}</span>
               </span>
               <a
                 href={txUrl(r.hash)}
                 target="_blank"
                 rel="noreferrer"
-                className="p-2 rounded-lg text-haze hover:text-starlight hover:bg-white/5 shrink-0"
+                className="p-2 rounded-lg text-subtle hover:text-ink hover:bg-black/[0.04] shrink-0"
                 aria-label="Open in explorer"
                 title="Open in explorer"
               >
                 <ExternalLink size={15} />
               </a>
-            </li>
+            </motion.li>
           ))}
+          </AnimatePresence>
         </ul>
       )}
     </Card>

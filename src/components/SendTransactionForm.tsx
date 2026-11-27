@@ -200,7 +200,7 @@ export default function SendTransactionForm() {
             <button
               type="button"
               onClick={() => setScannerOpen(true)}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg text-mist hover:text-starlight hover:bg-white/5"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 w-8 h-8 grid place-items-center rounded-lg text-muted hover:text-ink hover:bg-black/[0.04]"
               aria-label="Scan a QR code"
               title="Scan a QR code"
             >
@@ -231,7 +231,7 @@ export default function SendTransactionForm() {
           <div className="relative">
             <input
               id="send-amount"
-              className={`${inputClass(touched.amount && !!amountError)} num pr-14 text-[17px] font-semibold`}
+              className={`${inputClass(touched.amount && !!amountError)} num pr-14 !h-14 font-serif !text-[24px]`}
               inputMode="decimal"
               value={amount}
               disabled={isSending}
@@ -241,7 +241,7 @@ export default function SendTransactionForm() {
                 setTouched((t) => ({ ...t, amount: true }));
               }}
             />
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-mist">{symbol}</span>
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-muted">{symbol}</span>
           </div>
         </Field>
 
@@ -251,7 +251,7 @@ export default function SendTransactionForm() {
             htmlFor="send-memo"
             error={memoError}
             hint="Some exchanges need a memo to credit your deposit."
-            trailing={<span className={`text-[13px] num ${memoBytes > MEMO_MAX_BYTES ? 'text-bad' : 'text-haze'}`}>{memoBytes}/{MEMO_MAX_BYTES} bytes</span>}
+            trailing={<span className={`text-[13px] num ${memoBytes > MEMO_MAX_BYTES ? 'text-bad' : 'text-subtle'}`}>{memoBytes}/{MEMO_MAX_BYTES} bytes</span>}
           >
             <input id="send-memo" className={inputClass(!!memoError)} value={memo} disabled={isSending} placeholder="e.g. Invoice 1042" onChange={(e) => setMemo(e.target.value)} />
           </Field>
@@ -262,7 +262,7 @@ export default function SendTransactionForm() {
         </Button>
 
         {blocked && (
-          <p className="text-[13px] text-mist text-center">
+          <p className="text-[13px] text-muted text-center">
             {!wallet.networkOk
               ? 'Sending is paused until your wallet is on the right test network.'
               : !account
@@ -277,15 +277,15 @@ export default function SendTransactionForm() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="mt-6">
             {outcome.status === 'success' ? (
               <div className="rounded-2xl border border-ok/25 bg-ok/[0.06] p-5 relative">
-                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-mist hover:text-starlight" aria-label="Dismiss">
+                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-muted hover:text-ink" aria-label="Dismiss">
                   <X size={16} />
                 </button>
-                <p className="flex items-center gap-2 font-semibold text-starlight">
+                <p className="flex items-center gap-2 font-semibold text-ink">
                   <CheckCircle2 size={18} className="text-ok" />
                   {outcome.createdAccount ? 'Account created' : 'Sent'} {formatAmount(outcome.amount)} {symbol}
                 </p>
-                <p className="text-sm text-mist mt-1">
-                  to <Mono className="text-starlight">{shortAddress(outcome.recipient, 6, 6)}</Mono>
+                <p className="text-sm text-muted mt-1">
+                  to <Mono className="text-ink">{shortAddress(outcome.recipient, 6, 6)}</Mono>
                   {outcome.ledger ? <> · ledger <span className="num">{outcome.ledger.toLocaleString()}</span></> : null}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">
@@ -303,13 +303,13 @@ export default function SendTransactionForm() {
               </div>
             ) : (
               <div className="rounded-2xl border border-bad/25 bg-bad/[0.06] p-5 relative">
-                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-mist hover:text-starlight" aria-label="Dismiss">
+                <button onClick={() => setOutcome(null)} className="absolute right-3 top-3 p-1.5 rounded-lg text-muted hover:text-ink" aria-label="Dismiss">
                   <X size={16} />
                 </button>
-                <p className="flex items-center gap-2 font-semibold text-starlight">
+                <p className="flex items-center gap-2 font-semibold text-ink">
                   <XCircle size={18} className="text-bad" /> Payment not sent
                 </p>
-                <p className="text-sm text-mist mt-1.5 leading-relaxed pr-6">{outcome.reason}</p>
+                <p className="text-sm text-muted mt-1.5 leading-relaxed pr-6">{outcome.reason}</p>
               </div>
             )}
           </motion.div>
