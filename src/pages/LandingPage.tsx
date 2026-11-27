@@ -1,457 +1,552 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, ArrowUpRight, Radio, Eye, ShieldCheck, FlaskConical, Github, Menu, X, Wallet, Droplets, ArrowDownLeft } from 'lucide-react';
-import { Badge, Belt, Button, Logo, cx } from '../components/ui';
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useMotionValue,
+  useSpring,
+  useInView,
+  useReducedMotion,
+  animate,
+  MotionValue,
+} from 'motion/react';
+import { ArrowUpRight, ArrowDownLeft, Droplets, Eye, FlaskConical, QrCode, Radio, Wallet, Github, ShieldCheck, ArrowRight } from 'lucide-react';
+import StipplePlanet, { BELT, PLANET } from '../components/landing/StipplePlanet';
+import { Belt, cx } from '../components/ui';
 
-export default function LandingPage() {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const mouseRef = useRef({ x: 0, y: 0 });
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+const REPO_URL = 'https://github.com/arg0506/Orion';
+const ease = [0.22, 1, 0.36, 1] as const;
 
-  // Monitor scrolling to shrink notch if wanted, or adjust styling
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 40) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+/* ───────────────────────── tiles ───────────────────────── */
 
-  // Custom 3D Space Constellation & Star Ledger Orbit Canvas
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+type TileSpec = {
+  id: string;
+  label: string;
+  icon: React.ElementType;
+  bg: string;
+  fg: string;
+  x: number; // % of the art box (centre)
+  y: number;
+  rot: number;
+  depth: number;
+};
 
-    let animationFrameId: number;
-    let width = (canvas.width = canvas.parentElement?.clientWidth || window.innerWidth);
-    let height = (canvas.height = canvas.parentElement?.clientHeight || 750);
+const TILES: TileSpec[] = [
+  { id: 'watch', label: 'Watchlist', icon: Eye, bg: 'linear-gradient(160deg,#ff8fa0,#f0506a)', fg: '#fff', x: 7, y: 36, rot: -9, depth: 0.9 },
+  { id: 'receive', label: 'Receive', icon: QrCode, bg: 'linear-gradient(180deg,#ffe27a 0 26%,#fbfaf5 26%)', fg: '#3b3b3b', x: 21, y: 9, rot: -6, depth: 0.6 },
+  { id: 'send', label: 'Send', icon: ArrowUpRight, bg: 'linear-gradient(160deg,#ffffff,#f2f0ea)', fg: '#ff6a3d', x: 37, y: 25, rot: 5, depth: 0.4 },
+  { id: 'wallet', label: 'Connect', icon: Wallet, bg: 'linear-gradient(160deg,#7cc0ff,#2f7cf0)', fg: '#fff', x: 50.5, y: 4, rot: 0, depth: 0.3 },
+  { id: 'fund', label: 'Friendbot', icon: Droplets, bg: 'linear-gradient(160deg,#ffffff,#eef7f1)', fg: '#1fae6a', x: 63, y: 27, rot: 7, depth: 0.45 },
+  { id: 'live', label: 'Live activity', icon: Radio, bg: 'linear-gradient(160deg,#8f8cff,#5b55e8)', fg: '#fff', x: 79, y: 7, rot: 8, depth: 0.7 },
+  { id: 'lab', label: 'Playground', icon: FlaskConical, bg: 'linear-gradient(160deg,#fff4f0,#ffd9cc)', fg: '#e5553a', x: 93, y: 33, rot: -5, depth: 1 },
+];
 
-    const handleResize = () => {
-      if (!canvas) return;
-      width = canvas.width = canvas.parentElement?.clientWidth || window.innerWidth;
-      height = canvas.height = canvas.parentElement?.clientHeight || 750;
-    };
-    window.addEventListener('resize', handleResize);
-
-    // Stellar constellation nodes
-    interface SpaceNode {
-      x: number;
-      y: number;
-      z: number;
-      size: number;
-      pulseSpeed: number;
-      pulsePhase: number;
-      label: string;
-    }
-
-    const size = Math.min(width, height) * 0.18;
-    const nodes: SpaceNode[] = [
-      { x: -size, y: -size * 0.5, z: -size, size: 4, pulseSpeed: 0.02, pulsePhase: 0, label: "ORION_CORE" },
-      { x: size, y: -size * 0.8, z: -size * 0.5, size: 5, pulseSpeed: 0.015, pulsePhase: Math.PI / 4, label: "HORIZON_NODE_A" },
-      { x: size * 0.6, y: size * 0.7, z: -size * 1.2, size: 3.5, pulseSpeed: 0.03, pulsePhase: Math.PI / 2, label: "VALIDATOR_SOLAR" },
-      { x: -size * 0.8, y: size * 0.6, z: -size * 0.2, size: 4, pulseSpeed: 0.01, pulsePhase: Math.PI, label: "MEMPOOL_STRATUM" },
-      { x: -size * 0.2, y: -size * 1.2, z: size, size: 5, pulseSpeed: 0.025, pulsePhase: Math.PI * 1.5, label: "SDF_TESTNET" },
-      { x: size * 1.1, y: -size * 0.2, z: size * 0.8, size: 3.5, pulseSpeed: 0.018, pulsePhase: Math.PI * 0.3, label: "GATEWAY_XLM" },
-      { x: size * 0.3, y: size * 1.1, z: size * 0.5, size: 4.5, pulseSpeed: 0.022, pulsePhase: Math.PI * 0.8, label: "LEDGER_INDEX_B" },
-      { x: -size * 1.2, y: size * 0.1, z: size * 1.1, size: 4, pulseSpeed: 0.012, pulsePhase: Math.PI * 1.2, label: "CIPHER_PORT" },
-    ];
-
-    const connections = [
-      [0, 1], [1, 2], [2, 3], [3, 0], // Main constellation outer
-      [4, 5], [5, 6], [6, 7], [7, 4], // Front constellation outer
-      [0, 4], [1, 5], [2, 6], [3, 7], // Structural cross lines
-      [0, 5], [2, 7], [1, 6], [3, 4]  // Core diagonal orbits
-    ];
-
-    // Orbiting space stardust dust specs
-    interface StarSpec {
-      x: number;
-      y: number;
-      z: number;
-      angle: number;
-      radius: number;
-      speed: number;
-      brightness: number;
-      color: string;
-    }
-
-    const stardust: StarSpec[] = [];
-    const colors = ['rgba(238, 241, 250, ', 'rgba(143, 193, 255, ', 'rgba(255, 138, 91, ']; // starlight, Rigel, Betelgeuse
-    for (let i = 0; i < 120; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const radius = size * (1.1 + Math.random() * 2.6);
-      const color = colors[Math.floor(Math.random() * colors.length)];
-      stardust.push({
-        x: Math.cos(angle) * radius,
-        y: (Math.random() - 0.5) * size * 2.2,
-        z: Math.sin(angle) * radius,
-        angle,
-        radius,
-        speed: (Math.random() * 0.005 + 0.001) * (Math.random() > 0.45 ? 1 : -1),
-        brightness: 0.35 + Math.random() * 0.65,
-        color
-      });
-    }
-
-    let angleX = 0.003;
-    let angleY = 0.005;
-
-    // Projection & Render Loop
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Fine Space Grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.012)';
-      ctx.lineWidth = 1;
-      const gridSpacing = 60;
-      for (let x = 0; x < width; x += gridSpacing) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
-      }
-      for (let y = 0; y < height; y += gridSpacing) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-      }
-
-      const cx = width / 2;
-      const cy = height * 0.45;
-
-      // Parallax rotation based on mouse coordinates
-      const targetAngleX = (mouseRef.current.y / height - 0.5) * 0.9;
-      const targetAngleY = (mouseRef.current.x / width - 0.5) * 0.9;
-
-      angleX += (targetAngleX - angleX) * 0.04;
-      angleY += (targetAngleY - angleY) * 0.04;
-
-      const cosX = Math.cos(angleX);
-      const sinX = Math.sin(angleX);
-      const cosY = Math.cos(angleY);
-      const sinY = Math.sin(angleY);
-
-      // Render Orbits
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, size * 1.5, size * 0.7, angleY, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, size * 2.2, size * 1.0, -angleY * 0.5, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Project vertices to 2D
-      const projectedNodes = nodes.map((node) => {
-        // Rotate Y
-        let x1 = node.x * cosY - node.z * sinY;
-        let z1 = node.x * sinY + node.z * cosY;
-
-        // Rotate X
-        let y2 = node.y * cosX - z1 * sinX;
-        let z2 = node.y * sinX + z1 * cosX;
-
-        // Perspective
-        const perspective = 550;
-        const scale = perspective / Math.max(1, perspective + z2);
-        return {
-          x: cx + x1 * scale,
-          y: cy + y2 * scale,
-          z: z2,
-          scale,
-          node
-        };
-      });
-
-      // Draw constellation wireframe lines
-      connections.forEach(([p1, p2]) => {
-        const pt1 = projectedNodes[p1];
-        const pt2 = projectedNodes[p2];
-
-        const avgZ = (pt1.z + pt2.z) / 2;
-        const opacity = Math.max(0.04, 0.25 - (avgZ / (size * 4)));
-
-        // Silver-white futuristic vectors
-        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.lineWidth = 1.0;
-        ctx.beginPath();
-        ctx.moveTo(pt1.x, pt1.y);
-        ctx.lineTo(pt2.x, pt2.y);
-        ctx.stroke();
-      });
-
-      // Draw star nodes
-      projectedNodes.forEach((pt) => {
-        pt.node.pulsePhase += pt.node.pulseSpeed;
-        const sizePulse = pt.node.size + Math.sin(pt.node.pulsePhase) * 1.5;
-        const opacity = Math.max(0.1, 0.65 - (pt.z / (size * 3.5)));
-
-        // Metallic star sparkle aura
-        ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
-        ctx.shadowColor = '#ffffff';
-        ctx.shadowBlur = pt.scale * 12;
-        ctx.beginPath();
-        ctx.arc(pt.x, pt.y, Math.max(0, pt.scale * sizePulse * 0.5), 0, Math.PI * 2);
-        ctx.fill();
-        ctx.shadowBlur = 0;
-
-      });
-
-      // Update & render space stardust
-      stardust.forEach((star) => {
-        // Orbit update
-        star.angle += star.speed;
-        star.x = Math.cos(star.angle) * star.radius;
-        star.z = Math.sin(star.angle) * star.radius;
-
-        // Rotate Y
-        let x1 = star.x * cosY - star.z * sinY;
-        let z1 = star.x * sinY + star.z * cosY;
-
-        // Rotate X
-        let y2 = star.y * cosX - z1 * sinX;
-        let z2 = star.y * sinX + z1 * cosX;
-
-        const scale = 550 / Math.max(1, 550 + z2);
-        const px = cx + x1 * scale;
-        const py = cy + y2 * scale;
-
-        const opacity = Math.max(0.05, (0.45 - (z2 / (size * 5))) * star.brightness);
-        
-        // Twinkling effect
-        const finalOpacity = opacity * (0.7 + Math.sin(star.angle * 10) * 0.3);
-
-        ctx.fillStyle = `${star.color}${finalOpacity})`;
-        ctx.beginPath();
-        ctx.arc(px, py, Math.max(0, scale * 1.2), 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-  };
-
-  const scrollToSection = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-
-  const REPO_URL = 'https://github.com/arg0506/Orion';
-
-  const features = [
-    {
-      icon: ArrowUpRight,
-      title: 'Payments that follow the rules',
-      body: "Orion knows Stellar's minimum balance, fees and 28-byte memo limit, and creates the account automatically when you pay a brand-new address.",
-    },
-    {
-      icon: Radio,
-      title: 'Live activity',
-      body: 'Your history streams straight from Horizon. Incoming payments appear, and your balance updates, the moment they land.',
-    },
-    {
-      icon: Eye,
-      title: 'Watchlist',
-      body: "Track any testnet address you don't control, like a team treasury or a judge's wallet, with totals at a glance.",
-    },
-    {
-      icon: ShieldCheck,
-      title: 'Safe by default',
-      body: 'Your keys stay in Freighter or MetaMask. Sending is blocked on the wrong network, and errors are shown, never papered over.',
-    },
-  ];
+function Tile({ t, i, mx, my, reduced }: { key?: React.Key; t: TileSpec; i: number; mx: MotionValue<number>; my: MotionValue<number>; reduced: boolean }) {
+  const px = useTransform(mx, (v) => v * 22 * t.depth);
+  const py = useTransform(my, (v) => v * 16 * t.depth);
+  const Icon = t.icon;
+  // start inside the opening of the planet
+  const fromX = `${(PLANET.cx / PLANET.W) * 100 - t.x}%`;
+  const fromY = `${(PLANET.openY / PLANET.H) * 100 - t.y}%`;
 
   return (
-    <div className="min-h-screen orion-sky text-starlight font-sans overflow-x-hidden relative" onMouseMove={handleMouseMove}>
-      {/* 3D star field */}
-      <div className="absolute inset-x-0 top-0 h-[92vh] z-0 opacity-30 sm:opacity-70 pointer-events-none overflow-hidden" aria-hidden="true">
-        <canvas ref={canvasRef} className="w-full h-full" />
-      </div>
+    <motion.div className="absolute z-10" style={{ left: `${t.x}%`, top: `${t.y}%`, x: px, y: py }}>
+      <motion.div
+        initial={reduced ? false : { left: fromX, top: fromY, scale: 0.2, opacity: 0, rotate: 0 }}
+        animate={{ left: '0%', top: '0%', scale: 1, opacity: 1, rotate: t.rot }}
+        transition={{ delay: 0.9 + i * 0.09, type: 'spring', stiffness: 70, damping: 13 }}
+        className="relative -translate-x-1/2 -translate-y-1/2"
+      >
+        <motion.div
+          animate={reduced ? undefined : { y: [0, -7, 0] }}
+          transition={{ duration: 4 + (i % 3), repeat: Infinity, ease: 'easeInOut', delay: 2 + i * 0.3 }}
+          whileHover={{ scale: 1.12, rotate: 0 }}
+          className="group relative"
+        >
+          <span
+            className="grid place-items-center w-11 h-11 sm:w-[58px] sm:h-[58px] rounded-[13px] sm:rounded-[16px] shadow-[0_10px_24px_-10px_rgba(0,0,0,0.35),0_1px_0_rgba(255,255,255,0.6)_inset] ring-1 ring-black/5"
+            style={{ background: t.bg, color: t.fg }}
+          >
+            <Icon className="w-5 h-5 sm:w-[26px] sm:h-[26px]" strokeWidth={2.2} />
+          </span>
+          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 text-[12px] font-medium text-[#141414] bg-white rounded-full px-2.5 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {t.label}
+          </span>
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
 
-      {/* Navigation */}
-      <header className={cx('sticky top-0 z-40 transition-colors', scrolled ? 'bg-night/85 backdrop-blur-md border-b border-line' : 'border-b border-transparent')}>
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Link to="/" aria-label="Orion home">
-            <Logo />
-          </Link>
-          <nav className="hidden md:flex items-center gap-1 text-[15px]" aria-label="Main">
-            <button onClick={() => scrollToSection('features')} className="px-3 h-9 rounded-lg text-mist hover:text-starlight">Features</button>
-            <button onClick={() => scrollToSection('how')} className="px-3 h-9 rounded-lg text-mist hover:text-starlight">How it works</button>
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="px-3 h-9 rounded-lg text-mist hover:text-starlight inline-flex items-center gap-1.5">
-              <Github size={16} /> Source
-            </a>
-            <Link to="/terminal" className="ml-3">
-              <Button variant="primary" size="sm" icon={<Wallet size={15} />}>Open wallet</Button>
-            </Link>
-          </nav>
-          <button className="md:hidden p-2 rounded-lg text-mist hover:text-starlight" onClick={() => setMobileMenuOpen((o) => !o)} aria-label="Menu" aria-expanded={mobileMenuOpen}>
-            {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+function HeroArt() {
+  const reduced = !!useReducedMotion();
+  const mx = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
+  const my = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
+
+  return (
+    <div
+      className="relative w-full max-w-[600px] mx-auto"
+      onMouseMove={(e) => {
+        const r = e.currentTarget.getBoundingClientRect();
+        mx.set((e.clientX - r.left) / r.width - 0.5);
+        my.set((e.clientY - r.top) / r.height - 0.5);
+      }}
+      onMouseLeave={() => {
+        mx.set(0);
+        my.set(0);
+      }}
+    >
+      <StipplePlanet className="w-full h-auto" reduced={reduced} />
+      {/* belt stars glinting in the carved-out holes */}
+      {BELT.map((b, i) => (
+        <motion.span
+          key={i}
+          className="absolute w-[6px] h-[6px] -ml-[3px] -mt-[3px] rounded-full bg-white"
+          style={{ left: `${b.x * 100}%`, top: `${b.y * 100}%`, boxShadow: '0 0 10px 3px rgba(255,255,255,0.9)' }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={reduced ? { opacity: 1, scale: 1 } : { opacity: [0, 1, 0.55, 1], scale: [0, 1.4, 1, 1] }}
+          transition={{ delay: 1.8 + i * 0.15, duration: 1.2 }}
+        />
+      ))}
+      {TILES.map((t, i) => (
+        <Tile key={t.id} t={t} i={i} mx={mx} my={my} reduced={reduced} />
+      ))}
+    </div>
+  );
+}
+
+/* ───────────────────────── helpers ───────────────────────── */
+
+function Reveal({ children, delay = 0, className, y = 28 }: { key?: React.Key; children: React.ReactNode; delay?: number; className?: string; y?: number }) {
+  return (
+    <motion.div
+      className={className}
+      initial={{ opacity: 0, y }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-80px' }}
+      transition={{ duration: 0.8, ease, delay }}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function SplitHeadline({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+  const words = text.split(' ');
+  return (
+    <span className={className} aria-label={text}>
+      {words.map((w, i) => (
+        <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.08em] -mb-[0.08em]" aria-hidden="true">
+          <motion.span
+            className="inline-block"
+            initial={{ y: '105%' }}
+            whileInView={{ y: '0%' }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.9, ease, delay: delay + i * 0.08 }}
+          >
+            {w}
+            {i < words.length - 1 ? ' ' : ''}
+          </motion.span>
+        </span>
+      ))}
+    </span>
+  );
+}
+
+/** Paragraph whose words darken one by one as it scrolls through the viewport. */
+function ScrollInk({ text }: { text: string }) {
+  const ref = useRef<HTMLParagraphElement | null>(null);
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] });
+  const words = text.split(' ');
+  return (
+    <p ref={ref} className="font-serif text-[30px] sm:text-[44px] lg:text-[52px] leading-[1.12] tracking-[-0.01em] text-[#141414]">
+      {words.map((w, i) => (
+        <InkWord key={i} word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
+      ))}
+    </p>
+  );
+}
+
+function InkWord({ word, progress, range }: { key?: React.Key; word: string; progress: MotionValue<number>; range: [number, number] }) {
+  const opacity = useTransform(progress, range, [0.16, 1]);
+  return (
+    <motion.span style={{ opacity }} className="inline-block mr-[0.25em]">
+      {word}
+    </motion.span>
+  );
+}
+
+function CountUp({ to, decimals = 2 }: { to: number; decimals?: number }) {
+  const ref = useRef<HTMLSpanElement | null>(null);
+  const inView = useInView(ref, { once: true });
+  const [v, setV] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    const controls = animate(0, to, { duration: 1.8, ease, onUpdate: setV });
+    return () => controls.stop();
+  }, [inView, to]);
+  return <span ref={ref}>{v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <Reveal y={12}>
+      <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
+        <Belt className="w-5 text-[#141414]" />
+        {children}
+      </p>
+    </Reveal>
+  );
+}
+
+/* ───────────────────────── page ───────────────────────── */
+
+const FEATURES = [
+  { tile: TILES[2], title: 'Payments that follow the rules', body: "Orion knows Stellar's minimum balance, fees and 28-byte memo limit, and creates the account for you when you pay a brand-new address." },
+  { tile: TILES[5], title: 'Activity, as it happens', body: 'History streams straight from Horizon. Incoming payments appear, and your balance updates, the moment they land.' },
+  { tile: TILES[0], title: 'A watchlist for any address', body: "Track wallets you don't control, like a team treasury or a judge's account, with totals at a glance." },
+  { tile: { ...TILES[3], icon: ShieldCheck }, title: 'Safe by default', body: 'Keys stay in Freighter or MetaMask. Sending is blocked on the wrong network, and errors are shown, never papered over.' },
+];
+
+const STEPS = [
+  { title: 'Connect Freighter', body: 'Orion asks for your public address. Your secret key never leaves the extension.' },
+  { title: 'Fund with Friendbot', body: "New addresses don't exist until they hold 1 XLM. One click brings 10,000 test XLM." },
+  { title: 'Send and watch it land', body: 'Pick an address and amount, approve in Freighter, and see it on the ledger seconds later.' },
+];
+
+export default function LandingPage() {
+  const reduced = !!useReducedMotion();
+  const { scrollY } = useScroll();
+  const navShadow = useTransform(scrollY, [0, 80], ['0 0 0 rgba(0,0,0,0)', '0 8px 30px -12px rgba(0,0,0,0.25)']);
+  const heroArtY = useTransform(scrollY, [0, 700], [0, reduced ? 0 : -60]);
+
+  const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  return (
+    <div className="landing min-h-screen bg-[#f6f5f2] text-[#141414] font-sans overflow-x-hidden selection:bg-[#141414] selection:text-white">
+      {/* Nav pill */}
+      <motion.nav
+        initial={{ y: -24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.7, ease }}
+        style={{ boxShadow: navShadow }}
+        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-2 py-1.5 border border-black/[0.04]"
+        aria-label="Main"
+      >
+        <Link to="/" aria-label="Orion home" className="w-8 h-8 grid place-items-center rounded-lg hover:bg-black/5">
+          <Belt className="w-5 text-[#141414]" />
+        </Link>
+        {[
+          ['About', () => scrollTo('about')],
+          ['Features', () => scrollTo('features')],
+        ].map(([label, fn]) => (
+          <button key={label as string} onClick={fn as () => void} className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">
+            {label as string}
           </button>
-        </div>
-        {mobileMenuOpen && (
-          <div className="md:hidden border-t border-line bg-night/95 px-5 py-3 flex flex-col gap-1">
-            <button onClick={() => { setMobileMenuOpen(false); scrollToSection('features'); }} className="h-11 text-left text-mist">Features</button>
-            <button onClick={() => { setMobileMenuOpen(false); scrollToSection('how'); }} className="h-11 text-left text-mist">How it works</button>
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-11 flex items-center text-mist">Source on GitHub</a>
-            <Link to="/terminal" className="mt-1"><Button variant="primary" className="w-full">Open wallet</Button></Link>
-          </div>
-        )}
-      </header>
+        ))}
+        <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">
+          Source
+        </a>
+      </motion.nav>
 
-      {/* Hero */}
-      <section className="relative z-10 max-w-6xl mx-auto px-5 sm:px-8 pt-14 sm:pt-24 pb-20 grid lg:grid-cols-[1.15fr_0.85fr] gap-12 items-center">
-        <div>
-          <p className="inline-flex items-center gap-2 text-[13px] font-medium text-rigel mb-5">
-            <Belt className="w-6" /> Stellar testnet wallet
-          </p>
-          <h1 className="font-display font-bold tracking-tight leading-[1.02] text-[44px] sm:text-[64px] lg:text-[72px]">
-            Your clear window
-            <br />
-            onto the <span className="text-rigel">Stellar</span> testnet.
-          </h1>
-          <p className="text-[17px] sm:text-lg text-mist mt-6 max-w-xl leading-relaxed">
-            Connect Freighter, fund an account with Friendbot, send XLM and keep an eye on any address, all on the real testnet. Made for developers building and demoing Stellar apps.
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/terminal">
-              <Button variant="primary" size="lg" icon={<ArrowRight size={17} />}>Open wallet</Button>
-            </Link>
-            <a href={REPO_URL} target="_blank" rel="noreferrer">
-              <Button size="lg" icon={<Github size={17} />}>View source</Button>
-            </a>
-          </div>
-          <ul className="mt-10 flex flex-wrap gap-x-6 gap-y-2 text-sm text-mist">
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-ok" /> Reads live from Horizon</li>
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-rigel" /> Keys never leave your wallet</li>
-            <li className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-betel" /> No sign-up needed</li>
-          </ul>
-        </div>
+      {/* ───────── Hero ───────── */}
+      <section className="relative pt-28 sm:pt-32 text-center px-5">
+        <h1 className="font-serif text-[52px] sm:text-[84px] lg:text-[96px] leading-[0.95] tracking-[-0.02em]">
+          <SplitHeadline text="Meet Orion," delay={0.15} />
+        </h1>
+        <motion.p
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.55, duration: 0.7, ease }}
+          className="mt-4 text-[15px] sm:text-base text-[#3a3a37]"
+        >
+          and send your first Stellar payment in under a minute.
+        </motion.p>
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.7, ease }} className="mt-6">
+          <Link
+            to="/terminal"
+            className="group inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] hover:bg-black transition-colors"
+          >
+            <Wallet size={17} />
+            Open wallet
+            <ArrowRight size={15} className="w-0 opacity-0 -ml-2 group-hover:w-[15px] group-hover:opacity-100 group-hover:ml-0 transition-all" />
+          </Link>
+        </motion.div>
 
-        {/* Product preview (illustrative) */}
-        <div className="relative" aria-label="Preview of the Orion wallet">
-          <div className="absolute -inset-8 bg-rigel/10 blur-3xl rounded-full pointer-events-none" />
-          <div className="relative rounded-3xl border border-line bg-deep/90 backdrop-blur p-6 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-mist">Testnet balance</span>
-              <Badge tone="neutral">Example</Badge>
+        <motion.div style={{ y: heroArtY }} className="mt-8 sm:mt-10">
+          <HeroArt />
+        </motion.div>
+      </section>
+
+      {/* ───────── About ───────── */}
+      <section id="about" className="px-5 py-28 sm:py-40">
+        <div className="max-w-4xl mx-auto">
+          <SectionLabel>About</SectionLabel>
+          <div className="mt-8">
+            <ScrollInk text="Orion is a calm window onto the Stellar testnet. Connect a wallet, fund it, send a payment and watch it land, without jargon and without a single made-up number." />
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── Features ───────── */}
+      <section id="features" className="px-5 pb-28 sm:pb-40">
+        <div className="max-w-5xl mx-auto">
+          <SectionLabel>Features</SectionLabel>
+          <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
+            <SplitHeadline text="Everything a testnet payment needs." />
+          </h2>
+          <div className="mt-14 grid sm:grid-cols-2 gap-x-10 gap-y-14">
+            {FEATURES.map((f, i) => {
+              const Icon = f.tile.icon;
+              return (
+                <Reveal key={f.title} delay={(i % 2) * 0.12}>
+                  <motion.span
+                    initial={{ rotate: -20, scale: 0.6, opacity: 0 }}
+                    whileInView={{ rotate: f.tile.rot, scale: 1, opacity: 1 }}
+                    viewport={{ once: true }}
+                    whileHover={{ rotate: 0, scale: 1.08 }}
+                    transition={{ type: 'spring', stiffness: 120, damping: 12, delay: 0.15 + (i % 2) * 0.12 }}
+                    className="inline-grid place-items-center w-14 h-14 rounded-[16px] shadow-[0_10px_24px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5"
+                    style={{ background: f.tile.bg, color: f.tile.fg }}
+                  >
+                    <Icon size={26} strokeWidth={2.2} />
+                  </motion.span>
+                  <h3 className="mt-6 font-serif text-[26px] sm:text-[30px] leading-tight">{f.title}</h3>
+                  <p className="mt-3 text-[16px] leading-relaxed text-[#5a5955] max-w-md">{f.body}</p>
+                </Reveal>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── How it works: a constellation that draws itself ───────── */}
+      <HowItWorks />
+
+      {/* ───────── Preview ───────── */}
+      <section className="px-5 py-28 sm:py-40">
+        <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+          <div>
+            <SectionLabel>The wallet</SectionLabel>
+            <h2 className="mt-6 font-serif text-[38px] sm:text-[56px] leading-[1] tracking-[-0.02em]">
+              <SplitHeadline text="Dark sky, bright numbers." />
+            </h2>
+            <Reveal delay={0.2}>
+              <p className="mt-5 text-[16px] leading-relaxed text-[#5a5955] max-w-md">
+                Inside, Orion turns to night. Money coming in glows Rigel blue, money going out burns Betelgeuse orange, and everything else stays out of your way.
+              </p>
+              <Link to="/terminal" className="mt-7 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
+                Open the wallet <ArrowUpRight size={16} />
+              </Link>
+            </Reveal>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 60, rotate: 3 }}
+            whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
+            viewport={{ once: true, margin: '-100px' }}
+            transition={{ duration: 1.1, ease }}
+            className="relative rounded-[28px] bg-[#0b0e1a] text-[#eef1fa] p-6 sm:p-7 shadow-[0_40px_80px_-30px_rgba(11,14,26,0.6)]"
+          >
+            <div className="flex items-center justify-between text-[13px]">
+              <span className="text-[#8a93b2]">Testnet balance</span>
+              <span className="rounded-full border border-[#232a42] px-2.5 py-0.5 text-[#8a93b2]">Example</span>
             </div>
-            <p className="font-display font-bold text-[44px] leading-none mt-3 num">
-              10,000.00 <span className="text-xl text-mist font-semibold">XLM</span>
+            <p className="font-display font-bold text-[44px] sm:text-[52px] leading-none mt-3 tabular-nums">
+              <CountUp to={10000} /> <span className="text-xl text-[#8a93b2] font-semibold">XLM</span>
             </p>
-            <div className="mt-5 grid grid-cols-2 gap-2.5">
-              <span className="h-10 rounded-xl bg-rigel text-night font-semibold text-sm flex items-center justify-center gap-2"><ArrowUpRight size={16} /> Send</span>
-              <span className="h-10 rounded-xl bg-deeper border border-line font-semibold text-sm flex items-center justify-center gap-2"><ArrowDownLeft size={16} /> Receive</span>
-            </div>
-            <ul className="mt-6 divide-y divide-line">
+            <ul className="mt-6 divide-y divide-[#232a42]">
               {[
                 { inc: true, who: 'GDF7…MHHP', amt: '+250.00', when: 'just now' },
                 { inc: false, who: 'GCAK…EYFP', amt: '−1,200.00', when: '2 h ago' },
                 { inc: true, who: 'Friendbot', amt: '+10,000.00', when: '2 d ago', fund: true },
-              ].map((r) => (
-                <li key={r.who} className="flex items-center gap-3 py-3">
-                  <span className={cx('w-9 h-9 rounded-xl grid place-items-center border', r.inc ? 'text-rigel bg-rigel/10 border-rigel/20' : 'text-betel bg-betel/10 border-betel/20')}>
+              ].map((r, i) => (
+                <motion.li
+                  key={r.who}
+                  initial={{ opacity: 0, x: 24 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.5 + i * 0.15, duration: 0.6, ease }}
+                  className="flex items-center gap-3 py-3"
+                >
+                  <span className={cx('w-9 h-9 rounded-xl grid place-items-center border', r.inc ? 'text-[#8fc1ff] bg-[#8fc1ff]/10 border-[#8fc1ff]/20' : 'text-[#ff8a5b] bg-[#ff8a5b]/10 border-[#ff8a5b]/20')}>
                     {r.fund ? <Droplets size={15} /> : r.inc ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
                   </span>
-                  <span className="flex-1 min-w-0">
-                    <span className="block text-sm text-starlight">{r.inc ? 'Received from' : 'Sent to'} <span className="font-mono text-[13px]">{r.who}</span></span>
-                    <span className="block text-[12px] text-haze">{r.when}</span>
+                  <span className="flex-1 min-w-0 text-left">
+                    <span className="block text-sm">
+                      {r.inc ? 'Received from' : 'Sent to'} <span className="font-mono text-[13px]">{r.who}</span>
+                    </span>
+                    <span className="block text-[12px] text-[#5f6886]">{r.when}</span>
                   </span>
-                  <span className={cx('text-sm font-semibold num', r.inc ? 'text-rigel' : 'text-starlight')}>{r.amt}</span>
-                </li>
+                  <span className={cx('text-sm font-semibold tabular-nums', r.inc ? 'text-[#8fc1ff]' : '')}>{r.amt}</span>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="relative z-10 border-t border-line">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
-          <h2 className="font-display font-bold text-[32px] sm:text-[40px] tracking-tight max-w-2xl leading-tight">Everything you need to test a Stellar payment flow.</h2>
-          <div className="mt-10 grid sm:grid-cols-2 gap-4">
-            {features.map(({ icon: Icon, title, body }) => (
-              <div key={title} className="rounded-2xl border border-line bg-deep/70 p-6">
-                <span className="w-10 h-10 rounded-xl grid place-items-center bg-deeper border border-line text-rigel">
-                  <Icon size={18} />
-                </span>
-                <h3 className="font-display font-semibold text-xl mt-4">{title}</h3>
-                <p className="text-[15px] text-mist mt-2 leading-relaxed">{body}</p>
-              </div>
+      {/* ───────── Playground marquee ───────── */}
+      <section className="py-20 sm:py-28 border-y border-black/[0.06] overflow-hidden">
+        <div className="flex whitespace-nowrap" aria-hidden="true">
+          <motion.div
+            className="flex shrink-0 font-serif text-[64px] sm:text-[110px] leading-none tracking-[-0.02em]"
+            animate={reduced ? undefined : { x: ['0%', '-50%'] }}
+            transition={{ duration: 38, repeat: Infinity, ease: 'linear' }}
+          >
+            {[0, 1].map((k) => (
+              <span key={k} className="flex shrink-0">
+                {['Soroban', 'Freighter', 'Horizon', 'Friendbot', 'XLM', 'Testnet'].map((w, i) => (
+                  <span key={w} className={cx('px-6 sm:px-10 flex items-center gap-6 sm:gap-10', i % 2 ? 'text-transparent [-webkit-text-stroke:1.5px_#141414]' : '')}>
+                    {w}
+                    <Belt className="w-10 sm:w-16 text-[#141414]" />
+                  </span>
+                ))}
+              </span>
             ))}
-          </div>
+          </motion.div>
         </div>
+        <Reveal className="max-w-5xl mx-auto px-5 mt-14 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+          <div className="max-w-xl">
+            <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
+              <FlaskConical size={15} /> Playground
+            </p>
+            <p className="mt-3 font-serif text-[28px] sm:text-[34px] leading-tight">See how a smart contract goes from code to deploy.</p>
+            <p className="mt-3 text-[15px] text-[#5a5955] leading-relaxed">
+              Step through Soroban and Solidity templates, contract calls, events and a CI pipeline. It's a guided simulation in your browser, so nothing is deployed.
+            </p>
+          </div>
+          <Link to="/developer" className="shrink-0 inline-flex items-center gap-2 h-11 px-5 rounded-[12px] border border-[#141414] text-[15px] font-medium hover:bg-[#141414] hover:text-white transition-colors">
+            Open playground <ArrowRight size={15} />
+          </Link>
+        </Reveal>
       </section>
 
-      {/* How it works */}
-      <section id="how" className="relative z-10 border-t border-line">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20 grid lg:grid-cols-[0.8fr_1.2fr] gap-10">
-          <div>
-            <h2 className="font-display font-bold text-[32px] sm:text-[40px] tracking-tight leading-tight">From zero to first payment in a minute.</h2>
-            <p className="text-mist mt-4 leading-relaxed">You need the free Freighter browser extension, set to Testnet. Nothing else.</p>
-          </div>
-          <ol className="grid gap-4">
-            {[
-              ['Connect Freighter', 'Orion asks Freighter for your public address. Your secret key never leaves the extension.'],
-              ['Fund with Friendbot', "New Stellar addresses don't exist until they hold 1 XLM. One click gets you 10,000 free test XLM."],
-              ['Send and watch it land', 'Enter an address and amount, approve in Freighter, and see the payment on the ledger seconds later.'],
-            ].map(([t, d], i) => (
-              <li key={t} className="flex gap-5 rounded-2xl border border-line bg-deep/70 p-5">
-                <span className="w-9 h-9 rounded-full border border-line bg-deeper grid place-items-center font-semibold text-rigel shrink-0 num">{i + 1}</span>
-                <div>
-                  <p className="font-semibold text-[17px]">{t}</p>
-                  <p className="text-[15px] text-mist mt-1 leading-relaxed">{d}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
+      {/* ───────── Final CTA ───────── */}
+      <FinalCta />
 
-      {/* Playground */}
-      <section className="relative z-10 border-t border-line">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-20">
-          <div className="rounded-3xl border border-line bg-deep/70 p-8 sm:p-10 flex flex-col md:flex-row md:items-center gap-6 justify-between">
-            <div className="max-w-2xl">
-              <p className="inline-flex items-center gap-2 text-[13px] font-medium text-betel"><FlaskConical size={15} /> Learning playground</p>
-              <h2 className="font-display font-bold text-[26px] sm:text-[32px] tracking-tight mt-2 leading-tight">See how a smart contract goes from code to deploy.</h2>
-              <p className="text-mist mt-3 leading-relaxed">
-                Step through Soroban and Solidity templates, inter-contract calls, events and a CI pipeline. It's a guided simulation that runs in your browser, so nothing is deployed.
-              </p>
-            </div>
-            <Link to="/developer" className="shrink-0">
-              <Button size="lg" icon={<ArrowRight size={17} />}>Open playground</Button>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <footer className="relative z-10 border-t border-line">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row gap-4 justify-between text-sm text-haze">
-          <span className="flex items-center gap-2"><Belt className="w-5 text-mist" /> Orion · Built by Arpan Roy · Test networks only</span>
+      <footer className="px-5 pb-10">
+        <div className="max-w-5xl mx-auto pt-8 border-t border-black/[0.06] flex flex-col sm:flex-row gap-4 justify-between text-[13px] text-[#6b6a66]">
+          <span className="flex items-center gap-2">
+            <Belt className="w-5 text-[#141414]" /> Orion · Built by Arpan Roy · Test networks only, tokens have no real value
+          </span>
           <span className="flex gap-5">
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-starlight">GitHub</a>
-            <a href="https://developers.stellar.org" target="_blank" rel="noreferrer" className="hover:text-starlight">Stellar docs</a>
-            <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="hover:text-starlight">Get Freighter</a>
+            <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-[#141414] inline-flex items-center gap-1">
+              <Github size={14} /> GitHub
+            </a>
+            <a href="https://developers.stellar.org" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
+              Stellar docs
+            </a>
+            <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
+              Get Freighter
+            </a>
           </span>
         </div>
       </footer>
     </div>
+  );
+}
+
+function HowItWorks() {
+  // Three steps = Orion's three belt stars, joined by a line that draws as you scroll in
+  const pts = [
+    { x: 60, y: 120 },
+    { x: 500, y: 80 },
+    { x: 940, y: 40 },
+  ];
+  return (
+    <section className="px-5 py-28 sm:py-40 bg-[#efede8]">
+      <div className="max-w-5xl mx-auto">
+        <SectionLabel>How it works</SectionLabel>
+        <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
+          <SplitHeadline text="Three stars to your first payment." />
+        </h2>
+
+        <svg viewBox="0 0 1000 160" className="hidden md:block w-full mt-16 overflow-visible" aria-hidden="true">
+          <motion.path
+            d={`M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y} L${pts[2].x} ${pts[2].y}`}
+            fill="none"
+            stroke="#141414"
+            strokeWidth="1.5"
+            strokeDasharray="1 7"
+            strokeLinecap="round"
+            initial={{ pathLength: 0 }}
+            whileInView={{ pathLength: 1 }}
+            viewport={{ once: true, margin: '-120px' }}
+            transition={{ duration: 1.8, ease }}
+          />
+          {pts.map((p, i) => (
+            <motion.g
+              key={i}
+              initial={{ scale: 0, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true, margin: '-120px' }}
+              transition={{ delay: 0.2 + i * 0.6, type: 'spring', stiffness: 200, damping: 12 }}
+              style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+            >
+              <circle cx={p.x} cy={p.y} r="22" fill="#141414" opacity="0.06" />
+              <circle cx={p.x} cy={p.y} r={i === 1 ? 9 : 7} fill="#141414" />
+            </motion.g>
+          ))}
+        </svg>
+
+        <ol className="mt-12 md:mt-4 grid md:grid-cols-3 gap-10">
+          {STEPS.map((s, i) => (
+            <Reveal key={s.title} delay={0.3 + i * 0.25}>
+              <li className="list-none">
+                <span className="font-serif text-[15px] text-[#6b6a66]">Step {i + 1}</span>
+                <h3 className="mt-2 font-serif text-[26px] leading-tight">{s.title}</h3>
+                <p className="mt-2 text-[15px] leading-relaxed text-[#5a5955]">{s.body}</p>
+              </li>
+            </Reveal>
+          ))}
+        </ol>
+      </div>
+    </section>
+  );
+}
+
+function FinalCta() {
+  const reduced = !!useReducedMotion();
+  // a small field of twinkling stars, placed deterministically
+  const stars = Array.from({ length: 26 }, (_, i) => ({
+    x: (i * 37) % 100,
+    y: (i * 53) % 100,
+    s: 2 + (i % 3),
+    d: (i % 7) * 0.4,
+  }));
+  return (
+    <section className="relative px-5 py-32 sm:py-44 text-center overflow-hidden">
+      {stars.map((s, i) => (
+        <motion.span
+          key={i}
+          className="absolute rounded-full bg-[#141414]"
+          style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.s, height: s.s }}
+          initial={{ opacity: 0.15 }}
+          animate={reduced ? undefined : { opacity: [0.1, 0.7, 0.1] }}
+          transition={{ duration: 3 + (i % 4), repeat: Infinity, delay: s.d }}
+          aria-hidden="true"
+        />
+      ))}
+      <div className="relative">
+        <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
+          <SplitHeadline text="Look up," />
+          <br />
+          <SplitHeadline text="then ship." delay={0.2} />
+        </h2>
+        <Reveal delay={0.4}>
+          <p className="mt-6 text-[16px] text-[#5a5955]">Free, open source and no sign-up. All you need is Freighter set to Testnet.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link to="/terminal" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium hover:bg-black transition-colors">
+              <Wallet size={17} /> Open wallet
+            </Link>
+            <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
+              <Github size={17} /> View source
+            </a>
+          </div>
+        </Reveal>
+      </div>
+    </section>
   );
 }

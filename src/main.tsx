@@ -5,6 +5,7 @@ import '@fontsource-variable/bricolage-grotesque/opsz.css';
 import '@fontsource-variable/instrument-sans';
 import '@fontsource/ibm-plex-mono/400.css';
 import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/gloock/400.css';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(

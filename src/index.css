@@ -3,6 +3,7 @@
 @theme {
   --font-sans: "Instrument Sans Variable", "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-serif: "Gloock", Georgia, serif;
   --font-display: "Bricolage Grotesque Variable", "Bricolage Grotesque", "Instrument Sans Variable", sans-serif;
 
   /* Orion palette — the night sky and its two brightest stars */
