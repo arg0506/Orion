@@ -578,6 +578,20 @@ python3 e2e/e2e.py              # end-to-end in Chrome (see the script header)`}
             </UL>
           </Section>
 
+          {/* ── Troubleshooting ── */}
+          <Section id="troubleshooting" eyebrow="Internals" title="Troubleshooting">
+            <H3>"Can't reach … right now"</H3>
+            <P>The network's RPC didn't answer. For local networks, make sure your node is running on the port shown in the network list. For public testnets, try again or switch to another one.</P>
+            <H3>My dapp doesn't see Orion</H3>
+            <P>Reload the page after installing or updating the extension. For EVM, make sure your library supports EIP-6963 (or that no other wallet has claimed <C>window.ethereum</C>). Check the Log tab to see whether requests arrive.</P>
+            <H3>"Orion was updated or restarted. Reload the page."</H3>
+            <P>The page's connection to the extension went stale after an update. Reloading the page fixes it.</P>
+            <H3>Speed up / Cancel is missing</H3>
+            <P>They only appear on pending EVM and Stellar transactions. Solana transactions can't be replaced; Orion shows their expiry countdown instead.</P>
+            <H3>Friendbot says the account is already funded</H3>
+            <P>Friendbot only funds accounts that don't exist yet. Send from another testnet account instead.</P>
+          </Section>
+
       </div>
     </div>
   );
