@@ -20,6 +20,7 @@
     "@stellar/stellar-sdk": "^16.0.1",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
+    "@web3icons/react": "^4.1.27",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
     "firebase": "^12.15.0",
