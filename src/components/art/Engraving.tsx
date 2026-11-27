@@ -269,3 +269,48 @@ export function Comet({ width = 120, height = 40 }: { width?: number; height?: n
   );
 }
 
+/** Engraved starburst with a serif word: shown when something lands. */
+export function Starburst({ show, word }: { show: boolean; word?: string }) {
+  const reduced = useReducedMotion();
+  const rays = 56;
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div className="pointer-events-none absolute inset-0 z-40 grid place-items-center bg-paper/70 backdrop-blur-[1px]" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+          <div className="relative w-[240px] h-[240px] grid place-items-center">
+            <svg viewBox="0 0 200 200" className="absolute inset-0" aria-hidden="true">
+              {Array.from({ length: rays }, (_, i) => {
+                const a = (i / rays) * Math.PI * 2;
+                const long = i % 4 === 0;
+                const r1 = 34, r2 = long ? 98 : 72;
+                return (
+                  <motion.line key={i} x1={100 + r1 * Math.cos(a)} y1={100 + r1 * Math.sin(a)} x2={100 + r2 * Math.cos(a)} y2={100 + r2 * Math.sin(a)}
+                    stroke={i % 14 === 0 ? BETEL : i % 14 === 7 ? RIGEL : INK} strokeWidth={long ? 0.9 : 0.5}
+                    initial={reduced ? false : { pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.7, delay: (i % 8) * 0.03, ease: [0.22, 1, 0.36, 1] }} />
+                );
+              })}
+              <circle cx="100" cy="100" r="30" fill="#f6f5f2" stroke={INK} strokeWidth="0.8" />
+            </svg>
+            <motion.span className="relative font-serif text-[34px] italic" initial={reduced ? false : { scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 200, damping: 14, delay: 0.15 }}>
+              {word}
+            </motion.span>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/** A small italic annotation with a leader line, like a label in an old atlas. */
+export function Annotation({ children, tone = 'ink' }: { children: React.ReactNode; tone?: 'ink' | 'bad' | 'accent' }) {
+  const color = tone === 'bad' ? '#d93b4b' : tone === 'accent' ? RIGEL : '#5a5955';
+  return (
+    <motion.span className="inline-flex items-center gap-1.5 font-serif italic text-[12px] whitespace-nowrap" style={{ color }} initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }}>
+      {children}
+      <svg width="22" height="6" viewBox="0 0 22 6" aria-hidden="true">
+        <line x1="0" y1="3" x2="18" y2="3" stroke={color} strokeWidth="0.8" />
+        <circle cx="19.5" cy="3" r="1.6" fill={color} />
+      </svg>
+    </motion.span>
+  );
+}
