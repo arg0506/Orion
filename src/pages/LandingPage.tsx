@@ -256,17 +256,10 @@ export default function LandingPage() {
           <AnimatedMark className="w-[22px] h-[22px] text-[#141414]" delay={0.3} />
           <span className="font-serif text-[17px] leading-none">Orion</span>
         </Link>
-        {[
-          ['About', () => scrollTo('about')],
-          ['Features', () => scrollTo('features')],
-        ].map(([label, fn]) => (
-          <button key={label as string} onClick={fn as () => void} className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">
-            {label as string}
-          </button>
-        ))}
-        <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">
-          Source
-        </a>
+        <button onClick={() => scrollTo('chains')} className="hidden sm:block h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">Chains</button>
+        <button onClick={() => scrollTo('tools')} className="hidden sm:block h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">Tools</button>
+        <Link to="/docs" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">Docs</Link>
+        <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">Source</a>
       </motion.nav>
 
       {/* ───────── Hero ───────── */}
@@ -274,25 +267,19 @@ export default function LandingPage() {
         <h1 className="font-serif text-[52px] sm:text-[84px] lg:text-[96px] leading-[0.95] tracking-[-0.02em]">
           <SplitHeadline text="Meet Orion," delay={0.15} />
         </h1>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.7, ease }}
-          className="mt-4 text-[15px] sm:text-base text-[#3a3a37]"
-        >
-          and send your first Stellar payment in under a minute.
+        <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.7, ease }} className="mt-4 text-[15px] sm:text-base text-[#3a3a37]">
+          the wallet for every chain you build on.
         </motion.p>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.7, ease }} className="mt-6">
-          <Link
-            to="/terminal"
-            className="group inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] hover:bg-black transition-colors"
-          >
-            <Wallet size={17} />
-            Open wallet
-            <ArrowRight size={15} className="w-0 opacity-0 -ml-2 group-hover:w-[15px] group-hover:opacity-100 group-hover:ml-0 transition-all" />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.7, ease }} className="mt-6 flex flex-wrap justify-center gap-2.5">
+          <Link to="/docs?s=install" className="group inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] hover:bg-black transition-colors">
+            <Puzzle size={17} />
+            Get the extension
+          </Link>
+          <Link to="/docs" className="inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
+            <BookOpen size={16} />
+            Read the docs
           </Link>
         </motion.div>
-
         <motion.div style={{ y: heroArtY }} className="mt-8 sm:mt-10">
           <HeroArt />
         </motion.div>
@@ -301,38 +288,78 @@ export default function LandingPage() {
       {/* ───────── About ───────── */}
       <section id="about" className="px-5 py-28 sm:py-40">
         <div className="max-w-4xl mx-auto">
-          <SectionLabel>About</SectionLabel>
+          <Label>About</Label>
           <div className="mt-8">
-            <ScrollInk text="Orion is a calm window onto the Stellar testnet. Connect a wallet, fund it, send a payment and watch it land, without jargon and without a single made-up number." />
+            <ScrollInk text="Orion is a browser wallet for people who build on more than one chain. One recovery phrase takes you from Ethereum to Solana to Stellar, with fast sends, real cancels, and tools that tell you the truth." />
           </div>
         </div>
       </section>
 
-      {/* ───────── Features ───────── */}
-      <section id="features" className="px-5 pb-28 sm:pb-40">
+      {/* ───────── Chains ───────── */}
+      <section id="chains" className="px-5 pb-28 sm:pb-40">
         <div className="max-w-5xl mx-auto">
-          <SectionLabel>Features</SectionLabel>
+          <Label>Chains</Label>
           <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
-            <SplitHeadline text="Everything a testnet payment needs." />
+            <SplitHeadline text="Three families, one phrase." />
           </h2>
-          <div className="mt-14 grid sm:grid-cols-2 gap-x-10 gap-y-14">
-            {FEATURES.map((f, i) => {
-              const Icon = f.tile.icon;
+          <Reveal delay={0.1}>
+            <p className="mt-5 text-[16px] text-[#5a5955] max-w-2xl leading-relaxed">
+              Orion derives the standard address for every chain, so importing your phrase shows the same accounts as MetaMask, Phantom and Freighter.
+            </p>
+          </Reveal>
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {CHAINS.map((c, i) => (
+              <Reveal key={c.family} delay={i * 0.12}>
+                <div className="h-full rounded-[24px] border border-[#e4e2dc] bg-white p-6">
+                  <motion.div initial={{ rotate: -30, opacity: 0 }} whileInView={{ rotate: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1, ease, delay: 0.2 + i * 0.12 }}>
+                    <Medallion family={c.family} size={64} />
+                  </motion.div>
+                  <h3 className="mt-5 font-serif text-[26px] leading-tight">{c.name}</h3>
+                  <p className="mt-2 text-[14px] text-[#5a5955] leading-relaxed">{c.nets}</p>
+                  <dl className="mt-5 space-y-2 text-[13px]">
+                    <div className="flex justify-between gap-3 border-t border-[#e4e2dc] pt-2">
+                      <dt className="text-[#8a8984]">Dapp standard</dt>
+                      <dd className="text-right">{c.standard}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-t border-[#e4e2dc] pt-2">
+                      <dt className="text-[#8a8984]">Path</dt>
+                      <dd className="font-mono text-[12px]">{c.path}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── Cancel & speed-up ───────── */}
+      <CancelStory />
+
+      {/* ───────── Tools ───────── */}
+      <section id="tools" className="px-5 py-28 sm:py-40">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid lg:grid-cols-[1fr_auto] gap-10 items-end">
+            <div>
+              <Label>For developers</Label>
+              <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-2xl">
+                <SplitHeadline text="Built for the testnet you're on today." />
+              </h2>
+            </div>
+            <Reveal className="hidden lg:block">
+              <Astrolabe size={160} />
+            </Reveal>
+          </div>
+          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+            {TOOLS.map((t, i) => {
+              const Icon = t.icon;
               return (
-                <Reveal key={f.title} delay={(i % 2) * 0.12}>
-                  <motion.span
-                    initial={{ rotate: -20, scale: 0.6, opacity: 0 }}
-                    whileInView={{ rotate: f.tile.rot, scale: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ rotate: 0, scale: 1.08 }}
-                    transition={{ type: 'spring', stiffness: 120, damping: 12, delay: 0.15 + (i % 2) * 0.12 }}
-                    className="inline-grid place-items-center w-14 h-14 rounded-[16px] shadow-[0_10px_24px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5"
-                    style={{ background: f.tile.bg, color: f.tile.fg }}
-                  >
-                    <Icon size={26} strokeWidth={2.2} />
-                  </motion.span>
-                  <h3 className="mt-6 font-serif text-[26px] sm:text-[30px] leading-tight">{f.title}</h3>
-                  <p className="mt-3 text-[16px] leading-relaxed text-[#5a5955] max-w-md">{f.body}</p>
+                <Reveal key={t.title} delay={(i % 3) * 0.1}>
+                  <span className="inline-grid place-items-center w-12 h-12 rounded-full border border-[#141414]">
+                    <Icon size={20} strokeWidth={1.6} />
+                  </span>
+                  <h3 className="mt-5 font-serif text-[24px] leading-tight">{t.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#5a5955]">{t.body}</p>
                 </Reveal>
               );
             })}
@@ -340,69 +367,36 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───────── How it works: a constellation that draws itself ───────── */}
-      <HowItWorks />
-
-      {/* ───────── Preview ───────── */}
-      <section className="px-5 py-28 sm:py-40">
-        <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
-          <div>
-            <SectionLabel>The wallet</SectionLabel>
-            <h2 className="mt-6 font-serif text-[38px] sm:text-[56px] leading-[1] tracking-[-0.02em]">
-              <SplitHeadline text="Ink on paper, numbers that count." />
+      {/* ───────── Integrate ───────── */}
+      <section className="px-5 py-28 sm:py-32 bg-[#efede8]">
+        <div className="max-w-5xl mx-auto grid lg:grid-cols-[0.8fr_1.2fr] gap-12 items-start">
+          <div className="min-w-0">
+            <Label>Integrate</Label>
+            <h2 className="mt-6 font-serif text-[38px] sm:text-[52px] leading-[1] tracking-[-0.02em]">
+              <SplitHeadline text="Speaks every dapp's language." />
             </h2>
-            <Reveal delay={0.2}>
-              <p className="mt-5 text-[16px] leading-relaxed text-[#5a5955] max-w-md">
-                The wallet looks just like this page. Your balance is set big in serif, money coming in is Rigel blue, money going out is Betelgeuse orange, and everything else stays out of your way.
+            <Reveal delay={0.15}>
+              <p className="mt-5 text-[16px] text-[#5a5955] leading-relaxed">
+                Orion announces itself the standard way on each chain, so it sits next to MetaMask or Phantom instead of fighting them for <span className="font-mono text-[14px]">window.ethereum</span>.
               </p>
-              <Link to="/terminal" className="mt-7 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
-                Open the wallet <ArrowUpRight size={16} />
+              <Link to="/docs?s=integrate" className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
+                Provider API reference <ArrowUpRight size={16} />
               </Link>
             </Reveal>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 60, rotate: 3 }}
-            whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 1.1, ease }}
-            className="relative rounded-[28px] bg-white border border-[#e4e2dc] p-6 sm:p-7 shadow-[0_40px_80px_-40px_rgba(20,20,20,0.45)]"
-          >
-            <div className="flex items-center justify-between text-[13px]">
-              <span className="text-[#5a5955]">Testnet balance</span>
-              <span className="rounded-full bg-[#efede8] px-2.5 py-0.5 text-[#5a5955]">Example</span>
-            </div>
-            <p className="font-serif text-[52px] sm:text-[64px] leading-none mt-3 tabular-nums tracking-[-0.03em]">
-              <CountUp to={10000} /> <span className="text-2xl text-[#5a5955] tracking-normal">XLM</span>
-            </p>
-            <ul className="mt-6 divide-y divide-[#e4e2dc]">
-              {[
-                { inc: true, who: 'GDF7…MHHP', amt: '+250.00', when: 'just now' },
-                { inc: false, who: 'GCAK…EYFP', amt: '−1,200.00', when: '2 h ago' },
-                { inc: true, who: 'Friendbot', amt: '+10,000.00', when: '2 d ago', fund: true },
-              ].map((r, i) => (
-                <motion.li
-                  key={r.who}
-                  initial={{ opacity: 0, x: 24 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.15, duration: 0.6, ease }}
-                  className="flex items-center gap-3 py-3"
-                >
-                  <span className={cx('tile w-10 h-10', r.fund ? 'bg-[linear-gradient(160deg,#fff,#eef7f1)] text-[#1f9d5c]' : r.inc ? 'bg-[linear-gradient(160deg,#7cc0ff,#2f7cf0)] text-white' : 'bg-[linear-gradient(160deg,#fff,#f2f0ea)] text-[#e8622f]')}>
-                    {r.fund ? <Droplets size={15} /> : r.inc ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
-                  </span>
-                  <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-sm">
-                      {r.inc ? 'Received from' : 'Sent to'} <span className="font-mono text-[13px]">{r.who}</span>
-                    </span>
-                    <span className="block text-[12px] text-[#8a8984]">{r.when}</span>
-                  </span>
-                  <span className={cx('font-serif text-[18px] tabular-nums', r.inc ? 'text-[#2f6fe0]' : '')}>{r.amt}</span>
-                </motion.li>
+          <Reveal delay={0.1} className="min-w-0">
+            <div className="inline-flex p-1 rounded-[14px] bg-[#e2e0da] mb-4">
+              {(['evm', 'solana', 'stellar'] as Family[]).map((f) => (
+                <button key={f} onClick={() => setTab(f)} className={cx('relative h-9 px-4 rounded-[10px] text-[14px] flex items-center gap-2', tab === f ? 'text-[#141414]' : 'text-[#5a5955]')}>
+                  {tab === f && <motion.span layoutId="code-tab" className="absolute inset-0 rounded-[10px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+                  <span className="relative">{f === 'evm' ? 'EVM' : f === 'solana' ? 'Solana' : 'Stellar'}</span>
+                </button>
               ))}
-            </ul>
-          </motion.div>
+            </div>
+            <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease }}>
+              <CodeBlock code={SNIPPETS[tab].code} lang={SNIPPETS[tab].lang} />
+            </motion.div>
+          </Reveal>
         </div>
       </section>
 
