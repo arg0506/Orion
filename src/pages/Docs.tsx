@@ -455,6 +455,22 @@ const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassp
             <P>Events: <C>connect</C>, <C>accountsChanged</C>, <C>chainChanged</C>. The provider also exposes <C>isOrion: true</C> and <C>isMetaMask: false</C>.</P>
           </Section>
 
+          {/* ── Solana API ── */}
+          <Section id="api-solana" eyebrow="Developers" title="Solana wallet API">
+            <Table
+              head={['Feature', 'Approval', 'Notes']}
+              rows={[
+                [<C>standard:connect</C>, 'Connect', <>With <C>{'{ silent: true }'}</C> it only succeeds if the site is already connected.</>],
+                [<C>standard:disconnect</C>, '—', 'Revokes the site for Solana.'],
+                [<C>standard:events</C>, '—', <><C>change</C> fires when accounts change.</>],
+                [<C>solana:signTransaction</C>, 'Sign', 'Legacy and v0 transactions.'],
+                [<C>solana:signAndSendTransaction</C>, 'Send', 'Orion sends, rebroadcasts and tracks it until it lands or expires.'],
+                [<C>solana:signMessage</C>, 'Sign', 'ed25519 signature over the raw bytes.'],
+              ]}
+            />
+            <P>Supported chains: <C>solana:devnet</C>, <C>solana:testnet</C>, <C>solana:localnet</C>, and <C>solana:mainnet</C> when mainnets are enabled.</P>
+          </Section>
+
       </div>
     </div>
   );
