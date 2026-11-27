@@ -215,3 +215,57 @@ export function Constellation({ size = 120, labels = true, draw = true }: { size
   );
 }
 
+/** A slowly turning astrolabe: graduated rings around Orion. */
+export function Astrolabe({ size = 140 }: { size?: number }) {
+  const reduced = useReducedMotion();
+  const ring = (r: number, ticks: number, w: number) =>
+    Array.from({ length: ticks }, (_, i) => {
+      const a = (i / ticks) * Math.PI * 2;
+      const long = i % 5 === 0;
+      return <line key={i} x1={50 + r * Math.cos(a)} y1={50 + r * Math.sin(a)} x2={50 + (r - (long ? 4 : 2)) * Math.cos(a)} y2={50 + (r - (long ? 4 : 2)) * Math.sin(a)} stroke={INK} strokeWidth={long ? w : w * 0.6} />;
+    });
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <motion.svg viewBox="0 0 100 100" className="absolute inset-0" animate={reduced ? undefined : { rotate: 360 }} transition={{ duration: 80, repeat: Infinity, ease: 'linear' }} aria-hidden="true">
+        <circle cx="50" cy="50" r="48" fill="#fff" stroke={INK} strokeWidth="1.2" />
+        <circle cx="50" cy="50" r="44" fill="none" stroke={INK} strokeWidth="0.5" />
+        {ring(48, 60, 0.8)}
+      </motion.svg>
+      <motion.svg viewBox="0 0 100 100" className="absolute inset-0" animate={reduced ? undefined : { rotate: -360 }} transition={{ duration: 50, repeat: Infinity, ease: 'linear' }} aria-hidden="true">
+        <circle cx="50" cy="50" r="38" fill="none" stroke={INK} strokeWidth="0.7" strokeDasharray="0.8 2" />
+        <ellipse cx="50" cy="50" rx="38" ry="14" fill="none" stroke={INK} strokeWidth="0.5" />
+        <line x1="12" y1="50" x2="88" y2="50" stroke={INK} strokeWidth="0.4" />
+        <line x1="50" y1="12" x2="50" y2="88" stroke={INK} strokeWidth="0.4" />
+      </motion.svg>
+      <div className="absolute inset-0 grid place-items-center">
+        <Constellation size={size * 0.56} labels={false} />
+      </div>
+    </div>
+  );
+}
+
+/** A stippled comet crossing on a loop: used for "in flight". */
+export function Comet({ width = 120, height = 40 }: { width?: number; height?: number }) {
+  const reduced = useReducedMotion();
+  const dots = useMemo(() => {
+    const r = rng(42);
+    return Array.from({ length: 90 }, () => {
+      const t = Math.pow(r(), 0.7);
+      return { x: -t * width * 0.7, y: (r() - 0.5) * t * height * 0.55 + t * height * 0.12, rr: (1 - t) * 1.6 + 0.35, o: 1 - t * 0.85 };
+    });
+  }, [width, height]);
+  return (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden="true" style={{ overflow: 'hidden' }}>
+      <motion.g initial={{ x: width * 0.2 }} animate={reduced ? { x: width * 0.75 } : { x: [width * 0.1, width * 1.25] }} transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}>
+        <g transform={`translate(0 ${height * 0.42})`}>
+          {dots.map((d, i) => (
+            <circle key={i} cx={d.x} cy={d.y} r={d.rr} fill={INK} opacity={d.o} />
+          ))}
+          <circle cx={2} cy={0} r={4} fill={RIGEL} />
+          <circle cx={2} cy={0} r={7} fill="none" stroke={INK} strokeWidth={0.7} />
+        </g>
+      </motion.g>
+    </svg>
+  );
+}
+
