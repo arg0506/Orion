@@ -313,6 +313,20 @@ npm run dev`}</Code>
             <P>Orion locks after 30 minutes without activity (configurable from 5 minutes to 4 hours in Settings), when you press the lock icon, or when the browser closes. While locked, dapps can still ask to connect; the approval window asks for your password first.</P>
           </Section>
 
+          {/* ── Networks ── */}
+          <Section id="networks" eyebrow="Using Orion" title="Networks">
+            <Table
+              head={['Chain', 'Testnets', 'Local', 'Mainnets (opt-in)']}
+              rows={[
+                ['EVM', 'Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia', <>Anvil / Hardhat · <C>127.0.0.1:8545</C> · chain 31337</>, 'Ethereum, Base'],
+                ['Solana', 'Devnet, Testnet', <>solana-test-validator · <C>127.0.0.1:8899</C></>, 'Mainnet Beta'],
+                ['Stellar', 'Testnet', <>Quickstart · <C>localhost:8000</C></>, 'Public network'],
+              ]}
+            />
+            <P>Mainnets are hidden until you turn on <strong>Show mainnets</strong> in Settings, so you can't sign a real-money transaction by accident. When a mainnet is active, the network chip and every approval are marked in red.</P>
+            <P>Dapps can add EVM networks with <C>wallet_addEthereumChain</C> (you approve each one) and switch between known ones with <C>wallet_switchEthereumChain</C>.</P>
+          </Section>
+
       </div>
     </div>
   );
