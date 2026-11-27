@@ -13,7 +13,7 @@ import {
 } from 'motion/react';
 import { ArrowUpRight, ArrowDownLeft, Droplets, Eye, FlaskConical, QrCode, Radio, Wallet, Github, ShieldCheck, ArrowRight } from 'lucide-react';
 import StipplePlanet, { BELT, PLANET } from '../components/landing/StipplePlanet';
-import { Belt, cx } from '../components/ui';
+import { Belt, cx, ORION_RING_PATH, ORION_STAR_PATHS } from '../components/ui';
 
 const REPO_URL = 'https://github.com/arg0506/Orion';
 const ease = [0.22, 1, 0.36, 1] as const;
@@ -113,6 +113,40 @@ function HeroArt() {
         <Tile key={t.id} t={t} i={i} mx={mx} my={my} reduced={reduced} />
       ))}
     </div>
+  );
+}
+
+/* ───────────────────────── logo ───────────────────────── */
+
+/** The Orion mark, animated: the O settles in, then the belt stars rise through it one by one. */
+function AnimatedMark({ className, delay = 0, inView = false }: { className?: string; delay?: number; inView?: boolean }) {
+  const reduced = !!useReducedMotion();
+  const trigger = inView ? 'whileInView' : 'animate';
+  const ring = { initial: reduced ? false : { scale: 0.6, opacity: 0, rotate: -40 }, [trigger]: { scale: 1, opacity: 1, rotate: 0 } };
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+      <motion.path
+        d={ORION_RING_PATH}
+        fill="currentColor"
+        fillRule="evenodd"
+        style={{ transformOrigin: '50px 50px' }}
+        {...ring}
+        viewport={{ once: true }}
+        transition={{ delay, duration: 0.9, ease }}
+      />
+      {ORION_STAR_PATHS.map((d, i) => (
+        <motion.path
+          key={i}
+          d={d}
+          fill="currentColor"
+          style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+          initial={reduced ? false : { scale: 0, opacity: 0, x: -8, y: 8 }}
+          {...{ [trigger]: { scale: 1, opacity: 1, x: 0, y: 0 } }}
+          viewport={{ once: true }}
+          transition={{ delay: delay + 0.45 + i * 0.14, type: 'spring', stiffness: 260, damping: 14 }}
+        />
+      ))}
+    </svg>
   );
 }
 
@@ -234,8 +268,9 @@ export default function LandingPage() {
         className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-2 py-1.5 border border-black/[0.04]"
         aria-label="Main"
       >
-        <Link to="/" aria-label="Orion home" className="w-8 h-8 grid place-items-center rounded-lg hover:bg-black/5">
-          <Belt className="w-5 text-[#141414]" />
+        <Link to="/" aria-label="Orion home" className="h-8 pl-1.5 pr-2.5 flex items-center gap-1.5 rounded-lg hover:bg-black/5">
+          <AnimatedMark className="w-[22px] h-[22px] text-[#141414]" delay={0.3} />
+          <span className="font-serif text-[17px] leading-none">Orion</span>
         </Link>
         {[
           ['About', () => scrollTo('about')],
@@ -429,7 +464,7 @@ export default function LandingPage() {
       <footer className="px-5 pb-10">
         <div className="max-w-5xl mx-auto pt-8 border-t border-black/[0.06] flex flex-col sm:flex-row gap-4 justify-between text-[13px] text-[#6b6a66]">
           <span className="flex items-center gap-2">
-            <Belt className="w-5 text-[#141414]" /> Orion · Built by Arpan Roy · Test networks only, tokens have no real value
+            <AnimatedMark className="w-5 h-5 text-[#141414]" inView /> Orion · Built by Arpan Roy · Test networks only, tokens have no real value
           </span>
           <span className="flex gap-5">
             <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-[#141414] inline-flex items-center gap-1">
@@ -530,6 +565,7 @@ function FinalCta() {
         />
       ))}
       <div className="relative">
+        <AnimatedMark className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-10 text-[#141414]" inView />
         <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
           <SplitHeadline text="Look up," />
           <br />
