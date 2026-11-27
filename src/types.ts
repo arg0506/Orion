@@ -6,6 +6,8 @@ export interface WalletState {
   status: 'disconnected' | 'connecting' | 'connected' | 'error';
   error: string | null;
   walletType?: 'freighter' | 'metamask' | null;
+  /** True when the wallet is on the network Orion expects (Stellar testnet / Sepolia). */
+  networkOk: boolean;
 }
 
 export interface AccountData {
@@ -15,6 +17,7 @@ export interface AccountData {
   exists: boolean;
   lastUpdated: string;
   subentryCount?: number;
+  assets?: { code: string; issuer: string; balance: string }[];
 }
 
 export interface MultiAccountItem {
