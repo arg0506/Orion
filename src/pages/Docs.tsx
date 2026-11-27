@@ -391,6 +391,47 @@ npm run dev`}</Code>
             <P>Closing the window rejects the request. You can see and disconnect sites from the <strong>Sites</strong> tab.</P>
           </Section>
 
+          {/* ── Integrate ── */}
+          <Section id="integrate" eyebrow="Developers" title="Dapp integration">
+            <H3>EVM: EIP-6963</H3>
+            <P>Orion announces an EIP-1193 provider through EIP-6963 with <C>rdns: "app.orion.wallet"</C>. Libraries that support multi-wallet discovery (wagmi v2, RainbowKit, Web3Modal / Reown AppKit, ConnectKit) list it automatically. Orion only sets <C>window.ethereum</C> if no other wallet has.</P>
+            <Code lang="ts · vanilla">{`const providers = new Map<string, any>();
+window.addEventListener('eip6963:announceProvider', (e: any) => {
+  providers.set(e.detail.info.rdns, e.detail.provider);
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+
+const orion = providers.get('app.orion.wallet');
+const [address] = await orion.request({ method: 'eth_requestAccounts' });
+orion.on('accountsChanged', (accounts: string[]) => { /* … */ });
+orion.on('chainChanged', (chainId: string) => { /* … */ });`}</Code>
+            <Code lang="ts · wagmi v2">{`import { createConfig, http } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
+
+// multiInjectedProviderDiscovery is on by default, so Orion
+// shows up as its own connector alongside MetaMask and others.
+export const config = createConfig({
+  chains: [sepolia],
+  transports: { [sepolia.id]: http() },
+});`}</Code>
+            <H3>Solana: Wallet Standard</H3>
+            <P>Orion registers with the Wallet Standard, so <C>@solana/wallet-adapter</C> and any Wallet Standard app list it as "Orion" without an adapter package.</P>
+            <Code lang="tsx · @solana/wallet-adapter-react">{`<WalletProvider wallets={[]} autoConnect>
+  {/* Orion appears in the modal automatically */}
+</WalletProvider>
+
+const { wallets, select, signMessage } = useWallet();
+select('Orion' as WalletName);`}</Code>
+            <H3>Stellar: SEP-43</H3>
+            <P>Orion exposes a SEP-43 style interface at <C>window.orion.stellar</C> and fires <C>orion:stellar#initialized</C> on <C>window</C> when it's ready. Methods resolve with an object and report problems in an <C>error</C> field rather than throwing.</P>
+            <Code lang="ts">{`const stellar = (window as any).orion?.stellar;
+const { address, error } = await stellar.getAddress();
+if (error) throw new Error(error.message);
+
+const { networkPassphrase } = await stellar.getNetwork();
+const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassphrase });`}</Code>
+          </Section>
+
       </div>
     </div>
   );
