@@ -505,6 +505,21 @@ const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassp
             />
           </Section>
 
+          {/* ── Local ── */}
+          <Section id="local" eyebrow="Developers" title="Local development" art={<Stipple kind="ringed" size={120} seed={8} />}>
+            <P>Start a node, switch Orion to the matching <em>Local</em> network, and use the Faucet button.</P>
+            <Code lang="bash · EVM">{`anvil                      # Foundry, chain 31337 on :8545
+# or
+npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
+            <Code lang="bash · Solana">{`solana-test-validator      # RPC on :8899`}</Code>
+            <Code lang="bash · Stellar">{`docker run --rm -p 8000:8000 stellar/quickstart --local
+# Horizon and Friendbot on :8000`}</Code>
+            <P>The local EVM faucet calls <C>anvil_setBalance</C>, falling back to <C>hardhat_setBalance</C>. Importing Hardhat's default test phrase (<C>test test … junk</C>) gives you the pre-funded <C>0xf39F…2266</C> account.</P>
+            <Callout title="Testing cancel and speed-up locally">
+              Turn off automining (<C>evm_setAutomine false</C>) so transactions stay pending, use Speed up or Cancel in Orion, then mine a block with <C>evm_mine</C>.
+            </Callout>
+          </Section>
+
       </div>
     </div>
   );
