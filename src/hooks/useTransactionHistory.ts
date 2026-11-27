@@ -5,6 +5,9 @@ import { db } from '../services/firebase';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-hot-toast';
 
+/** Fired whenever a receipt is added, so every hook instance (form + history list) stays in sync. */
+export const TX_ADDED_EVENT = 'orion:tx-added';
+
 export const useTransactionHistory = (senderPublicKey: string | null) => {
   const { user } = useAuth();
   const [history, setHistory] = useState<TransactionHistoryItem[]>([]);
@@ -43,7 +46,7 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
           setHistory(loadedTxs);
         } catch (err) {
           console.error('Failed to load transactions from Firestore:', err);
-          toast.error('Failed to synchronize transaction history from cloud.');
+          toast.error('Could not load your saved receipts.');
         } finally {
           if (active) setLoading(false);
         }
@@ -70,6 +73,15 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
       active = false;
     };
   }, [user]);
+
+  useEffect(() => {
+    const onAdded = (e: Event) => {
+      const tx = (e as CustomEvent<TransactionHistoryItem>).detail;
+      setHistory((prev) => (prev.some((p) => p.hash === tx.hash) ? prev : [tx, ...prev]));
+    };
+    window.addEventListener(TX_ADDED_EVENT, onAdded);
+    return () => window.removeEventListener(TX_ADDED_EVENT, onAdded);
+  }, []);
 
   // Filter history for current active wallet if public key is provided
   const userHistory = senderPublicKey
@@ -102,15 +114,20 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
         });
       } catch (err) {
         console.error('Failed to save transaction to Firestore:', err);
-        toast.error('Failed to archive transaction receipt to cloud.');
+        toast.error('Payment sent, but the receipt could not be saved to your account.');
       }
     } else {
-      // Save to localStorage for guest
-      const updated = [newTx, ...history];
-      localStorage.setItem('stellar_tx_history', JSON.stringify(updated));
+      // Save to localStorage for guests
+      let existing: TransactionHistoryItem[] = [];
+      try {
+        existing = JSON.parse(localStorage.getItem('stellar_tx_history') || '[]');
+      } catch {
+        /* ignore corrupt data */
+      }
+      localStorage.setItem('stellar_tx_history', JSON.stringify([newTx, ...existing]));
     }
 
-    setHistory((prev) => [newTx, ...prev]);
+    window.dispatchEvent(new CustomEvent(TX_ADDED_EVENT, { detail: newTx }));
   };
 
   const clearHistory = async () => {
@@ -124,15 +141,15 @@ export const useTransactionHistory = (senderPublicKey: string | null) => {
           batch.delete(docSnapshot.ref);
         });
         await batch.commit();
-        toast.success('Cloud transaction logs cleared.');
+        toast.success('Receipts cleared');
       } catch (err) {
         console.error('Failed to clear transaction history from Firestore:', err);
-        toast.error('Failed to clear transaction logs from cloud.');
+        toast.error('Could not clear your receipts.');
         return;
       }
     } else {
       localStorage.removeItem('stellar_tx_history');
-      toast.success('Local transaction logs cleared.');
+      toast.success('Receipts cleared');
     }
     
     setHistory([]);

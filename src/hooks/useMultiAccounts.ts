@@ -40,7 +40,7 @@ export const useMultiAccounts = () => {
           setAccounts(loadedAccounts);
         } catch (err) {
           console.error('Failed to load accounts from Firestore:', err);
-          toast.error('Failed to synchronize monitored accounts from cloud.');
+          toast.error('Could not load your watchlist.');
         } finally {
           if (active) setLoading(false);
         }
@@ -159,13 +159,13 @@ export const useMultiAccounts = () => {
     }
 
     if (!isValidAddress(cleanAddress)) {
-      toast.error('Invalid Stellar address format.');
+      toast.error('That is not a valid Stellar address.');
       return false;
     }
 
     // Check duplicates
     if (accounts.some((acc) => acc.address.toLowerCase() === cleanAddress.toLowerCase())) {
-      toast.error('Address is already in your monitor list.');
+      toast.error('That address is already on your watchlist.');
       return false;
     }
 
@@ -188,7 +188,7 @@ export const useMultiAccounts = () => {
         targetId = docRef.id;
       } catch (err) {
         console.error('Failed to add account to Firestore:', err);
-        toast.error('Failed to save monitored account to cloud database.');
+        toast.error('Could not save this address to your account.');
         return false;
       }
     }
@@ -238,7 +238,7 @@ export const useMultiAccounts = () => {
         saveToLocalStorage(next);
         return next;
       });
-      toast.success('Monitored account added!');
+      toast.success('Added to watchlist');
       return true;
     } catch (err: any) {
       const errMsg = err.message || 'Failed to resolve balance.';
@@ -266,7 +266,7 @@ export const useMultiAccounts = () => {
         saveToLocalStorage(next);
         return next;
       });
-      toast('Account added, but failed to fetch balance details.', { icon: '⚠️' });
+      toast('Added, but its balance could not be loaded yet.', { icon: '⚠️' });
       return true;
     }
   };
@@ -278,7 +278,7 @@ export const useMultiAccounts = () => {
         await deleteDoc(docRef);
       } catch (err) {
         console.error('Failed to delete account from Firestore:', err);
-        toast.error('Failed to remove monitored account from cloud database.');
+        toast.error('Could not remove this address.');
         return;
       }
     }
@@ -286,20 +286,20 @@ export const useMultiAccounts = () => {
     const updated = accounts.filter((acc) => acc.id !== id);
     setAccounts(updated);
     saveToLocalStorage(updated);
-    toast.success('Account removed from monitor.');
+    toast.success('Removed from watchlist');
   };
 
   const refreshAllAccounts = async () => {
     if (accounts.length === 0) {
-      toast.error('No accounts to refresh.');
+      toast.error('Your watchlist is empty.');
       return;
     }
 
     const promises = accounts.map((acc) => fetchSingleAccount(acc.id, acc.address));
     toast.promise(Promise.all(promises), {
-      loading: 'Refreshing all account balances...',
-      success: 'All accounts refreshed!',
-      error: 'Some balances failed to refresh.',
+      loading: 'Refreshing balances…',
+      success: 'Balances updated',
+      error: 'Some balances could not be loaded.',
     });
   };
 
