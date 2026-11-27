@@ -119,3 +119,23 @@ export function Stipple({ kind = 'sphere', size = 120, seed = 7, className, repr
   return <canvas ref={ref} className={className} style={{ width: size, height: size }} aria-hidden="true" />;
 }
 
+/** A chain's mark set in an engraved medallion: hairline rings and a graduated bezel. */
+export function Medallion({ family, networkId, size = 40 }: { family: Family; networkId?: string; size?: number }) {
+  const ticks = 36;
+  return (
+    <span className="relative inline-grid place-items-center shrink-0" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 100 100" className="absolute inset-0" aria-hidden="true">
+        <circle cx="50" cy="50" r="48" fill="#fff" stroke={INK} strokeWidth="1.6" />
+        <circle cx="50" cy="50" r="40" fill="none" stroke={INK} strokeWidth="0.8" />
+        {Array.from({ length: ticks }, (_, i) => {
+          const a = (i / ticks) * Math.PI * 2;
+          const r1 = 41.5, r2 = i % 3 === 0 ? 47 : 44.5;
+          return <line key={i} x1={50 + r1 * Math.cos(a)} y1={50 + r1 * Math.sin(a)} x2={50 + r2 * Math.cos(a)} y2={50 + r2 * Math.sin(a)} stroke={INK} strokeWidth={i % 3 === 0 ? 0.9 : 0.5} />;
+        })}
+      </svg>
+      <span className="relative">{networkId ? <NetworkLogo networkId={networkId} family={family} size={size * 0.52} /> : <FamilyLogo family={family} size={size * 0.52} />}</span>
+    </span>
+  );
+}
+
+/** A stippled planet with chain medallions on tilted elliptical orbits. */
