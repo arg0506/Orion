@@ -592,6 +592,27 @@ python3 e2e/e2e.py              # end-to-end in Chrome (see the script header)`}
             <P>Friendbot only funds accounts that don't exist yet. Send from another testnet account instead.</P>
           </Section>
 
+          {/* ── Roadmap ── */}
+          <Section id="roadmap" eyebrow="Internals" title="Roadmap" art={<Constellation size={130} labels={false} />}>
+            <UL>
+              <li>Multiple accounts per chain and hardware wallets</li>
+              <li>Token balances (ERC-20, SPL, Stellar assets)</li>
+              <li>Soroban <C>signAuthEntry</C> and WalletConnect pairing</li>
+              <li>NEAR and more chains</li>
+              <li>Firefox build and a Chrome Web Store release</li>
+              <li>An independent security audit</li>
+            </UL>
+            <div className="mt-12 rounded-[20px] border border-[#e4e2dc] bg-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-serif text-[22px]">Found something missing?</p>
+                <p className="text-[14px] text-[#5a5955] mt-1">Open an issue or a pull request on GitHub.</p>
+              </div>
+              <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium">
+                <Github size={16} /> GitHub <ArrowUpRight size={15} />
+              </a>
+            </div>
+          </Section>
+        </motion.main>
       </div>
     </div>
   );
