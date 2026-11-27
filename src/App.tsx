@@ -10,6 +10,7 @@ import Dashboard from './pages/Dashboard';
 import MultiAccountChecker from './pages/MultiAccountChecker';
 import LandingPage from './pages/LandingPage';
 const DeveloperHub = lazy(() => import('./pages/DeveloperHub'));
+const Docs = lazy(() => import('./pages/Docs'));
 import { WalletProvider } from './context/WalletContext';
 import { AuthProvider } from './context/AuthContext';
 import { Toaster } from 'react-hot-toast';
@@ -21,6 +22,7 @@ export default function App() {
         <HashRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
+            <Route path="/docs" element={<Suspense fallback={null}><Docs /></Suspense>} />
             <Route element={<Layout />}>
               <Route path="terminal" element={<Dashboard />} />
               <Route path="monitor" element={<MultiAccountChecker />} />

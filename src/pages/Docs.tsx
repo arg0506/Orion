@@ -1,0 +1,619 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, useReducedMotion } from 'motion/react';
+import { AlertTriangle, ArrowUpRight, Check, Copy, Github, Info, Menu, Search, X } from 'lucide-react';
+import { Astrolabe, Constellation, Medallion, Stipple } from '../components/art/Engraving';
+import { Belt, OrionMark, cx } from '../components/ui';
+
+const REPO_URL = 'https://github.com/arg0506/Orion';
+const ease = [0.22, 1, 0.36, 1] as const;
+
+/* ───────────────────────── building blocks ───────────────────────── */
+
+function Code({ children, lang }: { children: string; lang?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <div className="my-5 rounded-[16px] bg-[#141414] text-[#eceae4] overflow-hidden">
+      <div className="flex items-center justify-between px-4 h-9 border-b border-white/10 text-[12px] text-white/50">
+        <span className="font-mono">{lang ?? 'code'}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(children);
+            setDone(true);
+            setTimeout(() => setDone(false), 1200);
+          }}
+          className="inline-flex items-center gap-1.5 hover:text-white"
+          aria-label="Copy code"
+        >
+          {done ? <Check size={13} /> : <Copy size={13} />}
+          {done ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className="p-4 text-[13px] leading-relaxed font-mono overflow-x-auto">{children}</pre>
+    </div>
+  );
+}
+
+const C = ({ children }: { children: React.ReactNode }) => <code className="font-mono text-[0.86em] bg-[#ebe9e4] rounded-[6px] px-1.5 py-0.5">{children}</code>;
+const P = ({ children }: { children: React.ReactNode }) => <p className="text-[16px] leading-[1.75] text-[#3a3a37] my-4">{children}</p>;
+const H3 = ({ children, id }: { children: React.ReactNode; id?: string }) => (
+  <h3 id={id} className="font-serif text-[24px] leading-tight mt-10 mb-2 scroll-mt-24">
+    {children}
+  </h3>
+);
+const UL = ({ children }: { children: React.ReactNode }) => <ul className="my-4 space-y-2 text-[16px] leading-[1.7] text-[#3a3a37] list-disc pl-5 marker:text-[#8a8984]">{children}</ul>;
+const OL = ({ children }: { children: React.ReactNode }) => <ol className="my-4 space-y-2 text-[16px] leading-[1.7] text-[#3a3a37] list-decimal pl-5 marker:font-serif">{children}</ol>;
+
+function Table({ head, rows }: { head: string[]; rows: React.ReactNode[][] }) {
+  return (
+    <div className="my-6 overflow-x-auto rounded-[16px] border border-[#e4e2dc] bg-white">
+      <table className="w-full text-[14px] border-collapse">
+        <thead>
+          <tr className="text-left">
+            {head.map((h) => (
+              <th key={h} className="px-4 py-3 font-medium text-[#5a5955] border-b border-[#e4e2dc] whitespace-nowrap">
+                {h}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => (
+            <tr key={i} className="align-top">
+              {r.map((cell, j) => (
+                <td key={j} className="px-4 py-3 border-b border-[#efede8] leading-relaxed">
+                  {cell}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Callout({ tone = 'info', title, children }: { tone?: 'info' | 'warn'; title: string; children: React.ReactNode }) {
+  const Icon = tone === 'warn' ? AlertTriangle : Info;
+  return (
+    <div className={cx('my-6 rounded-[16px] border p-4 flex gap-3', tone === 'warn' ? 'border-[#b7791f]/30 bg-[#b7791f]/[0.06]' : 'border-[#2f6fe0]/25 bg-[#2f6fe0]/[0.05]')}>
+      <Icon size={18} className={cx('shrink-0 mt-0.5', tone === 'warn' ? 'text-[#b7791f]' : 'text-[#2f6fe0]')} />
+      <div>
+        <p className="font-serif text-[18px]">{title}</p>
+        <div className="text-[15px] leading-relaxed text-[#3a3a37] mt-1">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function Section({ id, eyebrow, title, children, art }: { id: string; eyebrow: string; title: string; children: React.ReactNode; art?: React.ReactNode }) {
+  return (
+    <section id={id} data-doc-section className="scroll-mt-24 pt-14 first:pt-0 border-t border-[#e4e2dc] first:border-0">
+      <div className="flex items-start justify-between gap-6">
+        <div>
+          <p className="flex items-center gap-2 text-[13px] text-[#8a8984]">
+            <Belt className="w-5 text-[#141414]" />
+            {eyebrow}
+          </p>
+          <h2 className="font-serif text-[36px] sm:text-[44px] leading-[1.02] tracking-[-0.01em] mt-3">{title}</h2>
+        </div>
+        {art && <div className="hidden md:block shrink-0">{art}</div>}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/* ───────────────────────── table of contents ───────────────────────── */
+
+const TOC: { group: string; items: { id: string; label: string }[] }[] = [
+  { group: 'Start', items: [{ id: 'introduction', label: 'Introduction' }, { id: 'install', label: 'Install' }, { id: 'quickstart', label: 'Quickstart' }] },
+  {
+    group: 'Using Orion',
+    items: [
+      { id: 'accounts', label: 'Accounts & recovery phrase' },
+      { id: 'networks', label: 'Networks' },
+      { id: 'sending', label: 'Sending' },
+      { id: 'cancel', label: 'Cancel & speed up' },
+      { id: 'sites', label: 'Sites & approvals' },
+    ],
+  },
+  {
+    group: 'Developers',
+    items: [
+      { id: 'integrate', label: 'Dapp integration' },
+      { id: 'api-evm', label: 'EVM provider API' },
+      { id: 'api-solana', label: 'Solana wallet API' },
+      { id: 'api-stellar', label: 'Stellar wallet API' },
+      { id: 'errors', label: 'Errors' },
+      { id: 'local', label: 'Local development' },
+      { id: 'devtools', label: 'Request log & simulation' },
+    ],
+  },
+  {
+    group: 'Internals',
+    items: [
+      { id: 'security', label: 'Security model' },
+      { id: 'architecture', label: 'Architecture' },
+      { id: 'testing', label: 'Testing' },
+      { id: 'troubleshooting', label: 'Troubleshooting' },
+      { id: 'roadmap', label: 'Roadmap' },
+    ],
+  },
+];
+
+/* ───────────────────────── page ───────────────────────── */
+
+export default function Docs() {
+  const location = useLocation();
+  const reduced = useReducedMotion();
+  const [active, setActive] = useState('introduction');
+  const [query, setQuery] = useState('');
+  const [menu, setMenu] = useState(false);
+  const mainRef = useRef<HTMLDivElement | null>(null);
+
+  const go = (id: string) => {
+    setMenu(false);
+    document.getElementById(id)?.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+  };
+
+  // Deep links: #/docs?s=install
+  useEffect(() => {
+    const s = new URLSearchParams(location.search).get('s');
+    if (s) setTimeout(() => go(s), 120);
+    else window.scrollTo(0, 0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
+
+  // Scrollspy
+  useEffect(() => {
+    const sections = Array.from(document.querySelectorAll<HTMLElement>('[data-doc-section]'));
+    const obs = new IntersectionObserver(
+      (entries) => {
+        const visible = entries.filter((e) => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        if (visible[0]) setActive(visible[0].target.id);
+      },
+      { rootMargin: '-80px 0px -65% 0px' }
+    );
+    sections.forEach((s) => obs.observe(s));
+    return () => obs.disconnect();
+  }, []);
+
+  const filtered = useMemo(
+    () =>
+      TOC.map((g) => ({ ...g, items: g.items.filter((i) => !query || i.label.toLowerCase().includes(query.toLowerCase()) || i.id.includes(query.toLowerCase())) })).filter((g) => g.items.length),
+    [query]
+  );
+
+  const Sidebar = (
+    <nav aria-label="Documentation">
+      <label className="relative block mb-6">
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#8a8984]" />
+        <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search docs" className="w-full h-10 rounded-[12px] bg-white border border-[#e4e2dc] pl-9 pr-3 text-[14px] focus:outline-none focus:border-[#141414]" />
+      </label>
+      {filtered.map((g) => (
+        <div key={g.group} className="mb-6">
+          <p className="text-[12px] font-medium text-[#8a8984] mb-2 px-3">{g.group}</p>
+          <ul>
+            {g.items.map((i) => (
+              <li key={i.id}>
+                <button onClick={() => go(i.id)} className={cx('relative w-full text-left h-9 px-3 rounded-[10px] text-[14px] transition-colors', active === i.id ? 'text-[#141414]' : 'text-[#5a5955] hover:text-[#141414]')}>
+                  {active === i.id && <motion.span layoutId="doc-active" className="absolute inset-0 rounded-[10px] bg-white shadow-[0_2px_8px_-3px_rgba(0,0,0,0.15)]" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+                  <span className="relative">{i.label}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+      {!filtered.length && <p className="px-3 text-[14px] text-[#8a8984]">Nothing matches “{query}”.</p>}
+    </nav>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#f6f5f2] text-[#141414] font-sans">
+      <header className="sticky top-0 z-40 bg-[#f6f5f2]/85 backdrop-blur-md border-b border-[#e4e2dc]">
+        <div className="max-w-7xl mx-auto h-16 px-4 sm:px-6 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button className="lg:hidden p-2 -ml-2 rounded-lg hover:bg-black/5" onClick={() => setMenu(!menu)} aria-label="Open contents">
+              {menu ? <X size={18} /> : <Menu size={18} />}
+            </button>
+            <Link to="/" className="flex items-center gap-2">
+              <OrionMark className="w-7 h-7" />
+              <span className="font-serif text-[21px] leading-none">Orion</span>
+            </Link>
+            <span className="text-[#cfccc4]">/</span>
+            <span className="text-[15px] text-[#5a5955]">Docs</span>
+          </div>
+          <div className="flex items-center gap-1 text-[14px]">
+            <Link to="/" className="hidden sm:inline-flex h-9 px-3 items-center rounded-[10px] text-[#5a5955] hover:text-[#141414] hover:bg-black/5">Home</Link>
+            <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex h-9 px-3 items-center gap-1.5 rounded-[10px] text-[#5a5955] hover:text-[#141414] hover:bg-black/5">
+              <Github size={15} /> GitHub
+            </a>
+          </div>
+        </div>
+      </header>
+
+      {menu && (
+        <motion.div className="lg:hidden fixed inset-x-0 top-16 bottom-0 z-30 bg-[#f6f5f2] overflow-y-auto p-5" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          {Sidebar}
+        </motion.div>
+      )}
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 grid lg:grid-cols-[250px_1fr] gap-10">
+        <aside className="hidden lg:block sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto py-8 pr-2">{Sidebar}</aside>
+
+        <motion.main ref={mainRef} className="min-w-0 max-w-[760px] py-10 sm:py-14 pb-32" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease }}>
+          {/* ── Introduction ── */}
+          <Section id="introduction" eyebrow="Start" title="Orion documentation" art={<Constellation size={150} />}>
+            <P>
+              Orion is a browser-extension wallet for developers who build on more than one chain. One recovery phrase gives you accounts on <strong>Ethereum and EVM chains</strong>, <strong>Solana</strong> and <strong>Stellar</strong>. Dapps find Orion through each ecosystem's standard discovery mechanism, sending is fast by default, and pending transactions can be cancelled or sped up wherever the chain makes that possible.
+            </P>
+            <div className="my-8 grid sm:grid-cols-3 gap-3">
+              {(['evm', 'solana', 'stellar'] as const).map((f) => (
+                <div key={f} className="rounded-[18px] border border-[#e4e2dc] bg-white p-4 flex items-center gap-3">
+                  <Medallion family={f} size={44} />
+                  <div>
+                    <p className="font-serif text-[18px] leading-tight">{f === 'evm' ? 'EVM' : f === 'solana' ? 'Solana' : 'Stellar'}</p>
+                    <p className="text-[12px] text-[#8a8984]">{f === 'evm' ? 'EIP-6963' : f === 'solana' ? 'Wallet Standard' : 'SEP-43'}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Callout tone="warn" title="v0.1, testnet-first">
+              Orion has not been security-audited. Mainnets are hidden by default. Don't keep real funds in it yet.
+            </Callout>
+            <P>This repository also contains Orion's web dashboard for the Stellar testnet, which you can open from the site's footer. These docs cover the extension.</P>
+          </Section>
+
+          {/* ── Install ── */}
+          <Section id="install" eyebrow="Start" title="Install">
+            <P>Orion isn't on the Chrome Web Store yet. Install it as an unpacked extension, either from a prebuilt zip or by building it yourself.</P>
+            <H3>From a build zip</H3>
+            <OL>
+              <li>Download and unzip the Orion build.</li>
+              <li>Open <C>chrome://extensions</C> and switch on <strong>Developer mode</strong> (top right).</li>
+              <li>Click <strong>Load unpacked</strong> and choose the unzipped folder (the one containing <C>manifest.json</C>).</li>
+              <li>Pin Orion from the puzzle-piece menu so it's always one click away.</li>
+            </OL>
+            <H3>From source</H3>
+            <Code lang="bash">{`git clone https://github.com/arg0506/Orion
+cd Orion/extension
+npm install
+npm run build        # outputs .output/chrome-mv3
+# or, with live reload while you work:
+npm run dev`}</Code>
+            <P>Then load <C>extension/.output/chrome-mv3</C> with <strong>Load unpacked</strong>. Orion targets Chromium browsers (Chrome, Brave, Edge, Arc).</P>
+          </Section>
+
+          {/* ── Quickstart ── */}
+          <Section id="quickstart" eyebrow="Start" title="Quickstart">
+            <OL>
+              <li><strong>Create or import.</strong> Create a wallet and write down the 12-word phrase (Orion checks three words), or import an existing phrase. Set a password of at least 8 characters.</li>
+              <li><strong>Pick a chain.</strong> Use the EVM / Solana / Stellar switch at the top of the popup. Tap the network chip to change networks.</li>
+              <li><strong>Get test funds.</strong> Tap <strong>Faucet</strong>. On Stellar testnet that's Friendbot, on Solana devnet an airdrop, on a local EVM node a balance of 100 ETH.</li>
+              <li><strong>Send.</strong> Choose <em>Fast</em> or <em>Normal</em>. The transaction appears in Activity, where you can speed it up or cancel it while it's pending.</li>
+              <li><strong>Connect a dapp.</strong> Click "Connect wallet" on any EVM, Solana or Stellar dapp and pick Orion. Approve the request in the window that opens.</li>
+            </OL>
+          </Section>
+
+          {/* ── Accounts ── */}
+          <Section id="accounts" eyebrow="Using Orion" title="Accounts & recovery phrase" art={<Stipple kind="keyhole" size={120} seed={4} />}>
+            <P>Everything is derived from one BIP-39 recovery phrase using the same paths as the most popular wallet on each chain, so importing your phrase shows the accounts you already have.</P>
+            <Table
+              head={['Chain', 'Curve', 'Derivation path', 'Matches']}
+              rows={[
+                ['EVM', 'secp256k1 (BIP-32)', <C>m/44'/60'/0'/0/0</C>, 'MetaMask, Rabby, Hardhat, Anvil'],
+                ['Solana', 'ed25519 (SLIP-10)', <C>m/44'/501'/0'/0'</C>, 'Phantom, Solflare'],
+                ['Stellar', 'ed25519 (SLIP-10, SEP-5)', <C>m/44'/148'/0'</C>, 'Freighter, Lobstr'],
+              ]}
+            />
+            <P>v0.1 uses account index 0 on every chain. Your phrase is encrypted with your password and never leaves the extension. See <button className="underline underline-offset-4" onClick={() => go('security')}>Security model</button>.</P>
+            <H3>Locking</H3>
+            <P>Orion locks after 30 minutes without activity (configurable from 5 minutes to 4 hours in Settings), when you press the lock icon, or when the browser closes. While locked, dapps can still ask to connect; the approval window asks for your password first.</P>
+          </Section>
+
+          {/* ── Networks ── */}
+          <Section id="networks" eyebrow="Using Orion" title="Networks">
+            <Table
+              head={['Chain', 'Testnets', 'Local', 'Mainnets (opt-in)']}
+              rows={[
+                ['EVM', 'Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia', <>Anvil / Hardhat · <C>127.0.0.1:8545</C> · chain 31337</>, 'Ethereum, Base'],
+                ['Solana', 'Devnet, Testnet', <>solana-test-validator · <C>127.0.0.1:8899</C></>, 'Mainnet Beta'],
+                ['Stellar', 'Testnet', <>Quickstart · <C>localhost:8000</C></>, 'Public network'],
+              ]}
+            />
+            <P>Mainnets are hidden until you turn on <strong>Show mainnets</strong> in Settings, so you can't sign a real-money transaction by accident. When a mainnet is active, the network chip and every approval are marked in red.</P>
+            <P>Dapps can add EVM networks with <C>wallet_addEthereumChain</C> (you approve each one) and switch between known ones with <C>wallet_switchEthereumChain</C>.</P>
+          </Section>
+
+          {/* ── Sending ── */}
+          <Section id="sending" eyebrow="Using Orion" title="Sending">
+            <P>Every send form has a <strong>Fast</strong> / <strong>Normal</strong> switch. Fast is the default.</P>
+            <Table
+              head={['Chain', 'Fast', 'Normal']}
+              rows={[
+                ['EVM', 'EIP-1559 with 2× the suggested priority fee; usually lands in the next block', 'Suggested priority fee'],
+                ['Solana', '75th-percentile recent priority fee (min 10,000 µlamports/CU), rebroadcast every 2.5 s', 'Median recent priority fee'],
+                ['Stellar', '90th-percentile fee, 30-second time bound', 'Median fee, 2-minute time bound'],
+              ]}
+            />
+            <H3>Chain rules Orion handles for you</H3>
+            <UL>
+              <li><strong>Stellar:</strong> paying a brand-new address uses <C>createAccount</C> (minimum 1 XLM); memos are limited to 28 bytes; the account's minimum balance is kept back.</li>
+              <li><strong>Solana:</strong> a transfer to a new address must cover the rent-exempt minimum, or Orion stops you before signing.</li>
+              <li><strong>EVM:</strong> gas is estimated and padded by 20%; the nonce comes from the pending block so back-to-back sends don't collide.</li>
+            </UL>
+          </Section>
+
+          {/* ── Cancel ── */}
+          <Section id="cancel" eyebrow="Using Orion" title="Cancel & speed up" art={<Astrolabe size={130} />}>
+            <P>While a transaction is pending, Orion can send a <em>replacement</em>: the same transaction with a higher fee (speed up), or a harmless one that takes its place (cancel). The network only ever accepts one of them, so whichever lands first wins and the other can never go through.</P>
+            <H3>EVM</H3>
+            <UL>
+              <li><strong>Speed up</strong> re-signs the same transaction with the same nonce, raising both <C>maxPriorityFeePerGas</C> and <C>maxFeePerGas</C> by at least 12.5% (nodes require 10%), or to the current fast fee if that's higher.</li>
+              <li><strong>Cancel</strong> sends a 0-value transfer to yourself with the same nonce and higher fees. If it's mined first, the original's nonce is used up.</li>
+              <li>Orion detects the outcome by checking receipts and the account's mined nonce.</li>
+            </UL>
+            <H3>Stellar</H3>
+            <UL>
+              <li><strong>Speed up</strong> wraps the pending transaction in a <em>fee-bump transaction</em> paying 10× the fee (stellar-core only replaces a queued transaction for a 10× fee). The inner transaction, and its hash, stay the same.</li>
+              <li><strong>Cancel</strong> submits a transaction with the <em>same sequence number</em> containing a no-op <C>bumpSequence</C>, at 10× the fee.</li>
+              <li>Every transaction also has a time bound (30 s fast, 2 min normal), so it can't linger.</li>
+            </UL>
+            <H3>Solana</H3>
+            <P>
+              Solana has no way to cancel or replace a transaction once it's sent. Instead, Orion rebroadcasts it every 2.5 seconds until it lands and shows a countdown to its blockhash expiry (about 60 to 90 seconds). After that the transaction can never be included, so if it hasn't landed, no funds moved.
+            </P>
+            <H3>Statuses</H3>
+            <Table
+              head={['Status', 'Meaning']}
+              rows={[
+                ['Pending', 'Submitted, not yet in a block or ledger.'],
+                ['Confirmed', 'Included and successful.'],
+                ['Replaced', 'A cancel or speed-up (or the original) landed first; this one can no longer go through.'],
+                ['Expired', 'Its time bound or blockhash ran out before it landed. No funds moved.'],
+                ['Failed', 'Included, but it reverted or failed on chain. Fees may still have been charged.'],
+              ]}
+            />
+          </Section>
+
+          {/* ── Sites ── */}
+          <Section id="sites" eyebrow="Using Orion" title="Sites & approvals">
+            <P>A site must connect before it can see your address. Connecting is per chain family: connecting a site for EVM doesn't share your Solana or Stellar address.</P>
+            <P>Every signature or transaction opens an approval window showing the requesting site (taken from the browser, not the page), the network, and a plain-language summary:</P>
+            <UL>
+              <li><strong>EVM transactions</strong> show the amount, recipient, decoded ERC-20 <C>transfer</C> / <C>approve</C> and <C>setApprovalForAll</C> calls, the maximum fee and a simulation result.</li>
+              <li><strong>Solana transactions</strong> list SOL transfers, the instruction count and every program involved.</li>
+              <li><strong>Stellar transactions</strong> list each operation, destination and amount, the memo, fee and network.</li>
+              <li><strong>Messages</strong> are shown as text when readable, otherwise as hex.</li>
+            </UL>
+            <P>Closing the window rejects the request. You can see and disconnect sites from the <strong>Sites</strong> tab.</P>
+          </Section>
+
+          {/* ── Integrate ── */}
+          <Section id="integrate" eyebrow="Developers" title="Dapp integration">
+            <H3>EVM: EIP-6963</H3>
+            <P>Orion announces an EIP-1193 provider through EIP-6963 with <C>rdns: "app.orion.wallet"</C>. Libraries that support multi-wallet discovery (wagmi v2, RainbowKit, Web3Modal / Reown AppKit, ConnectKit) list it automatically. Orion only sets <C>window.ethereum</C> if no other wallet has.</P>
+            <Code lang="ts · vanilla">{`const providers = new Map<string, any>();
+window.addEventListener('eip6963:announceProvider', (e: any) => {
+  providers.set(e.detail.info.rdns, e.detail.provider);
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+
+const orion = providers.get('app.orion.wallet');
+const [address] = await orion.request({ method: 'eth_requestAccounts' });
+orion.on('accountsChanged', (accounts: string[]) => { /* … */ });
+orion.on('chainChanged', (chainId: string) => { /* … */ });`}</Code>
+            <Code lang="ts · wagmi v2">{`import { createConfig, http } from 'wagmi';
+import { sepolia } from 'wagmi/chains';
+
+// multiInjectedProviderDiscovery is on by default, so Orion
+// shows up as its own connector alongside MetaMask and others.
+export const config = createConfig({
+  chains: [sepolia],
+  transports: { [sepolia.id]: http() },
+});`}</Code>
+            <H3>Solana: Wallet Standard</H3>
+            <P>Orion registers with the Wallet Standard, so <C>@solana/wallet-adapter</C> and any Wallet Standard app list it as "Orion" without an adapter package.</P>
+            <Code lang="tsx · @solana/wallet-adapter-react">{`<WalletProvider wallets={[]} autoConnect>
+  {/* Orion appears in the modal automatically */}
+</WalletProvider>
+
+const { wallets, select, signMessage } = useWallet();
+select('Orion' as WalletName);`}</Code>
+            <H3>Stellar: SEP-43</H3>
+            <P>Orion exposes a SEP-43 style interface at <C>window.orion.stellar</C> and fires <C>orion:stellar#initialized</C> on <C>window</C> when it's ready. Methods resolve with an object and report problems in an <C>error</C> field rather than throwing.</P>
+            <Code lang="ts">{`const stellar = (window as any).orion?.stellar;
+const { address, error } = await stellar.getAddress();
+if (error) throw new Error(error.message);
+
+const { networkPassphrase } = await stellar.getNetwork();
+const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassphrase });`}</Code>
+          </Section>
+
+          {/* ── EVM API ── */}
+          <Section id="api-evm" eyebrow="Developers" title="EVM provider API">
+            <Table
+              head={['Method', 'Approval', 'Notes']}
+              rows={[
+                [<C>eth_requestAccounts</C>, 'Connect', 'Returns the account. Also unlocks Orion if needed.'],
+                [<C>eth_accounts</C>, '—', 'Empty array unless this site is connected and Orion is unlocked.'],
+                [<C>eth_chainId</C> , '—', 'Follows the active EVM network.'],
+                [<C>personal_sign</C>, 'Sign', 'Hex or text message; shown as text when printable.'],
+                [<C>eth_signTypedData_v4</C>, 'Sign', 'EIP-712; domain, type and message are shown.'],
+                [<C>eth_sendTransaction</C>, 'Send', 'Simulated first; you can choose Fast or Normal. Returns the hash, which is tracked for cancel / speed up.'],
+                [<C>wallet_switchEthereumChain</C>, '—', 'Switches to a known network; 4902 if unknown or a hidden mainnet.'],
+                [<C>wallet_addEthereumChain</C>, 'Add network', 'Adds and switches to a custom chain.'],
+                [<C>wallet_requestPermissions</C> , 'Connect', <>Returns <C>[{'{'} parentCapability: 'eth_accounts' {'}'}]</C>.</>],
+                [<C>wallet_getPermissions</C>, '—', ''],
+                [<C>wallet_revokePermissions</C>, '—', 'Disconnects the site for EVM.'],
+                [<>Read methods (<C>eth_call</C>, <C>eth_getBalance</C>, <C>eth_estimateGas</C>, …)</>, '—', 'Proxied to the active network RPC.'],
+                [<><C>eth_sign</C>, <C>eth_signTransaction</C>, typed data v1/v3</>, '—', 'Rejected with 4200 (unsafe or deprecated).'],
+              ]}
+            />
+            <P>Events: <C>connect</C>, <C>accountsChanged</C>, <C>chainChanged</C>. The provider also exposes <C>isOrion: true</C> and <C>isMetaMask: false</C>.</P>
+          </Section>
+
+          {/* ── Solana API ── */}
+          <Section id="api-solana" eyebrow="Developers" title="Solana wallet API">
+            <Table
+              head={['Feature', 'Approval', 'Notes']}
+              rows={[
+                [<C>standard:connect</C>, 'Connect', <>With <C>{'{ silent: true }'}</C> it only succeeds if the site is already connected.</>],
+                [<C>standard:disconnect</C>, '—', 'Revokes the site for Solana.'],
+                [<C>standard:events</C>, '—', <><C>change</C> fires when accounts change.</>],
+                [<C>solana:signTransaction</C>, 'Sign', 'Legacy and v0 transactions.'],
+                [<C>solana:signAndSendTransaction</C>, 'Send', 'Orion sends, rebroadcasts and tracks it until it lands or expires.'],
+                [<C>solana:signMessage</C>, 'Sign', 'ed25519 signature over the raw bytes.'],
+              ]}
+            />
+            <P>Supported chains: <C>solana:devnet</C>, <C>solana:testnet</C>, <C>solana:localnet</C>, and <C>solana:mainnet</C> when mainnets are enabled.</P>
+          </Section>
+
+          {/* ── Stellar API ── */}
+          <Section id="api-stellar" eyebrow="Developers" title="Stellar wallet API">
+            <Table
+              head={['Method', 'Returns', 'Notes']}
+              rows={[
+                [<C>getAddress()</C>, <C>{'{ address }'}</C>, 'Asks to connect if the site isn’t yet.'],
+                [<C>requestAccess()</C>, <C>{'{ address }'}</C>, 'Same as getAddress.'],
+                [<C>isConnected()</C>, <C>{'{ isConnected }'}</C>, 'Always true when the extension is installed.'],
+                [<C>isAllowed()</C>, <C>{'{ isAllowed }'}</C>, 'Whether this site is connected and Orion is unlocked.'],
+                [<C>getNetwork()</C>, <C>{'{ network, networkPassphrase }'}</C>, ''],
+                [<C>signTransaction(xdr, opts?)</C>, <C>{'{ signedTxXdr, signerAddress }'}</C>, <>Uses <C>opts.networkPassphrase</C> or the active network.</>],
+                [<C>signMessage(message)</C>, <C>{'{ signedMessage, signerAddress }'}</C>, <>SEP-53: signs <C>sha256("Stellar Signed Message:\n" + message)</C>; base64 signature.</>],
+                [<C>signAuthEntry()</C>, <C>{'{ error }'}</C>, 'Not supported yet (Soroban auth).'],
+                [<C>onChange(fn)</C>, 'unsubscribe fn', 'Called with the address and network when they change.'],
+              ]}
+            />
+          </Section>
+
+          {/* ── Errors ── */}
+          <Section id="errors" eyebrow="Developers" title="Errors">
+            <P>All three providers use EIP-1193 numbering. EVM and Solana reject with an error carrying <C>code</C> and <C>message</C>; Stellar returns <C>{'{ error: { code, message } }'}</C>.</P>
+            <Table
+              head={['Code', 'When']}
+              rows={[
+                [<C>4001</C>, 'The user rejected the request or closed the approval window.'],
+                [<C>4100</C>, 'The site is not connected, or the requested address is not the connected account.'],
+                [<C>4200</C>, 'The method is not supported.'],
+                [<C>4902</C>, 'The chain is unknown (add it with wallet_addEthereumChain) or is a hidden mainnet.'],
+                [<C>-32602</C>, 'Invalid parameters, such as unreadable transaction bytes or XDR.'],
+                [<C>-32603</C>, 'Internal error, such as an unreachable RPC. The message says what happened.'],
+              ]}
+            />
+          </Section>
+
+          {/* ── Local ── */}
+          <Section id="local" eyebrow="Developers" title="Local development" art={<Stipple kind="ringed" size={120} seed={8} />}>
+            <P>Start a node, switch Orion to the matching <em>Local</em> network, and use the Faucet button.</P>
+            <Code lang="bash · EVM">{`anvil                      # Foundry, chain 31337 on :8545
+# or
+npx hardhat node           # Hardhat, chain 31337 on :8545`}</Code>
+            <Code lang="bash · Solana">{`solana-test-validator      # RPC on :8899`}</Code>
+            <Code lang="bash · Stellar">{`docker run --rm -p 8000:8000 stellar/quickstart --local
+# Horizon and Friendbot on :8000`}</Code>
+            <P>The local EVM faucet calls <C>anvil_setBalance</C>, falling back to <C>hardhat_setBalance</C>. Importing Hardhat's default test phrase (<C>test test … junk</C>) gives you the pre-funded <C>0xf39F…2266</C> account.</P>
+            <Callout title="Testing cancel and speed-up locally">
+              Turn off automining (<C>evm_setAutomine false</C>) so transactions stay pending, use Speed up or Cancel in Orion, then mine a block with <C>evm_mine</C>.
+            </Callout>
+          </Section>
+
+          {/* ── Devtools ── */}
+          <Section id="devtools" eyebrow="Developers" title="Request log & simulation">
+            <P>The <strong>Log</strong> tab records every request a site made: method, params, result or error, and how long it took (including time spent waiting for you to approve). Filter by method or site. It keeps the last 300 entries.</P>
+            <P>Before an <C>eth_sendTransaction</C> approval appears, Orion runs <C>eth_estimateGas</C>. If the call would revert, the approval says "Likely to fail" with the revert reason. It also warns about unlimited ERC-20 approvals and <C>setApprovalForAll(true)</C>.</P>
+          </Section>
+
+          {/* ── Security ── */}
+          <Section id="security" eyebrow="Internals" title="Security model" art={<Stipple kind="eclipse" size={120} seed={13} />}>
+            <UL>
+              <li>The recovery phrase is encrypted with PBKDF2-SHA256 (600,000 iterations) and AES-256-GCM, with a fresh salt and IV each time, and stored in <C>chrome.storage.local</C>.</li>
+              <li>While unlocked, the phrase lives only in <C>chrome.storage.session</C>, which is held in memory and never written to disk. It's cleared on lock, auto-lock and browser close.</li>
+              <li>Keys are derived and used only in the background service worker. Web pages receive addresses and signatures, never keys.</li>
+              <li>The origin of every dapp request comes from the browser's message sender, not from anything the page says.</li>
+              <li>The wallet's own API only accepts messages from Orion's extension pages; content scripts can't call it.</li>
+              <li>Every connect, signature and transaction needs explicit approval in an extension-owned window.</li>
+            </UL>
+            <Callout tone="warn" title="Not audited">Treat Orion as developer tooling for test networks until it has had an independent security review.</Callout>
+          </Section>
+
+          {/* ── Architecture ── */}
+          <Section id="architecture" eyebrow="Internals" title="Architecture">
+            <Code lang="text">{`extension/
+├─ entrypoints/
+│  ├─ background.ts        service worker: routes popup + dapp messages, auto-lock alarm
+│  ├─ inpage.content.ts    MAIN world: installs the EVM, Solana and Stellar providers
+│  ├─ bridge.content.ts    ISOLATED world: relays page <-> background
+│  ├─ popup/               the wallet UI
+│  └─ approval/            the approval window
+└─ src/
+   ├─ lib/keyring/         BIP-39 / BIP-32 / SLIP-10 derivation, encrypted vault
+   ├─ lib/chains/          evm.ts, solana.ts, stellar.ts adapters
+   ├─ lib/dapp/            per-chain request handlers + permissions
+   ├─ lib/tracker.ts       polls pending txs, rebroadcasts Solana, resolves races
+   ├─ inpage/              the providers dapps talk to
+   └─ ui/                  React screens and the illustration system`}</Code>
+            <H3>Request flow</H3>
+            <OL>
+              <li>The dapp calls the provider in the page (MAIN world).</li>
+              <li>The provider posts a message; the bridge content script forwards it to the background with <C>runtime.sendMessage</C>.</li>
+              <li>The background checks permissions, opens an approval window if needed, signs with the right chain adapter, logs the request, and replies.</li>
+              <li>Account and network changes are pushed back to every tab, filtered by each site's permissions.</li>
+            </OL>
+          </Section>
+
+          {/* ── Testing ── */}
+          <Section id="testing" eyebrow="Internals" title="Testing">
+            <Code lang="bash">{`cd extension
+npm test                        # unit + integration tests (vitest)
+REQUIRE_LOCAL_NODE=1 npm test   # fail instead of skip without a node on :8545
+python3 e2e/e2e.py              # end-to-end in Chrome (see the script header)`}</Code>
+            <UL>
+              <li><strong>Key derivation</strong> is checked against the official SLIP-10 and SEP-5 test vectors and Hardhat's default accounts.</li>
+              <li><strong>EVM speed-up and cancel</strong> run against a real local node with automining off, proving the replacement wins and the original never lands.</li>
+              <li><strong>Solana and Stellar</strong> transaction builders (priority fees, fee-bump, same-sequence cancel, SEP-53) are tested offline.</li>
+              <li><strong>End to end</strong>, the built extension is loaded in Chrome, onboarded through the UI, and driven by a test dapp across all three chains, including cancelling a pending transaction from the popup (18 checks).</li>
+            </UL>
+          </Section>
+
+          {/* ── Troubleshooting ── */}
+          <Section id="troubleshooting" eyebrow="Internals" title="Troubleshooting">
+            <H3>"Can't reach … right now"</H3>
+            <P>The network's RPC didn't answer. For local networks, make sure your node is running on the port shown in the network list. For public testnets, try again or switch to another one.</P>
+            <H3>My dapp doesn't see Orion</H3>
+            <P>Reload the page after installing or updating the extension. For EVM, make sure your library supports EIP-6963 (or that no other wallet has claimed <C>window.ethereum</C>). Check the Log tab to see whether requests arrive.</P>
+            <H3>"Orion was updated or restarted. Reload the page."</H3>
+            <P>The page's connection to the extension went stale after an update. Reloading the page fixes it.</P>
+            <H3>Speed up / Cancel is missing</H3>
+            <P>They only appear on pending EVM and Stellar transactions. Solana transactions can't be replaced; Orion shows their expiry countdown instead.</P>
+            <H3>Friendbot says the account is already funded</H3>
+            <P>Friendbot only funds accounts that don't exist yet. Send from another testnet account instead.</P>
+          </Section>
+
+          {/* ── Roadmap ── */}
+          <Section id="roadmap" eyebrow="Internals" title="Roadmap" art={<Constellation size={130} labels={false} />}>
+            <UL>
+              <li>Multiple accounts per chain and hardware wallets</li>
+              <li>Token balances (ERC-20, SPL, Stellar assets)</li>
+              <li>Soroban <C>signAuthEntry</C> and WalletConnect pairing</li>
+              <li>NEAR and more chains</li>
+              <li>Firefox build and a Chrome Web Store release</li>
+              <li>An independent security audit</li>
+            </UL>
+            <div className="mt-12 rounded-[20px] border border-[#e4e2dc] bg-white p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <p className="font-serif text-[22px]">Found something missing?</p>
+                <p className="text-[14px] text-[#5a5955] mt-1">Open an issue or a pull request on GitHub.</p>
+              </div>
+              <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium">
+                <Github size={16} /> GitHub <ArrowUpRight size={15} />
+              </a>
+            </div>
+          </Section>
+        </motion.main>
+      </div>
+    </div>
+  );
+}
