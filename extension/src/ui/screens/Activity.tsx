@@ -5,7 +5,7 @@ import { call } from '../api';
 import { Badge, Button, ErrorText, ago, cx, fmt, short } from '../kit';
 import { explorerTxUrl, type Network } from '../../lib/networks';
 import type { TrackedTx } from '../../lib/chains/types';
-import Ori from '../art/Ori';
+import { Comet, Constellation, Stipple } from '../art/Engraving';
 import { NetworkLogo } from '../art/ChainLogo';
 
 const STATUS: Record<TrackedTx['status'], { label: string; tone: 'neutral' | 'ok' | 'warn' | 'bad' | 'info' }> = {
@@ -35,14 +35,14 @@ export default function Activity({ txs, networks, onChange }: { txs: TrackedTx[]
         <h2 className="font-serif text-[20px]">Activity</h2>
         {txs.length > 0 && (
           <span className="flex items-center gap-1 text-[12px] text-subtle">
-            {anyPending && <Ori size={30} pose="run" mood="focused" shadow={false} />}
+            {anyPending && <Comet width={44} height={18} />}
             {txs.filter((t) => t.status === 'pending').length} pending
           </span>
         )}
       </div>
       {txs.length === 0 ? (
-        <div className="rounded-[16px] border-2 border-dashed border-line-strong pt-3 pb-6 text-center">
-          <Ori size={92} pose="sleep" mood="sleepy" shadow={false} className="mx-auto" />
+        <div className="rounded-[16px] border border-dashed border-line-strong pt-3 pb-6 text-center">
+          <div className="mx-auto w-fit"><Constellation size={120} /></div>
           <p className="font-serif text-[18px]">Nothing yet</p>
           <p className="text-[12px] text-muted mt-1">Transactions you send from Orion or approve for a site show up here.</p>
         </div>
@@ -145,7 +145,7 @@ function TxRow({ tx, net, now, onChange }: { tx: TrackedTx; net?: Network; now: 
             <p className="text-[11px] text-subtle leading-snug">Solana can't cancel a sent transaction, but it can't land after its blockhash expires. If it does, no funds move.</p>
           ) : tx.kind === 'cancel' ? (
             <div className="flex items-center gap-2">
-              <Ori size={44} prop="stop" mood="worried" shadow={false} />
+              <Stipple kind="eclipse" size={40} seed={9} />
               <p className="text-[11px] text-subtle leading-snug">Racing the original. Whichever lands first wins; the other can never go through.</p>
             </div>
           ) : null}
