@@ -131,3 +131,41 @@ Run the site locally with `npm install && npm run dev` from the repository root,
 <img src="docs/images/docs.png" alt="The documentation page" width="760">
 </div>
 
+## How it works
+
+```
+Orion/
+├─ extension/                  the wallet (WXT + React, Manifest V3)
+│  ├─ entrypoints/
+│  │  ├─ background.ts         service worker: routes popup + dapp messages, auto-lock
+│  │  ├─ inpage.content.ts     page world: EVM, Solana and Stellar providers
+│  │  ├─ bridge.content.ts     isolated world: relays page <-> background
+│  │  ├─ popup/                the wallet UI
+│  │  └─ approval/             the approval window
+│  ├─ src/lib/
+│  │  ├─ keyring/              BIP-39 / BIP-32 / SLIP-10 derivation, encrypted vault
+│  │  ├─ chains/               evm.ts · solana.ts · stellar.ts adapters
+│  │  ├─ dapp/                 per-chain request handlers + permissions
+│  │  └─ tracker.ts            pending-tx polling, Solana rebroadcast, replacement races
+│  ├─ src/inpage/              the providers dapps talk to
+│  ├─ src/ui/                  screens + the engraved illustration system
+│  └─ e2e/                     end-to-end suite (real Chrome + test dapp)
+├─ src/                        the website: landing page, docs, Stellar web dashboard
+└─ docs/images/                screenshots used in this README
+```
+
+A dapp request travels **page → bridge content script → background service worker**. The background takes the requesting origin from the browser (never from the page), checks the site's permission, opens an approval window when needed, signs with the right chain adapter, logs the call, and replies. Account and network changes are pushed back to every tab, filtered by each site's permissions.
+
+### Security model
+
+- The recovery phrase is encrypted with **PBKDF2-SHA256 (600,000 iterations) → AES-256-GCM** and stored in `chrome.storage.local`.
+- While unlocked, it lives only in `chrome.storage.session` (memory, never on disk) and is cleared on lock, auto-lock (default 30 min) or browser close.
+- Keys never leave the background service worker; pages only receive addresses and signatures.
+- Every connection, signature and transaction needs explicit approval in an extension-owned window.
+
+### Design
+
+Orion's interface is ink on paper: Gloock serif headlines, a halftone stippled planet, and illustrations in the style of an old star atlas (stippled celestial bodies, engraved medallions for each chain, an astrolabe, and small italic annotations such as *"fig. — node unreachable"*). The illustrations are generated in code, so each stippled body prints itself dot by dot. Animation respects `prefers-reduced-motion`.
+
+Chain and network marks (Ethereum, Base, Arbitrum, Optimism, Sepolia, Solana, Stellar) come unaltered from [`@web3icons/react`](https://github.com/0xa3k5/web3icons) (MIT) and belong to their respective projects.
+
