@@ -169,3 +169,37 @@ Orion's interface is ink on paper: Gloock serif headlines, a halftone stippled p
 
 Chain and network marks (Ethereum, Base, Arbitrum, Optimism, Sepolia, Solana, Stellar) come unaltered from [`@web3icons/react`](https://github.com/0xa3k5/web3icons) (MIT) and belong to their respective projects.
 
+## Development
+
+```bash
+# Extension
+cd extension
+npm install
+npm run dev            # live-reloading build
+npm run typecheck
+npm test               # unit + integration tests
+
+# Website (landing page, docs, Stellar web dashboard)
+cd ..
+npm install
+npm run dev            # http://localhost:3000
+npm run build
+```
+
+### Tests
+
+| Suite | What it proves |
+|---|---|
+| **Key derivation** | Matches the official SLIP-10 and SEP-5 test vectors and Hardhat's default accounts. |
+| **Vault** | Round-trips with the right password, rejects the wrong one, fresh salt and IV every time. |
+| **EVM integration** | Against a real local node with automining off: speed-up and cancel replace the pending transaction, and the original never lands. |
+| **Solana & Stellar** | Priority-fee transfers, fee-bump speed-up, same-sequence cancel and SEP-53 signing, offline. |
+| **End to end** | Loads the built extension in Chrome, onboards through the UI, and drives a test dapp across all three chains, including cancelling a pending payment from the popup (18 checks). |
+
+```bash
+cd extension
+npx hardhat node            # or: anvil   (in another terminal)
+REQUIRE_LOCAL_NODE=1 npm test
+python3 e2e/e2e.py          # needs Python Playwright and a Chromium that allows --load-extension
+```
+
