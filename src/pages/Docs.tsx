@@ -489,6 +489,22 @@ const { signedTxXdr } = await stellar.signTransaction(tx.toXDR(), { networkPassp
             />
           </Section>
 
+          {/* ── Errors ── */}
+          <Section id="errors" eyebrow="Developers" title="Errors">
+            <P>All three providers use EIP-1193 numbering. EVM and Solana reject with an error carrying <C>code</C> and <C>message</C>; Stellar returns <C>{'{ error: { code, message } }'}</C>.</P>
+            <Table
+              head={['Code', 'When']}
+              rows={[
+                [<C>4001</C>, 'The user rejected the request or closed the approval window.'],
+                [<C>4100</C>, 'The site is not connected, or the requested address is not the connected account.'],
+                [<C>4200</C>, 'The method is not supported.'],
+                [<C>4902</C>, 'The chain is unknown (add it with wallet_addEthereumChain) or is a hidden mainnet.'],
+                [<C>-32602</C>, 'Invalid parameters, such as unreadable transaction bytes or XDR.'],
+                [<C>-32603</C>, 'Internal error, such as an unreachable RPC. The message says what happened.'],
+              ]}
+            />
+          </Section>
+
       </div>
     </div>
   );
