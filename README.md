@@ -2,240 +2,222 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="public/orion-logo-light.svg">
-  <img src="public/orion-logo-ink.svg" alt="Orion" width="260">
+  <img src="public/orion-logo-ink.svg" alt="Orion" width="280">
 </picture>
 
-### A multi-chain wallet built for developers
+### The wallet for every chain you build on.
 
-> **New: the Orion browser extension** — one recovery phrase for Ethereum & EVM L2s, Solana and Stellar, with dapp sync on every chain, fast sends, and real cancel / speed-up. See [`extension/`](extension/README.md).
+A browser-extension wallet for developers: one recovery phrase for **Ethereum & EVM chains**, **Solana** and **Stellar**,<br>
+dapp sync on every chain, fast sends, and real cancel / speed-up where the chain allows it.
 
-#### This repo also contains the Orion web dashboard for the Stellar Testnet
+[Documentation](#documentation) · [Install](#install) · [Integrate](#integrate-with-your-dapp) · [How it works](#how-it-works) · [Contributing](#development)
 
-Manage • Monitor • Transact • Explore
+<br>
 
-[![Stellar](https://img.shields.io/badge/Built%20on-Stellar-000000?style=for-the-badge&logo=stellar&logoColor=white)](#)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react)](#)
-[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript)](#)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=for-the-badge&logo=tailwindcss)](#)
-[![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](#)
-[![License](https://img.shields.io/badge/License-MIT-success?style=for-the-badge)](#license)
-
----
-
-### Your Gateway to the Stellar Ecosystem
-
-A clean, intuitive, and developer-friendly dashboard for interacting with the Stellar blockchain.
-
-🚀 **Live Demo:** https://orion-xi-blond.vercel.app
+<img src="docs/images/landing.png" alt="The Orion website" width="860">
 
 </div>
 
 ---
-<p align="center">
-  <img src="src/assets/images/banner.png" width="100%" alt="orion-banner">
-</p>
 
-## 🎨 Visual Identity & Core Theme
-*   **Cosmic Slate / Dark Cyberpunk Theme:** A tailored dark visual design featuring glowing monochrome indicators, subtle glassmorphism layers, and responsive interactive states.
-*   **Aesthetic Pairings:** Uses the clean `Inter` for general UI text, paired with `Space Grotesk` display headers, and `JetBrains Mono` for precise blockchain markers and cryptographic hashes.
+> [!WARNING]
+> **v0.1, testnet-first.** Orion has not been security-audited. Mainnets are hidden by default. Please don't keep real funds in it yet.
+
+## Why Orion
+
+Building across chains usually means juggling MetaMask for EVM, Phantom for Solana and Freighter for Stellar, three sets of testnet faucets, and no way to undo a stuck transaction. Orion puts all of that in one extension designed around how developers actually work:
+
+- **One phrase, three families.** Standard derivation paths, so importing your phrase shows the same accounts as MetaMask, Phantom and Freighter.
+- **Speaks every dapp's language.** EIP-6963 for EVM, the Wallet Standard for Solana, and SEP-43 for Stellar. Orion sits alongside your other wallets instead of fighting them.
+- **Fast by default, reversible where possible.** Priority fees tuned per chain, real cancel and speed-up on EVM and Stellar, and an honest expiry countdown on Solana.
+- **Built for testnets and local nodes.** Anvil / Hardhat, solana-test-validator and Stellar Quickstart are one click away, with faucets built in.
+- **Tells you the truth.** Transactions are simulated before you sign, every dapp request is logged, and unreachable nodes are reported instead of hidden behind fake balances.
+
+<div align="center">
+<img src="docs/images/04-home-local.png" width="250" alt="Wallet home on a local chain">&nbsp;&nbsp;
+<img src="docs/images/05-pending.png" width="250" alt="A pending payment with Speed up and Cancel">&nbsp;&nbsp;
+<img src="docs/images/07-cancelled.png" width="250" alt="The cancellation confirmed, the original replaced">
+<br>
+<sub>Wallet on a local Hardhat chain · a pending dapp payment with Speed up and Cancel · the cancel wins, the original is replaced</sub>
+</div>
+
+## Features
+
+### Chains
+
+| | EVM | Solana | Stellar |
+|---|---|---|---|
+| **Networks** | Sepolia, Base Sepolia, Arbitrum Sepolia, OP Sepolia, Anvil / Hardhat, custom chains · Ethereum & Base (opt-in) | Devnet, Testnet, solana-test-validator · Mainnet (opt-in) | Testnet, Quickstart · Public (opt-in) |
+| **Dapp standard** | EIP-1193 via EIP-6963 | Wallet Standard | SEP-43, SEP-53 messages |
+| **Derivation** | `m/44'/60'/0'/0/0` (BIP-32) | `m/44'/501'/0'/0'` (SLIP-10) | `m/44'/148'/0'` (SEP-5) |
+| **Faucet** | `anvil_setBalance` / `hardhat_setBalance`, testnet links | Airdrop | Friendbot |
+
+### Fast sends, cancel and speed-up
+
+| Chain | Fast send | Speed up | Cancel |
+|---|---|---|---|
+| **EVM** | 2× suggested priority fee | Same nonce, fees +12.5% or current fast fee | 0-value self-transfer on the same nonce |
+| **Stellar** | p90 fee, 30-second time bound | Fee-bump transaction at 10× (stellar-core's replace-by-fee rule) | Same-sequence no-op `bumpSequence` at 10× |
+| **Solana** | p75 priority fee, rebroadcast every 2.5 s | Not safely possible | Not possible: Orion shows the blockhash-expiry countdown, after which it can never land |
+
+### Developer tools
+
+- **Request log**: every call a dapp made, with params, result, errors and timing.
+- **Simulation before signing**: EVM transactions run through `eth_estimateGas`. Reverts, unlimited ERC-20 approvals and `setApprovalForAll` are flagged in the approval window.
+- **Custom chains**: dapps can add and switch EVM chains with `wallet_addEthereumChain` / `wallet_switchEthereumChain`.
+- **Clear approvals**: every request shows the site, network and a plain-language summary of what you're signing.
+
+<div align="center">
+<img src="docs/images/approval-send.png" width="250" alt="Approval window for a transaction, with simulation result">&nbsp;&nbsp;
+<img src="docs/images/03-networks.png" width="250" alt="Network picker with testnets and local nodes">&nbsp;&nbsp;
+<img src="docs/images/09-log.png" width="250" alt="The developer request log">
+</div>
+
+## Install
+
+Orion isn't on the Chrome Web Store yet; load it as an unpacked extension.
+
+```bash
+git clone https://github.com/arg0506/Orion
+cd Orion/extension
+npm install
+npm run build          # outputs extension/.output/chrome-mv3
+```
+
+1. Open `chrome://extensions` and switch on **Developer mode**.
+2. Click **Load unpacked** and choose `extension/.output/chrome-mv3`.
+3. Pin Orion, then create a wallet or import a recovery phrase.
+
+Works in Chromium browsers (Chrome, Brave, Edge, Arc). For live reload while developing, run `npm run dev`.
+
+## Integrate with your dapp
+
+**EVM**: any EIP-6963-aware library (wagmi v2, RainbowKit, Reown AppKit, ConnectKit) lists Orion automatically. Directly:
+
+```js
+window.addEventListener('eip6963:announceProvider', (e) => {
+  if (e.detail.info.rdns === 'app.orion.wallet') {
+    e.detail.provider.request({ method: 'eth_requestAccounts' });
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));
+```
+
+**Solana**: nothing to install. Orion registers with the Wallet Standard and appears in `@solana/wallet-adapter` as "Orion".
+
+**Stellar**: a SEP-43 interface at `window.orion.stellar` (errors are returned, not thrown):
+
+```js
+const { address } = await window.orion.stellar.getAddress();
+const { signedTxXdr } = await window.orion.stellar.signTransaction(xdr, { networkPassphrase });
+```
+
+The full provider reference (every supported method, event and error code) is in the [documentation](#documentation).
+
+## Documentation
+
+The website includes a complete documentation page at **`/#/docs`**, covering:
+
+- Install and quickstart
+- Accounts, networks, sending, cancel & speed-up, approvals
+- Dapp integration for each chain, with copy-paste examples
+- Full EVM, Solana and Stellar provider API reference and error codes
+- Local development with Anvil / Hardhat, solana-test-validator and Stellar Quickstart
+- Security model, architecture, testing, troubleshooting and roadmap
+
+Run the site locally with `npm install && npm run dev` from the repository root, then open `http://localhost:3000/#/docs`.
+
+<div align="center">
+<img src="docs/images/docs.png" alt="The documentation page" width="760">
+</div>
+
+## How it works
+
+```
+Orion/
+├─ extension/                  the wallet (WXT + React, Manifest V3)
+│  ├─ entrypoints/
+│  │  ├─ background.ts         service worker: routes popup + dapp messages, auto-lock
+│  │  ├─ inpage.content.ts     page world: EVM, Solana and Stellar providers
+│  │  ├─ bridge.content.ts     isolated world: relays page <-> background
+│  │  ├─ popup/                the wallet UI
+│  │  └─ approval/             the approval window
+│  ├─ src/lib/
+│  │  ├─ keyring/              BIP-39 / BIP-32 / SLIP-10 derivation, encrypted vault
+│  │  ├─ chains/               evm.ts · solana.ts · stellar.ts adapters
+│  │  ├─ dapp/                 per-chain request handlers + permissions
+│  │  └─ tracker.ts            pending-tx polling, Solana rebroadcast, replacement races
+│  ├─ src/inpage/              the providers dapps talk to
+│  ├─ src/ui/                  screens + the engraved illustration system
+│  └─ e2e/                     end-to-end suite (real Chrome + test dapp)
+├─ src/                        the website: landing page, docs, Stellar web dashboard
+└─ docs/images/                screenshots used in this README
+```
+
+A dapp request travels **page → bridge content script → background service worker**. The background takes the requesting origin from the browser (never from the page), checks the site's permission, opens an approval window when needed, signs with the right chain adapter, logs the call, and replies. Account and network changes are pushed back to every tab, filtered by each site's permissions.
+
+### Security model
+
+- The recovery phrase is encrypted with **PBKDF2-SHA256 (600,000 iterations) → AES-256-GCM** and stored in `chrome.storage.local`.
+- While unlocked, it lives only in `chrome.storage.session` (memory, never on disk) and is cleared on lock, auto-lock (default 30 min) or browser close.
+- Keys never leave the background service worker; pages only receive addresses and signatures.
+- Every connection, signature and transaction needs explicit approval in an extension-owned window.
+
+### Design
+
+Orion's interface is ink on paper: Gloock serif headlines, a halftone stippled planet, and illustrations in the style of an old star atlas (stippled celestial bodies, engraved medallions for each chain, an astrolabe, and small italic annotations such as *"fig. — node unreachable"*). The illustrations are generated in code, so each stippled body prints itself dot by dot. Animation respects `prefers-reduced-motion`.
+
+Chain and network marks (Ethereum, Base, Arbitrum, Optimism, Sepolia, Solana, Stellar) come unaltered from [`@web3icons/react`](https://github.com/0xa3k5/web3icons) (MIT) and belong to their respective projects.
+
+## Development
+
+```bash
+# Extension
+cd extension
+npm install
+npm run dev            # live-reloading build
+npm run typecheck
+npm test               # unit + integration tests
+
+# Website (landing page, docs, Stellar web dashboard)
+cd ..
+npm install
+npm run dev            # http://localhost:3000
+npm run build
+```
+
+### Tests
+
+| Suite | What it proves |
+|---|---|
+| **Key derivation** | Matches the official SLIP-10 and SEP-5 test vectors and Hardhat's default accounts. |
+| **Vault** | Round-trips with the right password, rejects the wrong one, fresh salt and IV every time. |
+| **EVM integration** | Against a real local node with automining off: speed-up and cancel replace the pending transaction, and the original never lands. |
+| **Solana & Stellar** | Priority-fee transfers, fee-bump speed-up, same-sequence cancel and SEP-53 signing, offline. |
+| **End to end** | Loads the built extension in Chrome, onboards through the UI, and drives a test dapp across all three chains, including cancelling a pending payment from the popup (18 checks). |
+
+```bash
+cd extension
+npx hardhat node            # or: anvil   (in another terminal)
+REQUIRE_LOCAL_NODE=1 npm test
+python3 e2e/e2e.py          # needs Python Playwright and a Chromium that allows --load-extension
+```
+
+## Roadmap
+
+- Multiple accounts per chain and hardware wallets
+- Token balances (ERC-20, SPL, Stellar assets)
+- Soroban `signAuthEntry` and WalletConnect pairing
+- NEAR and more chains
+- Firefox build and a Chrome Web Store release
+- An independent security audit
+
+## Stellar web dashboard
+
+This repository also contains Orion's original web dashboard for the Stellar testnet (`/#/terminal`): connect Freighter, fund an account with Friendbot, send XLM, and watch addresses. It shares the website's design and is a handy companion when you're testing Stellar flows without the extension.
 
 ---
 
-## 🚀 Key Features
-
-### 1. Secure Firebase Authentication
-*   **Multi-Method Auth:** Protects the gateway terminal with email/password login, registration callsigns, Google ID integrations, and instant anonymous Guest Passes.
-*   **Optional sign-in:** The wallet works without an account. Signing in only syncs your watchlist and receipts across devices.
-
-### 2. Robust Wallet Integration
-*   **Freighter Connection:** Detects if the Freighter extension is active. Proposes secure public key permissions and maintains connected state across browser refreshes.
-*   **Network Synchronization:** Automatically queries and matches the active Freighter network to secure testnet transaction safety.
-
-### 3. Comprehensive Wallet Dashboard
-*   **Real Ledger Querying:** Direct, live connection to official Stellar Horizon Testnet nodes (no simulated data).
-*   **Dynamic States:** Displays the active wallet address, current sequence number, XLM balance, subentry counts, and last updated timestamps.
-*   **Interactive Faucet (Friendbot):** One click funds a brand-new testnet account with **10,000 XLM** (Friendbot only funds accounts that don't exist yet).
-
-### 4. Multi-Account Balance Checker
-*   **Simultaneous Monitors:** Add and label multiple Stellar public keys to track their active ledger status and balances from a single dashboard.
-*   **Address Validator:** Integrates official Stellar `StrKey` validations to discard ill-formatted addresses prior to issuing network queries.
-*   **Local Storage Memory:** Retains tracked wallets across sessions so your monitor setup is preserved.
-
-### 5. Direct XLM Payments
-*   **Form Validations:** Real-time recipient address validation, balance alerts, and UTF-8 memo text compliance checks (28-character limit).
-*   **Secure Workflow:** Programmatically loads sender credentials, builds a valid Stellar transaction, prompts Freighter for secure signing, and transmits the payload directly onto the testnet ledger.
-*   **Interactive Receipts:** Displays transaction receipt cards complete with Hash, sequence numbers, and direct hyperlinks to the **StellarExpert Blockchain Explorer**.
-
----
-
-## 📸 Screen Previews
-
-This section lists the fundamental operational states of the terminal interface.
-
-### 1. Wallet Connected State
-*Shows Freighter agent successfully paired and active.*
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  PILOT: ARPAN ROY   [CONNECTED ●]               [G-ADDR: GD3J...6F5T]  │
-├────────────────────────────────────────────────────────────────────────┤
-│  ● TESTNET_ONLINE                                                      │
-│  G-ADDR: GD3J26...X6F5T                                                │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 2. Balance Displayed
-*Visual card rendering native XLM and active subentry limits.*
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  NATIVE ASSET BALANCE                                            [XLM] │
-│                                                                        │
-│  10,000.0000 LUMENS                                                    │
-│  ≈ $1,100.00 USD                                                       │
-├────────────────────────────────────────────────────────────────────────┤
-│  Sequence ID: 1948572019485                    Active Subentries: 0    │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 3. Successful Testnet Transaction
-*Broadcast and network validation sequence.*
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  SEND PAYMENT [Broadcasting... ↻]                                      │
-│                                                                        │
-│  Recipient G-Address:  GCF472YXT4...7XF4H                              │
-│  Amount (XLM):         150.00                                          │
-│  Memo:                 Voyage Payload                                  │
-├────────────────────────────────────────────────────────────────────────┤
-│  [Authorize Shipment] ➔ Freighter signature requested                  │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 4. Transaction Result Displayed to User
-*Interactive transaction confirmation receipt.*
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│  ✔ SHIPMENT TRANSMITTED                                                │
-│                                                                        │
-│  • SENT: 150.00 XLM                                                    │
-│  • LEDGER INDEX: 2948572                                               │
-│  • RECIPIENT: GCF472YXT4...7XF4H                                       │
-│                                                                        │
-│  [ Copy Tx Hash ]                 [ View on Stellar Expert ↗ ]          │
-└────────────────────────────────────────────────────────────────────────┘
-```
-
-### 5. Developer Playground (simulation)
-*Scripted walkthrough of a lint → test → build → deploy pipeline. Nothing here runs on a real network.*
-
-<p align="center">
-  <img src="src/assets/images/cicd_pipeline_workflow.png" width="100%" alt="orion-ci/cd">
-</p>
-
----
-
-## 📁 Project Structure
-
-```text
-/
-├── .env.example                # Template for environment variables
-├── package.json                # Project dependencies and workspace scripts
-├── tsconfig.json               # TypeScript rules and compiler options
-├── vite.config.ts              # Vite configurations
-├── README.md                   # Core documentation
-├── firebase-applet-config.json # Firebase cloud credential settings
-├── src/
-    ├── App.tsx                 # Main Application router, provider, and toaster setup
-    ├── main.tsx                # Client entry-point
-    ├── index.css               # Global CSS stylesheet (Tailwind directives & custom styles)
-    ├── types.ts                # Core TypeScript type definitions
-    ├── components/
-    │   ├── Layout.tsx          # Cyberpunk shell layout, Firebase gate & Freighter install banners
-    │   ├── AuthScreen.tsx      # Secure authentication terminal interface
-    │   ├── SendTransactionForm.tsx # Secure payments form & Freighter signature handler
-    │   └── TransactionHistoryList.tsx # List of completed local transactions
-    ├── context/
-    │   ├── AuthContext.tsx     # Firebase Authentication State Provider
-    │   └── WalletContext.tsx   # Global state manager for wallet accounts & Friendbot faucets
-    ├── hooks/
-    │   ├── useMultiAccounts.ts # Custom hook for tracking and managing multiple accounts
-    │   └── useTransactionHistory.ts # Hook for managing historic local transactions
-    ├── services/
-    │   ├── firebase.ts         # Firebase App & SDK initialized services
-    │   └── stellar.ts          # Encapsulated on-chain logic (Horizon RPC, Friendbot, builders)
-```
-
----
-
-## ⚙️ Installation & Running Locally
-
-### Prerequisites
-1.  **Node.js:** Ensure Node.js (v18+) is installed.
-2.  **Freighter Wallet:** Download and install the [Freighter Browser Extension](https://www.freighter.app/) to send transactions.
-
-### Running Steps
-1.  **Clone & Install Dependencies:**
-    ```bash
-    npm install
-    ```
-2.  **Launch the development server:**
-    ```bash
-    npm run dev
-    ```
-3.  **Launch locally:**
-    Open your browser to `http://localhost:3000` to interact with the console interface.
-
----
-
-## ⚡ Environment Variables
-
-The application can optionally use environment variables defined in `.env`:
-
-```env
-# APP_URL: Optional reference URL representing the app deployment
-APP_URL="http://localhost:3000"
-```
-
----
-
-## 🛠️ Troubleshooting
-
-### 1. Freighter Not Detected
-*   Ensure that you have installed the extension from `freighter.app` and that it is enabled in your browser extensions manager.
-*   Refresh the page after installing to allow the browser injected context to load.
-
-### 2. "Account not found (404)" or "Inactive" Status
-*   This is expected for new accounts. Stellar accounts must be funded with at least **1 XLM** to exist on-chain.
-*   Click **"Fund with Friendbot"** on the Dashboard. This contacts Stellar's Friendbot faucet, funding and activating your wallet on the testnet ledger instantly.
-
-### 3. Google Sign-In closed / failed inside preview iframe
-*   Due to browser iframe security policies, popup elements like Google Auth may be blocked or closed by the browser when run inside the sandboxed dev environment.
-*   **Workaround:** Open the application in a new tab or use the **Email/Password** or **Guest Pass** fallback directly!
-
----
-
-## 🧪 Developer Playground (simulation)
-
-The **Developer** page is an interactive, in-browser walkthrough of a smart-contract workflow. It is clearly labelled in the app as a simulation: **nothing on this page compiles, deploys, or touches a real network**, and the logs, addresses and test results it prints are scripted examples.
-
-What you can explore:
-*   **Contract templates:** Soroban (Rust) AMM and oracle-client contracts, plus Solidity AMM and vault contracts, editable in the browser.
-*   **Inter-contract calls:** a step-by-step diagram of a router → pool → oracle → vault call chain.
-*   **Event stream:** a mock event feed, including custom events you inject yourself.
-*   **CI/CD and tests:** a scripted lint → test → build → deploy pipeline and a sample GitHub Actions workflow you can copy.
-
----
-
-## 🎨 Mobile Responsive & UI Design System
-
-*   **Adaptive Structural Grid:** Seamlessly morphs between high-density multi-column terminal dashboards (designed for full-screen ultra-wide screens) and singular column-stacked mobile viewports.
-*   **Touch-Action Targets:** All buttons, dropdown items, inputs, and interactive telemetry switches feature optimized touch spacing (minimum 44px) and elastic tap indicators.
-*   **Subtle Animation Timings:** Micro-interactions (hover, focus, and state transitions) are governed by fine-tuned elastic ease-out animations to maximize perceived application snappiness.
-
----
-
-## 🔒 Reliability & Safety
-
-1.  **No fake data:** if Horizon or a wallet call fails, Orion shows the error instead of a placeholder balance. There is no simulated wallet fallback.
-2.  **Network checks:** sending is blocked unless Freighter is on the Stellar **Testnet** (or MetaMask is on **Sepolia**), and Orion follows network and account switches made inside the wallet.
-3.  **Stellar rules built in:** the send form accounts for the minimum balance reserve and fees, checks memo length in bytes, and automatically uses `createAccount` when the recipient address does not exist yet.
-4.  **Live prices:** USD values use a live CoinGecko reference price and are labelled as such, since testnet tokens have no real value.
+<div align="center">
+<sub>Built by <a href="https://github.com/arg0506">Arpan Roy</a> · Look up, then ship.</sub>
+</div>

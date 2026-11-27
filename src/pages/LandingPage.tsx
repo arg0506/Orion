@@ -1,77 +1,52 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import {
-  motion,
-  useScroll,
-  useTransform,
-  useMotionValue,
-  useSpring,
-  useInView,
-  useReducedMotion,
-  animate,
-  MotionValue,
-} from 'motion/react';
-import { ArrowUpRight, ArrowDownLeft, Droplets, Eye, FlaskConical, QrCode, Radio, Wallet, Github, ShieldCheck, ArrowRight } from 'lucide-react';
+import { motion, useScroll, useTransform, useMotionValue, useSpring, useInView, useReducedMotion, MotionValue } from 'motion/react';
+import { ArrowRight, ArrowUpRight, BookOpen, Check, Copy, Github, Puzzle, ShieldCheck, Server, Droplets, ScrollText, FlaskConical, Network } from 'lucide-react';
 import StipplePlanet, { BELT, PLANET } from '../components/landing/StipplePlanet';
+import { Astrolabe, Constellation, Medallion, Stipple, type Family } from '../components/art/Engraving';
 import { Belt, cx, ORION_RING_PATH, ORION_STAR_PATHS } from '../components/ui';
 
 const REPO_URL = 'https://github.com/arg0506/Orion';
 const ease = [0.22, 1, 0.36, 1] as const;
 
-/* ───────────────────────── tiles ───────────────────────── */
+/* ───────────────────────── hero art: chains spilling out of the planet ───────────────────────── */
 
-type TileSpec = {
-  id: string;
-  label: string;
-  icon: React.ElementType;
-  bg: string;
-  fg: string;
-  x: number; // % of the art box (centre)
-  y: number;
-  rot: number;
-  depth: number;
-};
-
-const TILES: TileSpec[] = [
-  { id: 'watch', label: 'Watchlist', icon: Eye, bg: 'linear-gradient(160deg,#ff8fa0,#f0506a)', fg: '#fff', x: 7, y: 36, rot: -9, depth: 0.9 },
-  { id: 'receive', label: 'Receive', icon: QrCode, bg: 'linear-gradient(180deg,#ffe27a 0 26%,#fbfaf5 26%)', fg: '#3b3b3b', x: 21, y: 9, rot: -6, depth: 0.6 },
-  { id: 'send', label: 'Send', icon: ArrowUpRight, bg: 'linear-gradient(160deg,#ffffff,#f2f0ea)', fg: '#ff6a3d', x: 37, y: 25, rot: 5, depth: 0.4 },
-  { id: 'wallet', label: 'Connect', icon: Wallet, bg: 'linear-gradient(160deg,#7cc0ff,#2f7cf0)', fg: '#fff', x: 50.5, y: 4, rot: 0, depth: 0.3 },
-  { id: 'fund', label: 'Friendbot', icon: Droplets, bg: 'linear-gradient(160deg,#ffffff,#eef7f1)', fg: '#1fae6a', x: 63, y: 27, rot: 7, depth: 0.45 },
-  { id: 'live', label: 'Live activity', icon: Radio, bg: 'linear-gradient(160deg,#8f8cff,#5b55e8)', fg: '#fff', x: 79, y: 7, rot: 8, depth: 0.7 },
-  { id: 'lab', label: 'Playground', icon: FlaskConical, bg: 'linear-gradient(160deg,#fff4f0,#ffd9cc)', fg: '#e5553a', x: 93, y: 33, rot: -5, depth: 1 },
+type Spec = { id: string; family: Family; networkId?: string; label: string; x: number; y: number; depth: number };
+const MEDALLIONS: Spec[] = [
+  { id: 'arb', family: 'evm', networkId: 'evm:arbitrum-sepolia', label: 'Arbitrum', x: 7, y: 36, depth: 0.9 },
+  { id: 'sol', family: 'solana', label: 'Solana', x: 21, y: 9, depth: 0.6 },
+  { id: 'base', family: 'evm', networkId: 'evm:base', label: 'Base', x: 37, y: 25, depth: 0.4 },
+  { id: 'eth', family: 'evm', networkId: 'evm:mainnet', label: 'Ethereum', x: 50.5, y: 4, depth: 0.3 },
+  { id: 'op', family: 'evm', networkId: 'evm:op-sepolia', label: 'Optimism', x: 63, y: 27, depth: 0.45 },
+  { id: 'xlm', family: 'stellar', label: 'Stellar', x: 79, y: 7, depth: 0.7 },
+  { id: 'sep', family: 'evm', networkId: 'evm:sepolia', label: 'Sepolia', x: 93, y: 33, depth: 1 },
 ];
 
-function Tile({ t, i, mx, my, reduced }: { key?: React.Key; t: TileSpec; i: number; mx: MotionValue<number>; my: MotionValue<number>; reduced: boolean }) {
-  const px = useTransform(mx, (v) => v * 22 * t.depth);
-  const py = useTransform(my, (v) => v * 16 * t.depth);
-  const Icon = t.icon;
-  // start inside the opening of the planet
-  const fromX = `${(PLANET.cx / PLANET.W) * 100 - t.x}%`;
-  const fromY = `${(PLANET.openY / PLANET.H) * 100 - t.y}%`;
-
+function FloatingMedallion({ m, i, mx, my, reduced }: { key?: React.Key; m: Spec; i: number; mx: MotionValue<number>; my: MotionValue<number>; reduced: boolean }) {
+  const px = useTransform(mx, (v) => v * 22 * m.depth);
+  const py = useTransform(my, (v) => v * 16 * m.depth);
+  const fromX = `${(PLANET.cx / PLANET.W) * 100 - m.x}%`;
+  const fromY = `${(PLANET.openY / PLANET.H) * 100 - m.y}%`;
   return (
-    <motion.div className="absolute z-10" style={{ left: `${t.x}%`, top: `${t.y}%`, x: px, y: py }}>
+    <motion.div className="absolute z-10" style={{ left: `${m.x}%`, top: `${m.y}%`, x: px, y: py }}>
       <motion.div
-        initial={reduced ? false : { left: fromX, top: fromY, scale: 0.2, opacity: 0, rotate: 0 }}
-        animate={{ left: '0%', top: '0%', scale: 1, opacity: 1, rotate: t.rot }}
+        initial={reduced ? false : { left: fromX, top: fromY, scale: 0.2, opacity: 0 }}
+        animate={{ left: '0%', top: '0%', scale: 1, opacity: 1 }}
         transition={{ delay: 0.9 + i * 0.09, type: 'spring', stiffness: 70, damping: 13 }}
         className="relative -translate-x-1/2 -translate-y-1/2"
       >
         <motion.div
-          animate={reduced ? undefined : { y: [0, -7, 0] }}
+          animate={reduced ? undefined : { y: [0, -7, 0], rotate: [-4, 4, -4] }}
           transition={{ duration: 4 + (i % 3), repeat: Infinity, ease: 'easeInOut', delay: 2 + i * 0.3 }}
-          whileHover={{ scale: 1.12, rotate: 0 }}
+          whileHover={{ scale: 1.12 }}
           className="group relative"
         >
-          <span
-            className="grid place-items-center w-11 h-11 sm:w-[58px] sm:h-[58px] rounded-[13px] sm:rounded-[16px] shadow-[0_10px_24px_-10px_rgba(0,0,0,0.35),0_1px_0_rgba(255,255,255,0.6)_inset] ring-1 ring-black/5"
-            style={{ background: t.bg, color: t.fg }}
-          >
-            <Icon className="w-5 h-5 sm:w-[26px] sm:h-[26px]" strokeWidth={2.2} />
+          {/* One instance only: duplicated SVG logos would share gradient ids */}
+          <span className="block scale-[0.7] sm:scale-100">
+            <Medallion family={m.family} networkId={m.networkId} size={60} />
           </span>
-          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 text-[12px] font-medium text-[#141414] bg-white rounded-full px-2.5 py-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
-            {t.label}
+          <span className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-1.5 font-serif italic text-[13px] text-[#141414] opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+            {m.label}
           </span>
         </motion.div>
       </motion.div>
@@ -83,7 +58,6 @@ export function HeroArt({ className }: { className?: string }) {
   const reduced = !!useReducedMotion();
   const mx = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
   const my = useSpring(useMotionValue(0), { stiffness: 60, damping: 18 });
-
   return (
     <div
       className={cx('relative w-full max-w-[600px] mx-auto', className)}
@@ -98,7 +72,6 @@ export function HeroArt({ className }: { className?: string }) {
       }}
     >
       <StipplePlanet className="w-full h-auto" reduced={reduced} />
-      {/* belt stars glinting in the carved-out holes */}
       {BELT.map((b, i) => (
         <motion.span
           key={i}
@@ -109,76 +82,30 @@ export function HeroArt({ className }: { className?: string }) {
           transition={{ delay: 1.8 + i * 0.15, duration: 1.2 }}
         />
       ))}
-      {TILES.map((t, i) => (
-        <Tile key={t.id} t={t} i={i} mx={mx} my={my} reduced={reduced} />
+      {MEDALLIONS.map((m, i) => (
+        <FloatingMedallion key={m.id} m={m} i={i} mx={mx} my={my} reduced={reduced} />
       ))}
     </div>
   );
 }
 
-/* ───────────────────────── logo ───────────────────────── */
-
-/** The Orion mark, animated: the O settles in, then the belt stars rise through it one by one. */
-function AnimatedMark({ className, delay = 0, inView = false }: { className?: string; delay?: number; inView?: boolean }) {
-  const reduced = !!useReducedMotion();
-  const trigger = inView ? 'whileInView' : 'animate';
-  const ring = { initial: reduced ? false : { scale: 0.6, opacity: 0, rotate: -40 }, [trigger]: { scale: 1, opacity: 1, rotate: 0 } };
-  return (
-    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
-      <motion.path
-        d={ORION_RING_PATH}
-        fill="currentColor"
-        fillRule="evenodd"
-        style={{ transformOrigin: '50px 50px' }}
-        {...ring}
-        viewport={{ once: true }}
-        transition={{ delay, duration: 0.9, ease }}
-      />
-      {ORION_STAR_PATHS.map((d, i) => (
-        <motion.path
-          key={i}
-          d={d}
-          fill="currentColor"
-          style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-          initial={reduced ? false : { scale: 0, opacity: 0, x: -8, y: 8 }}
-          {...{ [trigger]: { scale: 1, opacity: 1, x: 0, y: 0 } }}
-          viewport={{ once: true }}
-          transition={{ delay: delay + 0.45 + i * 0.14, type: 'spring', stiffness: 260, damping: 14 }}
-        />
-      ))}
-    </svg>
-  );
-}
-
-/* ───────────────────────── helpers ───────────────────────── */
+/* ───────────────────────── motion helpers ───────────────────────── */
 
 function Reveal({ children, delay = 0, className, y = 28 }: { key?: React.Key; children: React.ReactNode; delay?: number; className?: string; y?: number }) {
   return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0, y }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-80px' }}
-      transition={{ duration: 0.8, ease, delay }}
-    >
+    <motion.div className={className} initial={{ opacity: 0, y }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: '-80px' }} transition={{ duration: 0.8, ease, delay }}>
       {children}
     </motion.div>
   );
 }
 
-function SplitHeadline({ text, className, delay = 0 }: { text: string; className?: string; delay?: number }) {
+function SplitHeadline({ text, delay = 0 }: { text: string; delay?: number }) {
   const words = text.split(' ');
   return (
-    <span className={className} aria-label={text}>
+    <span aria-label={text}>
       {words.map((w, i) => (
         <span key={i} className="inline-block overflow-hidden align-bottom pb-[0.08em] -mb-[0.08em]" aria-hidden="true">
-          <motion.span
-            className="inline-block"
-            initial={{ y: '105%' }}
-            whileInView={{ y: '0%' }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.9, ease, delay: delay + i * 0.08 }}
-          >
+          <motion.span className="inline-block" initial={{ y: '105%' }} whileInView={{ y: '0%' }} viewport={{ once: true }} transition={{ duration: 0.9, ease, delay: delay + i * 0.08 }}>
             {w}
             {i < words.length - 1 ? ' ' : ''}
           </motion.span>
@@ -188,20 +115,18 @@ function SplitHeadline({ text, className, delay = 0 }: { text: string; className
   );
 }
 
-/** Paragraph whose words darken one by one as it scrolls through the viewport. */
 function ScrollInk({ text }: { text: string }) {
   const ref = useRef<HTMLParagraphElement | null>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start 0.85', 'end 0.45'] });
   const words = text.split(' ');
   return (
-    <p ref={ref} className="font-serif text-[30px] sm:text-[44px] lg:text-[52px] leading-[1.12] tracking-[-0.01em] text-[#141414]">
+    <p ref={ref} className="font-serif text-[30px] sm:text-[44px] lg:text-[52px] leading-[1.12] tracking-[-0.01em]">
       {words.map((w, i) => (
         <InkWord key={i} word={w} progress={scrollYProgress} range={[i / words.length, (i + 1) / words.length]} />
       ))}
     </p>
   );
 }
-
 function InkWord({ word, progress, range }: { key?: React.Key; word: string; progress: MotionValue<number>; range: [number, number] }) {
   const opacity = useTransform(progress, range, [0.16, 1]);
   return (
@@ -211,22 +136,10 @@ function InkWord({ word, progress, range }: { key?: React.Key; word: string; pro
   );
 }
 
-function CountUp({ to, decimals = 2 }: { to: number; decimals?: number }) {
-  const ref = useRef<HTMLSpanElement | null>(null);
-  const inView = useInView(ref, { once: true });
-  const [v, setV] = useState(0);
-  useEffect(() => {
-    if (!inView) return;
-    const controls = animate(0, to, { duration: 1.8, ease, onUpdate: setV });
-    return () => controls.stop();
-  }, [inView, to]);
-  return <span ref={ref}>{v.toLocaleString(undefined, { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}</span>;
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function Label({ children, center = false }: { children: React.ReactNode; center?: boolean }) {
   return (
     <Reveal y={12}>
-      <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
+      <p className={cx('flex items-center gap-2 text-[13px] text-[#6b6a66]', center && 'justify-center')}>
         <Belt className="w-5 text-[#141414]" />
         {children}
       </p>
@@ -234,27 +147,98 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AnimatedMark({ className, delay = 0, inView = false }: { className?: string; delay?: number; inView?: boolean }) {
+  const reduced = !!useReducedMotion();
+  const trigger = inView ? 'whileInView' : 'animate';
+  return (
+    <svg viewBox="0 0 100 100" className={className} aria-hidden="true">
+      <motion.path d={ORION_RING_PATH} fill="currentColor" fillRule="evenodd" style={{ transformOrigin: '50px 50px' }}
+        initial={reduced ? false : { scale: 0.6, opacity: 0, rotate: -40 }} {...{ [trigger]: { scale: 1, opacity: 1, rotate: 0 } }} viewport={{ once: true }} transition={{ delay, duration: 0.9, ease }} />
+      {ORION_STAR_PATHS.map((d, i) => (
+        <motion.path key={i} d={d} fill="currentColor" style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+          initial={reduced ? false : { scale: 0, opacity: 0, x: -8, y: 8 }} {...{ [trigger]: { scale: 1, opacity: 1, x: 0, y: 0 } }} viewport={{ once: true }}
+          transition={{ delay: delay + 0.45 + i * 0.14, type: 'spring', stiffness: 260, damping: 14 }} />
+      ))}
+    </svg>
+  );
+}
+
+function CodeBlock({ code, lang }: { code: string; lang?: string }) {
+  const [done, setDone] = useState(false);
+  return (
+    <div className="relative rounded-[18px] bg-[#141414] text-[#eceae4] overflow-hidden">
+      <div className="flex items-center justify-between px-4 h-10 border-b border-white/10 text-[12px] text-white/50">
+        <span className="font-mono">{lang}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(code);
+            setDone(true);
+            setTimeout(() => setDone(false), 1200);
+          }}
+          className="inline-flex items-center gap-1.5 hover:text-white"
+        >
+          {done ? <Check size={13} /> : <Copy size={13} />}
+          {done ? 'Copied' : 'Copy'}
+        </button>
+      </div>
+      <pre className="p-4 sm:p-5 text-[13px] leading-relaxed font-mono overflow-x-auto">{code}</pre>
+    </div>
+  );
+}
+
+/* ───────────────────────── content ───────────────────────── */
+
+const CHAINS: { family: Family; name: string; nets: string; standard: string; path: string }[] = [
+  { family: 'evm', name: 'Ethereum & EVM', nets: 'Sepolia, Base, Arbitrum and OP Sepolia, Anvil / Hardhat, custom chains', standard: 'EIP-1193 + EIP-6963', path: "m/44'/60'/0'/0/0" },
+  { family: 'solana', name: 'Solana', nets: 'Devnet, Testnet, solana-test-validator', standard: 'Wallet Standard', path: "m/44'/501'/0'/0'" },
+  { family: 'stellar', name: 'Stellar', nets: 'Testnet, Quickstart (local)', standard: 'SEP-43 + SEP-53', path: "m/44'/148'/0'" },
+];
+
+const SNIPPETS: Record<Family, { lang: string; code: string }> = {
+  evm: {
+    lang: 'EIP-6963 · works with wagmi, RainbowKit, Web3Modal',
+    code: `window.addEventListener('eip6963:announceProvider', (e) => {
+  if (e.detail.info.rdns === 'app.orion.wallet') {
+    const orion = e.detail.provider;
+    orion.request({ method: 'eth_requestAccounts' });
+  }
+});
+window.dispatchEvent(new Event('eip6963:requestProvider'));`,
+  },
+  solana: {
+    lang: 'Wallet Standard · nothing to install',
+    code: `// Orion registers itself through the Wallet Standard, so
+// @solana/wallet-adapter lists it as "Orion" automatically.
+const { wallets } = useWallet();
+const orion = wallets.find((w) => w.adapter.name === 'Orion');
+await orion.adapter.connect();`,
+  },
+  stellar: {
+    lang: 'SEP-43 · errors are returned, not thrown',
+    code: `const { address } = await window.orion.stellar.getAddress();
+const { networkPassphrase } = await window.orion.stellar.getNetwork();
+const { signedTxXdr, error } = await window.orion.stellar
+  .signTransaction(xdr, { networkPassphrase });`,
+  },
+};
+
+const TOOLS = [
+  { icon: Server, title: 'Local nodes, one click', body: 'Anvil / Hardhat on :8545, solana-test-validator on :8899, Stellar Quickstart on :8000. Orion tells you when a node is down.' },
+  { icon: Droplets, title: 'Faucets built in', body: 'Friendbot for Stellar, airdrops on Solana devnet, and anvil_setBalance on local EVM. Links for public EVM testnets.' },
+  { icon: FlaskConical, title: 'Simulated before you sign', body: 'EVM transactions run through eth_estimateGas first. Reverts, unlimited approvals and setApprovalForAll are called out.' },
+  { icon: ScrollText, title: 'Request log', body: 'Every call a dapp made, with params, result, errors and timing. The fastest way to debug a wallet integration.' },
+  { icon: Network, title: 'Custom chains', body: 'Dapps can add and switch EVM chains with wallet_addEthereumChain. Mainnets stay hidden until you turn them on.' },
+  { icon: ShieldCheck, title: 'Honest by default', body: 'No fake balances, no simulated wallets. If a node is unreachable, Orion says so.' },
+];
+
 /* ───────────────────────── page ───────────────────────── */
-
-const FEATURES = [
-  { tile: TILES[2], title: 'Payments that follow the rules', body: "Orion knows Stellar's minimum balance, fees and 28-byte memo limit, and creates the account for you when you pay a brand-new address." },
-  { tile: TILES[5], title: 'Activity, as it happens', body: 'History streams straight from Horizon. Incoming payments appear, and your balance updates, the moment they land.' },
-  { tile: TILES[0], title: 'A watchlist for any address', body: "Track wallets you don't control, like a team treasury or a judge's account, with totals at a glance." },
-  { tile: { ...TILES[3], icon: ShieldCheck }, title: 'Safe by default', body: 'Keys stay in Freighter or MetaMask. Sending is blocked on the wrong network, and errors are shown, never papered over.' },
-];
-
-const STEPS = [
-  { title: 'Connect Freighter', body: 'Orion asks for your public address. Your secret key never leaves the extension.' },
-  { title: 'Fund with Friendbot', body: "New addresses don't exist until they hold 1 XLM. One click brings 10,000 test XLM." },
-  { title: 'Send and watch it land', body: 'Pick an address and amount, approve in Freighter, and see it on the ledger seconds later.' },
-];
 
 export default function LandingPage() {
   const reduced = !!useReducedMotion();
   const { scrollY } = useScroll();
   const navShadow = useTransform(scrollY, [0, 80], ['0 0 0 rgba(0,0,0,0)', '0 8px 30px -12px rgba(0,0,0,0.25)']);
   const heroArtY = useTransform(scrollY, [0, 700], [0, reduced ? 0 : -60]);
-
+  const [tab, setTab] = useState<Family>('evm');
   const scrollTo = (id: string) => document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
 
   return (
@@ -265,24 +249,17 @@ export default function LandingPage() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.7, ease }}
         style={{ boxShadow: navShadow }}
-        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-2 py-1.5 border border-black/[0.04]"
+        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-0.5 rounded-[14px] bg-[#e9e8e4]/85 backdrop-blur-md px-1.5 py-1.5 border border-black/[0.04]"
         aria-label="Main"
       >
         <Link to="/" aria-label="Orion home" className="h-8 pl-1.5 pr-2.5 flex items-center gap-1.5 rounded-lg hover:bg-black/5">
           <AnimatedMark className="w-[22px] h-[22px] text-[#141414]" delay={0.3} />
           <span className="font-serif text-[17px] leading-none">Orion</span>
         </Link>
-        {[
-          ['About', () => scrollTo('about')],
-          ['Features', () => scrollTo('features')],
-        ].map(([label, fn]) => (
-          <button key={label as string} onClick={fn as () => void} className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">
-            {label as string}
-          </button>
-        ))}
-        <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">
-          Source
-        </a>
+        <button onClick={() => scrollTo('chains')} className="hidden sm:block h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">Chains</button>
+        <button onClick={() => scrollTo('tools')} className="hidden sm:block h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5">Tools</button>
+        <Link to="/docs" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">Docs</Link>
+        <a href={REPO_URL} target="_blank" rel="noreferrer" className="h-8 px-2.5 rounded-lg text-[13px] text-[#3a3a37] hover:bg-black/5 inline-flex items-center">Source</a>
       </motion.nav>
 
       {/* ───────── Hero ───────── */}
@@ -290,25 +267,19 @@ export default function LandingPage() {
         <h1 className="font-serif text-[52px] sm:text-[84px] lg:text-[96px] leading-[0.95] tracking-[-0.02em]">
           <SplitHeadline text="Meet Orion," delay={0.15} />
         </h1>
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.55, duration: 0.7, ease }}
-          className="mt-4 text-[15px] sm:text-base text-[#3a3a37]"
-        >
-          and send your first Stellar payment in under a minute.
+        <motion.p initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55, duration: 0.7, ease }} className="mt-4 text-[15px] sm:text-base text-[#3a3a37]">
+          the wallet for every chain you build on.
         </motion.p>
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.7, ease }} className="mt-6">
-          <Link
-            to="/terminal"
-            className="group inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] hover:bg-black transition-colors"
-          >
-            <Wallet size={17} />
-            Open wallet
-            <ArrowRight size={15} className="w-0 opacity-0 -ml-2 group-hover:w-[15px] group-hover:opacity-100 group-hover:ml-0 transition-all" />
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.7, duration: 0.7, ease }} className="mt-6 flex flex-wrap justify-center gap-2.5">
+          <Link to="/docs?s=install" className="group inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium shadow-[0_8px_20px_-10px_rgba(0,0,0,0.6)] hover:bg-black transition-colors">
+            <Puzzle size={17} />
+            Get the extension
+          </Link>
+          <Link to="/docs" className="inline-flex items-center gap-2 h-11 px-5 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
+            <BookOpen size={16} />
+            Read the docs
           </Link>
         </motion.div>
-
         <motion.div style={{ y: heroArtY }} className="mt-8 sm:mt-10">
           <HeroArt />
         </motion.div>
@@ -317,38 +288,78 @@ export default function LandingPage() {
       {/* ───────── About ───────── */}
       <section id="about" className="px-5 py-28 sm:py-40">
         <div className="max-w-4xl mx-auto">
-          <SectionLabel>About</SectionLabel>
+          <Label>About</Label>
           <div className="mt-8">
-            <ScrollInk text="Orion is a calm window onto the Stellar testnet. Connect a wallet, fund it, send a payment and watch it land, without jargon and without a single made-up number." />
+            <ScrollInk text="Orion is a browser wallet for people who build on more than one chain. One recovery phrase takes you from Ethereum to Solana to Stellar, with fast sends, real cancels, and tools that tell you the truth." />
           </div>
         </div>
       </section>
 
-      {/* ───────── Features ───────── */}
-      <section id="features" className="px-5 pb-28 sm:pb-40">
+      {/* ───────── Chains ───────── */}
+      <section id="chains" className="px-5 pb-28 sm:pb-40">
         <div className="max-w-5xl mx-auto">
-          <SectionLabel>Features</SectionLabel>
+          <Label>Chains</Label>
           <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
-            <SplitHeadline text="Everything a testnet payment needs." />
+            <SplitHeadline text="Three families, one phrase." />
           </h2>
-          <div className="mt-14 grid sm:grid-cols-2 gap-x-10 gap-y-14">
-            {FEATURES.map((f, i) => {
-              const Icon = f.tile.icon;
+          <Reveal delay={0.1}>
+            <p className="mt-5 text-[16px] text-[#5a5955] max-w-2xl leading-relaxed">
+              Orion derives the standard address for every chain, so importing your phrase shows the same accounts as MetaMask, Phantom and Freighter.
+            </p>
+          </Reveal>
+          <div className="mt-14 grid md:grid-cols-3 gap-6">
+            {CHAINS.map((c, i) => (
+              <Reveal key={c.family} delay={i * 0.12}>
+                <div className="h-full rounded-[24px] border border-[#e4e2dc] bg-white p-6">
+                  <motion.div initial={{ rotate: -30, opacity: 0 }} whileInView={{ rotate: 0, opacity: 1 }} viewport={{ once: true }} transition={{ duration: 1, ease, delay: 0.2 + i * 0.12 }}>
+                    <Medallion family={c.family} size={64} />
+                  </motion.div>
+                  <h3 className="mt-5 font-serif text-[26px] leading-tight">{c.name}</h3>
+                  <p className="mt-2 text-[14px] text-[#5a5955] leading-relaxed">{c.nets}</p>
+                  <dl className="mt-5 space-y-2 text-[13px]">
+                    <div className="flex justify-between gap-3 border-t border-[#e4e2dc] pt-2">
+                      <dt className="text-[#8a8984]">Dapp standard</dt>
+                      <dd className="text-right">{c.standard}</dd>
+                    </div>
+                    <div className="flex justify-between gap-3 border-t border-[#e4e2dc] pt-2">
+                      <dt className="text-[#8a8984]">Path</dt>
+                      <dd className="font-mono text-[12px]">{c.path}</dd>
+                    </div>
+                  </dl>
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── Cancel & speed-up ───────── */}
+      <CancelStory />
+
+      {/* ───────── Tools ───────── */}
+      <section id="tools" className="px-5 py-28 sm:py-40">
+        <div className="max-w-5xl mx-auto">
+          <div className="grid lg:grid-cols-[1fr_auto] gap-10 items-end">
+            <div>
+              <Label>For developers</Label>
+              <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-2xl">
+                <SplitHeadline text="Built for the testnet you're on today." />
+              </h2>
+            </div>
+            <Reveal className="hidden lg:block">
+              <Astrolabe size={160} />
+            </Reveal>
+          </div>
+          <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+            {TOOLS.map((t, i) => {
+              const Icon = t.icon;
               return (
-                <Reveal key={f.title} delay={(i % 2) * 0.12}>
-                  <motion.span
-                    initial={{ rotate: -20, scale: 0.6, opacity: 0 }}
-                    whileInView={{ rotate: f.tile.rot, scale: 1, opacity: 1 }}
-                    viewport={{ once: true }}
-                    whileHover={{ rotate: 0, scale: 1.08 }}
-                    transition={{ type: 'spring', stiffness: 120, damping: 12, delay: 0.15 + (i % 2) * 0.12 }}
-                    className="inline-grid place-items-center w-14 h-14 rounded-[16px] shadow-[0_10px_24px_-12px_rgba(0,0,0,0.4)] ring-1 ring-black/5"
-                    style={{ background: f.tile.bg, color: f.tile.fg }}
-                  >
-                    <Icon size={26} strokeWidth={2.2} />
-                  </motion.span>
-                  <h3 className="mt-6 font-serif text-[26px] sm:text-[30px] leading-tight">{f.title}</h3>
-                  <p className="mt-3 text-[16px] leading-relaxed text-[#5a5955] max-w-md">{f.body}</p>
+                <Reveal key={t.title} delay={(i % 3) * 0.1}>
+                  <span className="inline-grid place-items-center w-12 h-12 rounded-full border border-[#141414]">
+                    <Icon size={20} strokeWidth={1.6} />
+                  </span>
+                  <h3 className="mt-5 font-serif text-[24px] leading-tight">{t.title}</h3>
+                  <p className="mt-2 text-[15px] leading-relaxed text-[#5a5955]">{t.body}</p>
                 </Reveal>
               );
             })}
@@ -356,125 +367,107 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ───────── How it works: a constellation that draws itself ───────── */}
-      <HowItWorks />
-
-      {/* ───────── Preview ───────── */}
-      <section className="px-5 py-28 sm:py-40">
-        <div className="max-w-5xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
-          <div>
-            <SectionLabel>The wallet</SectionLabel>
-            <h2 className="mt-6 font-serif text-[38px] sm:text-[56px] leading-[1] tracking-[-0.02em]">
-              <SplitHeadline text="Ink on paper, numbers that count." />
+      {/* ───────── Integrate ───────── */}
+      <section className="px-5 py-28 sm:py-32 bg-[#efede8]">
+        <div className="max-w-5xl mx-auto grid lg:grid-cols-[0.8fr_1.2fr] gap-12 items-start">
+          <div className="min-w-0">
+            <Label>Integrate</Label>
+            <h2 className="mt-6 font-serif text-[38px] sm:text-[52px] leading-[1] tracking-[-0.02em]">
+              <SplitHeadline text="Speaks every dapp's language." />
             </h2>
-            <Reveal delay={0.2}>
-              <p className="mt-5 text-[16px] leading-relaxed text-[#5a5955] max-w-md">
-                The wallet looks just like this page. Your balance is set big in serif, money coming in is Rigel blue, money going out is Betelgeuse orange, and everything else stays out of your way.
+            <Reveal delay={0.15}>
+              <p className="mt-5 text-[16px] text-[#5a5955] leading-relaxed">
+                Orion announces itself the standard way on each chain, so it sits next to MetaMask or Phantom instead of fighting them for <span className="font-mono text-[14px]">window.ethereum</span>.
               </p>
-              <Link to="/terminal" className="mt-7 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
-                Open the wallet <ArrowUpRight size={16} />
+              <Link to="/docs?s=integrate" className="mt-6 inline-flex items-center gap-1.5 text-[15px] font-medium border-b border-[#141414] pb-0.5 hover:gap-2.5 transition-all">
+                Provider API reference <ArrowUpRight size={16} />
               </Link>
             </Reveal>
           </div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 60, rotate: 3 }}
-            whileInView={{ opacity: 1, y: 0, rotate: -1.5 }}
-            viewport={{ once: true, margin: '-100px' }}
-            transition={{ duration: 1.1, ease }}
-            className="relative rounded-[28px] bg-white border border-[#e4e2dc] p-6 sm:p-7 shadow-[0_40px_80px_-40px_rgba(20,20,20,0.45)]"
-          >
-            <div className="flex items-center justify-between text-[13px]">
-              <span className="text-[#5a5955]">Testnet balance</span>
-              <span className="rounded-full bg-[#efede8] px-2.5 py-0.5 text-[#5a5955]">Example</span>
-            </div>
-            <p className="font-serif text-[52px] sm:text-[64px] leading-none mt-3 tabular-nums tracking-[-0.03em]">
-              <CountUp to={10000} /> <span className="text-2xl text-[#5a5955] tracking-normal">XLM</span>
-            </p>
-            <ul className="mt-6 divide-y divide-[#e4e2dc]">
-              {[
-                { inc: true, who: 'GDF7…MHHP', amt: '+250.00', when: 'just now' },
-                { inc: false, who: 'GCAK…EYFP', amt: '−1,200.00', when: '2 h ago' },
-                { inc: true, who: 'Friendbot', amt: '+10,000.00', when: '2 d ago', fund: true },
-              ].map((r, i) => (
-                <motion.li
-                  key={r.who}
-                  initial={{ opacity: 0, x: 24 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.15, duration: 0.6, ease }}
-                  className="flex items-center gap-3 py-3"
-                >
-                  <span className={cx('tile w-10 h-10', r.fund ? 'bg-[linear-gradient(160deg,#fff,#eef7f1)] text-[#1f9d5c]' : r.inc ? 'bg-[linear-gradient(160deg,#7cc0ff,#2f7cf0)] text-white' : 'bg-[linear-gradient(160deg,#fff,#f2f0ea)] text-[#e8622f]')}>
-                    {r.fund ? <Droplets size={15} /> : r.inc ? <ArrowDownLeft size={15} /> : <ArrowUpRight size={15} />}
-                  </span>
-                  <span className="flex-1 min-w-0 text-left">
-                    <span className="block text-sm">
-                      {r.inc ? 'Received from' : 'Sent to'} <span className="font-mono text-[13px]">{r.who}</span>
-                    </span>
-                    <span className="block text-[12px] text-[#8a8984]">{r.when}</span>
-                  </span>
-                  <span className={cx('font-serif text-[18px] tabular-nums', r.inc ? 'text-[#2f6fe0]' : '')}>{r.amt}</span>
-                </motion.li>
+          <Reveal delay={0.1} className="min-w-0">
+            <div className="inline-flex p-1 rounded-[14px] bg-[#e2e0da] mb-4">
+              {(['evm', 'solana', 'stellar'] as Family[]).map((f) => (
+                <button key={f} onClick={() => setTab(f)} className={cx('relative h-9 px-4 rounded-[10px] text-[14px] flex items-center gap-2', tab === f ? 'text-[#141414]' : 'text-[#5a5955]')}>
+                  {tab === f && <motion.span layoutId="code-tab" className="absolute inset-0 rounded-[10px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 380, damping: 32 }} />}
+                  <span className="relative">{f === 'evm' ? 'EVM' : f === 'solana' ? 'Solana' : 'Stellar'}</span>
+                </button>
               ))}
-            </ul>
-          </motion.div>
+            </div>
+            <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, ease }}>
+              <CodeBlock code={SNIPPETS[tab].code} lang={SNIPPETS[tab].lang} />
+            </motion.div>
+          </Reveal>
         </div>
       </section>
 
-      {/* ───────── Playground marquee ───────── */}
-      <section className="py-20 sm:py-28 border-y border-black/[0.06] overflow-hidden">
-        <div className="flex whitespace-nowrap" aria-hidden="true">
-          <motion.div
-            className="flex shrink-0 font-serif text-[64px] sm:text-[110px] leading-none tracking-[-0.02em]"
-            animate={reduced ? undefined : { x: ['0%', '-50%'] }}
-            transition={{ duration: 38, repeat: Infinity, ease: 'linear' }}
-          >
-            {[0, 1].map((k) => (
-              <span key={k} className="flex shrink-0">
-                {['Soroban', 'Freighter', 'Horizon', 'Friendbot', 'XLM', 'Testnet'].map((w, i) => (
-                  <span key={w} className={cx('px-6 sm:px-10 flex items-center gap-6 sm:gap-10', i % 2 ? 'text-transparent [-webkit-text-stroke:1.5px_#141414]' : '')}>
-                    {w}
-                    <Belt className="w-10 sm:w-16 text-[#141414]" />
-                  </span>
-                ))}
-              </span>
+      {/* ───────── Preview ───────── */}
+      <section className="px-5 py-28 sm:py-40 overflow-hidden">
+        <div className="max-w-5xl mx-auto text-center">
+          <Label center>The extension</Label>
+          <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em]">
+            <SplitHeadline text="Ink on paper, in your toolbar." />
+          </h2>
+          <div className="relative mt-16 h-[440px] sm:h-[520px]">
+            {[
+              { src: '/screens/04-home-local.png', rot: -9, x: '-118%', d: 0.1 },
+              { src: '/screens/05-pending.png', rot: 0, x: '-50%', d: 0 },
+              { src: '/screens/07-cancelled.png', rot: 9, x: '18%', d: 0.2 },
+            ].map((s, i) => (
+              <motion.img
+                key={s.src}
+                src={s.src}
+                alt={['The wallet on a local chain', 'A pending payment with Speed up and Cancel', 'The cancellation confirmed'][i]}
+                className="absolute left-1/2 top-0 w-[240px] sm:w-[300px] rounded-[22px] border border-[#e4e2dc] shadow-[0_40px_80px_-40px_rgba(20,20,20,0.45)] bg-white"
+                style={{ zIndex: i === 1 ? 2 : 1 }}
+                initial={{ x: '-50%', rotate: 0, y: 60, opacity: 0 }}
+                whileInView={{ x: s.x, rotate: s.rot, y: i === 1 ? 0 : 30, opacity: 1 }}
+                viewport={{ once: true, margin: '-100px' }}
+                transition={{ duration: 1.1, ease, delay: s.d }}
+              />
             ))}
-          </motion.div>
-        </div>
-        <Reveal className="max-w-5xl mx-auto px-5 mt-14 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="max-w-xl">
-            <p className="flex items-center gap-2 text-[13px] text-[#6b6a66]">
-              <FlaskConical size={15} /> Playground
-            </p>
-            <p className="mt-3 font-serif text-[28px] sm:text-[34px] leading-tight">See how a smart contract goes from code to deploy.</p>
-            <p className="mt-3 text-[15px] text-[#5a5955] leading-relaxed">
-              Step through Soroban and Solidity templates, contract calls, events and a CI pipeline. It's a guided simulation in your browser, so nothing is deployed.
-            </p>
           </div>
-          <Link to="/developer" className="shrink-0 inline-flex items-center gap-2 h-11 px-5 rounded-[12px] border border-[#141414] text-[15px] font-medium hover:bg-[#141414] hover:text-white transition-colors">
-            Open playground <ArrowRight size={15} />
-          </Link>
-        </Reveal>
+        </div>
       </section>
 
       {/* ───────── Final CTA ───────── */}
-      <FinalCta />
+      <section className="relative px-5 py-32 sm:py-44 text-center overflow-hidden border-t border-black/[0.06]">
+        <div className="absolute left-[6%] top-16 opacity-60 hidden md:block">
+          <Constellation size={170} />
+        </div>
+        <div className="absolute right-[8%] bottom-14 opacity-90 hidden md:block">
+          <Stipple kind="crescent" size={120} seed={5} />
+        </div>
+        <div className="relative">
+          <AnimatedMark className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-10 text-[#141414]" inView />
+          <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
+            <SplitHeadline text="Look up," />
+            <br />
+            <SplitHeadline text="then ship." delay={0.2} />
+          </h2>
+          <Reveal delay={0.4}>
+            <p className="mt-6 text-[16px] text-[#5a5955]">Open source. Testnet-first. Free.</p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <Link to="/docs?s=install" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium hover:bg-black transition-colors">
+                <Puzzle size={17} /> Get the extension
+              </Link>
+              <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
+                <Github size={17} /> View source
+              </a>
+            </div>
+          </Reveal>
+        </div>
+      </section>
 
       <footer className="px-5 pb-10">
         <div className="max-w-5xl mx-auto pt-8 border-t border-black/[0.06] flex flex-col sm:flex-row gap-4 justify-between text-[13px] text-[#6b6a66]">
           <span className="flex items-center gap-2">
-            <AnimatedMark className="w-5 h-5 text-[#141414]" inView /> Orion · Built by Arpan Roy · Test networks only, tokens have no real value
+            <AnimatedMark className="w-5 h-5 text-[#141414]" inView /> Orion · Built by Arpan Roy · Not audited, testnets first
           </span>
-          <span className="flex gap-5">
+          <span className="flex flex-wrap gap-5">
+            <Link to="/docs" className="hover:text-[#141414]">Docs</Link>
+            <Link to="/terminal" className="hover:text-[#141414]">Web dashboard</Link>
             <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-[#141414] inline-flex items-center gap-1">
               <Github size={14} /> GitHub
-            </a>
-            <a href="https://developers.stellar.org" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
-              Stellar docs
-            </a>
-            <a href="https://www.freighter.app/" target="_blank" rel="noreferrer" className="hover:text-[#141414]">
-              Get Freighter
             </a>
           </span>
         </div>
@@ -483,105 +476,73 @@ export default function LandingPage() {
   );
 }
 
-function HowItWorks() {
-  // Three steps = Orion's three belt stars, joined by a line that draws as you scroll in
-  const pts = [
-    { x: 60, y: 120 },
-    { x: 500, y: 80 },
-    { x: 940, y: 40 },
+/** The cancel race, drawn as a timeline: the replacement overtakes the original and lands first. */
+function CancelStory() {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const inView = useInView(ref, { margin: '-120px' });
+  const reduced = !!useReducedMotion();
+  const [cycle, setCycle] = useState(0);
+  useEffect(() => {
+    if (!inView || reduced) return;
+    const id = setInterval(() => setCycle((c) => c + 1), 5200);
+    return () => clearInterval(id);
+  }, [inView, reduced]);
+  const run = inView || reduced;
+
+  const rows = [
+    { chain: 'EVM', speed: 'Same nonce, fees up 12.5%+', cancel: '0-value self-transfer on the same nonce' },
+    { chain: 'Stellar', speed: 'Fee-bump transaction at 10x', cancel: 'Same-sequence no-op at 10x the fee' },
+    { chain: 'Solana', speed: 'Priority fee + rebroadcast', cancel: "Can't be cancelled: Orion shows when its blockhash expires" },
   ];
+
   return (
-    <section className="px-5 py-28 sm:py-40 bg-[#efede8]">
+    <section className="px-5 py-28 sm:py-40 bg-[#141414] text-[#f6f5f2]">
       <div className="max-w-5xl mx-auto">
-        <SectionLabel>How it works</SectionLabel>
+        <p className="flex items-center gap-2 text-[13px] text-white/50">
+          <Belt className="w-5 text-white" />
+          Fast, and reversible where the chain allows
+        </p>
         <h2 className="mt-6 font-serif text-[38px] sm:text-[60px] leading-[1] tracking-[-0.02em] max-w-3xl">
-          <SplitHeadline text="Three stars to your first payment." />
+          <SplitHeadline text="Changed your mind? Race it." />
         </h2>
+        <Reveal delay={0.1}>
+          <p className="mt-5 text-[16px] text-white/60 max-w-2xl leading-relaxed">
+            While a payment is pending, Orion can send a replacement with a higher fee. Whichever lands first wins, and the other can never go through.
+          </p>
+        </Reveal>
 
-        <svg viewBox="0 0 1000 160" className="hidden md:block w-full mt-16 overflow-visible" aria-hidden="true">
-          <motion.path
-            d={`M${pts[0].x} ${pts[0].y} L${pts[1].x} ${pts[1].y} L${pts[2].x} ${pts[2].y}`}
-            fill="none"
-            stroke="#141414"
-            strokeWidth="1.5"
-            strokeDasharray="1 7"
-            strokeLinecap="round"
-            initial={{ pathLength: 0 }}
-            whileInView={{ pathLength: 1 }}
-            viewport={{ once: true, margin: '-120px' }}
-            transition={{ duration: 1.8, ease }}
-          />
-          {pts.map((p, i) => (
-            <motion.g
-              key={i}
-              initial={{ scale: 0, opacity: 0 }}
-              whileInView={{ scale: 1, opacity: 1 }}
-              viewport={{ once: true, margin: '-120px' }}
-              transition={{ delay: 0.2 + i * 0.6, type: 'spring', stiffness: 200, damping: 12 }}
-              style={{ transformOrigin: `${p.x}px ${p.y}px` }}
-            >
-              <circle cx={p.x} cy={p.y} r="22" fill="#141414" opacity="0.06" />
-              <circle cx={p.x} cy={p.y} r={i === 1 ? 9 : 7} fill="#141414" />
+        <div ref={ref} className="mt-14 rounded-[24px] border border-white/10 p-6 sm:p-8">
+          <svg viewBox="0 0 800 170" className="w-full" aria-label="A pending payment overtaken by its cancellation">
+            {/* track */}
+            <line x1="40" y1="60" x2="700" y2="60" stroke="#fff" strokeOpacity="0.25" strokeDasharray="2 6" />
+            <line x1="40" y1="120" x2="700" y2="120" stroke="#fff" strokeOpacity="0.25" strokeDasharray="2 6" />
+            <line x1="720" y1="30" x2="720" y2="150" stroke="#fff" strokeWidth="1.5" />
+            <text x="730" y="96" fill="#fff" fontFamily="Gloock, Georgia, serif" fontSize="18">block</text>
+            <text x="40" y="44" fill="#fff" fillOpacity="0.6" fontSize="13">Sent 3.00 ETH · nonce 42</text>
+            <text x="40" y="150" fill="#2f6fe0" fontSize="13" fontWeight={600}>Cancel · nonce 42 · higher fee</text>
+            <motion.g key={`o-${cycle}`} initial={{ x: 0 }} animate={run ? { x: reduced ? 520 : [0, 300, 520] } : {}} transition={{ duration: 4.2, times: [0, 0.4, 1], ease: 'easeOut' }}>
+              <circle cx="60" cy="60" r="9" fill="#e8622f" />
             </motion.g>
-          ))}
-        </svg>
+            <motion.g key={`c-${cycle}`} initial={{ x: 0, opacity: 0 }} animate={run ? { x: reduced ? 660 : [0, 0, 660], opacity: [0, 1, 1] } : {}} transition={{ duration: 4.2, times: [0, 0.35, 0.8], ease: 'easeIn' }}>
+              <circle cx="60" cy="120" r="9" fill="#2f6fe0" />
+            </motion.g>
+            <motion.text key={`r-${cycle}`} x="560" y="44" fill="#e8622f" fontFamily="Gloock, Georgia, serif" fontStyle="italic" fontSize="16" initial={{ opacity: 0 }} animate={run ? { opacity: [0, 0, 1] } : {}} transition={{ duration: 4.2, times: [0, 0.82, 0.9] }}>
+              replaced
+            </motion.text>
+          </svg>
+        </div>
 
-        <ol className="mt-12 md:mt-4 grid md:grid-cols-3 gap-10">
-          {STEPS.map((s, i) => (
-            <Reveal key={s.title} delay={0.3 + i * 0.25}>
-              <li className="list-none">
-                <span className="font-serif text-[15px] text-[#6b6a66]">Step {i + 1}</span>
-                <h3 className="mt-2 font-serif text-[26px] leading-tight">{s.title}</h3>
-                <p className="mt-2 text-[15px] leading-relaxed text-[#5a5955]">{s.body}</p>
-              </li>
+        <div className="mt-10 grid md:grid-cols-3 gap-px bg-white/10 rounded-[20px] overflow-hidden">
+          {rows.map((r, i) => (
+            <Reveal key={r.chain} delay={i * 0.1} className="bg-[#141414] p-6">
+              <p className="font-serif text-[24px]">{r.chain}</p>
+              <p className="mt-4 text-[12px] uppercase tracking-wide text-white/40">Speed up</p>
+              <p className="text-[14px] text-white/80 mt-1">{r.speed}</p>
+              <p className="mt-4 text-[12px] uppercase tracking-wide text-white/40">Cancel</p>
+              <p className="text-[14px] text-white/80 mt-1">{r.cancel}</p>
             </Reveal>
           ))}
-        </ol>
-      </div>
-    </section>
-  );
-}
-
-function FinalCta() {
-  const reduced = !!useReducedMotion();
-  // a small field of twinkling stars, placed deterministically
-  const stars = Array.from({ length: 26 }, (_, i) => ({
-    x: (i * 37) % 100,
-    y: (i * 53) % 100,
-    s: 2 + (i % 3),
-    d: (i % 7) * 0.4,
-  }));
-  return (
-    <section className="relative px-5 py-32 sm:py-44 text-center overflow-hidden">
-      {stars.map((s, i) => (
-        <motion.span
-          key={i}
-          className="absolute rounded-full bg-[#141414]"
-          style={{ left: `${s.x}%`, top: `${s.y}%`, width: s.s, height: s.s }}
-          initial={{ opacity: 0.15 }}
-          animate={reduced ? undefined : { opacity: [0.1, 0.7, 0.1] }}
-          transition={{ duration: 3 + (i % 4), repeat: Infinity, delay: s.d }}
-          aria-hidden="true"
-        />
-      ))}
-      <div className="relative">
-        <AnimatedMark className="w-20 h-20 sm:w-28 sm:h-28 mx-auto mb-10 text-[#141414]" inView />
-        <h2 className="font-serif text-[56px] sm:text-[100px] leading-[0.95] tracking-[-0.03em]">
-          <SplitHeadline text="Look up," />
-          <br />
-          <SplitHeadline text="then ship." delay={0.2} />
-        </h2>
-        <Reveal delay={0.4}>
-          <p className="mt-6 text-[16px] text-[#5a5955]">Free, open source and no sign-up. All you need is Freighter set to Testnet.</p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <Link to="/terminal" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-[#141414] text-white text-[15px] font-medium hover:bg-black transition-colors">
-              <Wallet size={17} /> Open wallet
-            </Link>
-            <a href={REPO_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 h-12 px-6 rounded-[12px] bg-white border border-black/10 text-[15px] font-medium hover:border-black/30 transition-colors">
-              <Github size={17} /> View source
-            </a>
-          </div>
-        </Reveal>
+        </div>
       </div>
     </section>
   );

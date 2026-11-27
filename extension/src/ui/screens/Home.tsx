@@ -8,9 +8,8 @@ import type { WalletView } from '../../lib/messages';
 import { explorerAddressUrl, type Family, type Network } from '../../lib/networks';
 import type { TrackedTx } from '../../lib/chains/types';
 import Activity from './Activity';
-import Ori from '../art/Ori';
-import { Confetti } from '../art/Scene';
-import { NetworkLogo, Coin } from '../art/ChainLogo';
+import { NetworkLogo } from '../art/ChainLogo';
+import { Annotation, Comet, Medallion, Starburst, Stipple, type BodyKind } from '../art/Engraving';
 
 function AnimatedNumber({ value }: { value: number }) {
   const reduced = useReducedMotion();
@@ -83,7 +82,7 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
     try {
       const text = await call<string>({ type: 'ui:faucet', family });
       setFaucetMsg({ ok: true, text });
-      celebrate(text);
+      celebrate('Funded.');
       loadBalance();
     } catch (e: any) {
       setFaucetMsg({ ok: false, text: e.message });
@@ -94,16 +93,16 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
 
   const familyTxs = txs.filter((t) => t.family === family);
   const pendingHere = familyTxs.some((t) => t.status === 'pending');
-  // Ori reacts to what's going on with this chain.
-  const ori = balErr
-    ? { pose: 'stand' as const, mood: 'dizzy' as const, prop: 'plug' as const, say: 'Node unreachable!' }
+  // The vignette above the card reflects the state of this chain, like a plate in an atlas.
+  const plate: { art: 'body' | 'comet'; kind?: BodyKind; note: string; tone: 'ink' | 'bad' | 'accent' } = balErr
+    ? { art: 'body', kind: 'eclipse', note: 'fig. — node unreachable', tone: 'bad' }
     : faucetBusy
-      ? { pose: 'stand' as const, mood: 'focused' as const, prop: 'can' as const, say: 'Watering…' }
+      ? { art: 'body', kind: 'ringed', note: 'fig. — requesting funds', tone: 'accent' }
       : pendingHere
-        ? { pose: 'run' as const, mood: 'focused' as const, prop: null, say: 'On it!' }
+        ? { art: 'comet', note: 'fig. — transaction in flight', tone: 'accent' }
         : net.kind === 'mainnet'
-          ? { pose: 'stand' as const, mood: 'worried' as const, prop: null, say: 'Real money!' }
-          : { pose: 'sit' as const, mood: 'happy' as const, prop: null, say: '' };
+          ? { art: 'body', kind: 'crescent', note: 'fig. — mainnet, real funds', tone: 'bad' }
+          : { art: 'body', kind: 'sphere', note: `fig. — ${net.name}`, tone: 'ink' };
 
   return (
     <div className="relative h-full flex flex-col">
@@ -126,16 +125,12 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
         {/* Balance */}
         <AnimatePresence mode="wait">
           <motion.div key={family} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -6 }} transition={{ duration: 0.3, ease }}>
-            <Card className="relative mt-[76px] p-5">
-              {/* Ori perches on the card and reacts to the wallet's state */}
-              <motion.div key={ori.pose + ori.mood + ori.prop} className="absolute -top-[72px] right-2 z-10" initial={{ y: 12, opacity: 0, rotate: 12 }} animate={{ y: 0, opacity: 1, rotate: 0 }} transition={{ type: 'spring', stiffness: 220, damping: 12 }}>
-                <Ori size={70} pose={ori.pose} mood={ori.mood} prop={ori.prop} shadow={false} />
-                {ori.say && (
-                  <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="absolute right-[64px] top-2 whitespace-nowrap rounded-[10px] border-2 border-ink bg-white px-2 py-0.5 text-[11px] font-medium shadow-[2px_2px_0_#141414]">
-                    {ori.say}
-                  </motion.span>
-                )}
-              </motion.div>
+            {/* Plate: a stippled body (or comet) with an italic atlas annotation */}
+            <motion.div key={plate.note + plate.kind + family} className="mt-2 h-[76px] flex items-center justify-end gap-1 pr-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}>
+              <Annotation tone={plate.tone}>{plate.note}</Annotation>
+              {plate.art === 'comet' ? <Comet width={96} height={60} /> : <Stipple kind={plate.kind} size={76} seed={family.length * 7 + 3} />}
+            </motion.div>
+            <Card className="relative mt-0 p-5">
               <div className="flex items-center justify-between">
                 <button onClick={() => setSheet('networks')} className="inline-flex items-center gap-1.5 h-7 pl-1 pr-1.5 rounded-[9px] bg-inset text-[12px] font-medium hover:bg-line">
                   <NetworkLogo networkId={net.id} family={family} size={18} />
@@ -196,20 +191,10 @@ export default function Home({ view, setView, family, setFamily }: { view: Walle
       </div>
 
       <Sheet open={sheet === 'send'} onClose={() => setSheet(null)} title={`Send ${net.symbol}`}>
-        <SendForm family={family} net={net} balance={balance} onSent={() => { setSheet(null); loadTxs(); celebrate('Sent!'); }} />
+        <SendForm family={family} net={net} balance={balance} onSent={() => { setSheet(null); loadTxs(); celebrate('Sent.'); }} />
       </Sheet>
-      {/* Celebration: confetti + Ori cheering */}
-      <Confetti show={!!party} />
-      <AnimatePresence>
-        {party && (
-          <motion.div className="pointer-events-none absolute inset-0 z-40 grid place-items-center" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <motion.div initial={{ scale: 0.3, rotate: -20 }} animate={{ scale: 1, rotate: 0 }} exit={{ scale: 0.6, opacity: 0 }} transition={{ type: 'spring', stiffness: 200, damping: 10 }} className="flex flex-col items-center">
-              <span className="font-serif text-[30px] rounded-[16px] border-[3px] border-ink bg-[#ffd84d] px-4 py-1 shadow-[4px_4px_0_#141414] -rotate-3">{party}</span>
-              <Ori size={130} pose="cheer" mood="excited" sparkles />
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Celebration: an engraved starburst */}
+      <Starburst show={!!party} word={party ?? undefined} />
 
       <Sheet open={sheet === 'receive'} onClose={() => setSheet(null)} title="Receive">
         <div className="flex flex-col items-center text-center">
@@ -273,7 +258,7 @@ function NetworkList({ view, family, onPick }: { view: WalletView; family: Famil
             {list.map((n) => (
               <button key={n.id} onClick={() => onPick(n.id)} className="w-full flex items-center gap-3 px-3.5 py-3 text-left hover:bg-black/[0.02]">
                 <span className="relative">
-                  <Coin family={n.family} networkId={n.id} size={30} />
+                  <Medallion family={n.family} networkId={n.id} size={32} />
                   <span className={cx('absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full border-2 border-white', n.kind === 'mainnet' ? 'bg-bad' : n.kind === 'local' ? 'bg-rigel' : 'bg-ok')} />
                 </span>
                 <span className="flex-1 min-w-0">

@@ -2,8 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { call } from '../api';
 import { Button, ErrorText, Rise, SplitWords, inputCls } from '../kit';
-import Ori from '../art/Ori';
-import { Doodles, OriScene } from '../art/Scene';
+import { Annotation, Stipple } from '../art/Engraving';
 import type { WalletView } from '../../lib/messages';
 
 export default function Unlock({ onDone, compact = false }: { onDone: (v: WalletView) => void; compact?: boolean }) {
@@ -28,12 +27,8 @@ export default function Unlock({ onDone, compact = false }: { onDone: (v: Wallet
         }
       }}
     >
-      {!compact && <Doodles />}
-      {compact ? (
-        <Ori size={96} prop="key" mood={error ? 'worried' : 'happy'} />
-      ) : (
-        <OriScene size={190} prop="key" mood={error ? 'worried' : 'excited'} splat="#dbe7ff" seed={4} />
-      )}
+      <Stipple kind={error ? 'eclipse' : 'keyhole'} size={compact ? 96 : 170} seed={4} />
+      {error && <div className="-mt-2 mb-1"><Annotation tone="bad">fig. — locked</Annotation></div>}
       <h1 className={`font-serif ${compact ? 'text-[26px] mt-2' : 'text-[36px] mt-2'} leading-none`}>
         <SplitWords text="Welcome back" delay={0.2} />
       </h1>

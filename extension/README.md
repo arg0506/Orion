@@ -40,11 +40,10 @@
 
 ## Look and feel
 
-Orion's UI follows the website's ink-on-paper style, with a cartoon mascot, **Ori**: a chubby star wearing Orion's belt.
-He reacts to what's happening (dizzy with an unplugged cable when a node is unreachable, running while a transaction is pending,
-holding a stop sign while a cancel races the original, watering the faucet, cheering with confetti when a send goes through).
-Ori, the splats, confetti and doodles are original artwork drawn in code (`src/ui/art/`), with a hand-inked "line boil" wobble.
-All animation respects `prefers-reduced-motion`.
+Orion's UI follows the website's ink-on-paper style. Illustrations are drawn in code in the manner of an old star atlas:
+stippled celestial bodies that print themselves dot by dot, engraved medallions for each chain, an astrolabe, a stippled comet
+for transactions in flight, and italic annotations ("fig. — node unreachable"). They react to the wallet's state, and all
+animation respects `prefers-reduced-motion`. See `src/ui/art/`.
 
 Chain and network marks (Ethereum, Base, Arbitrum, Optimism, Sepolia, Solana, Stellar) come unaltered from
 [`@web3icons/react`](https://github.com/0xa3k5/web3icons) (MIT); they belong to their respective projects.
