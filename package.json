@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "orion",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,6 +11,9 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/instrument-sans": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@google/genai": "^2.4.0",
     "@stellar/freighter-api": "^6.0.1",
     "@stellar/stellar-sdk": "^16.0.1",
